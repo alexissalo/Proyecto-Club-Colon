@@ -10,9 +10,9 @@
             flex-direction: column;
             gap: 1rem;
             padding: 1rem;
-            
+
             border-radius: 8px;
-            
+
         }
 
         form#eventForm label {
@@ -34,7 +34,7 @@
         }
 
         form#eventForm textarea {
-            resize: vertical;
+            resize: none;
             min-height: 100px;
         }
 
@@ -67,7 +67,7 @@
 <body>
     <div class="grid-container">
         <%- include('header') %>
-            <%- include('sidebar',{ rolId: rolId }) %>
+            <%- include('sidebar',{ rolId: rolId, rolNombre:rolNombre, disciplinas:disciplinas }) %>
 
                 <!-- Main -->
                 <main class="main-container">
@@ -87,6 +87,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
+            let rolNombre = '<%= rolNombre %>';
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: "es",
@@ -102,9 +103,14 @@
                     list: 'Lista'
                 },
                 selectable: true,
+
                 dateClick: function (info) {
-                    abrirModal(info);
-                    document.getElementById('eventForm').addEventListener('submit', añadirEvento);
+                    if (rolNombre === 'admin_general') {
+                        abrirModal(info);
+                        document.getElementById('eventForm').addEventListener('submit', añadirEvento);
+                    } else {
+                        alert("No tienes permisos para añadir eventos.");
+                    }
                 },
                 eventClick: function (info) {
                     mostrarEvento(info.event);
@@ -160,12 +166,8 @@
 
             function mostrarEvento(event) {
                 console.log(event);
-
+                let rolNombre = '<%= rolNombre %>';
                 const id = parseInt(event.id)
-
-                console.log(id);
-
-
                 Swal.fire({
                     html: `
                         <div class="modal-content">
@@ -183,7 +185,7 @@
                     confirmButtonText: "Borrar"
 
                 }).then((result) => {
-                    if (result.isConfirmed) {
+                    if (result.isConfirmed && rolNombre==="admin_general") {
                         Swal.fire({
                             title: "Estas seguro?",
                             icon: "warning",
@@ -206,6 +208,8 @@
                                 })
                             }
                         });
+                    }else{
+                        alert("No tienes permiso para borrar eventos")
                     }
                 })
 

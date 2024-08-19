@@ -1,0 +1,52 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <title>Inicio</title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId,rolNombre:rolNombre, disciplinas:disciplinas }) %>
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>INICIO</h2>
+                    </div>
+                    <div class="inicio-cards">
+
+                        <div class="card">
+                            <div class="card-inner">
+                                <p class="text-primary">SOCIOS</p>
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <span class="text-primary font-weight-bold">249</span>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-inner">
+                                <p class="text-primary">DISCIPLINAS</p>
+                                <i class="bi bi-dribbble"></i>
+                            </div>
+                            <span class="text-primary font-weight-bold">83</span>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-inner">
+                                <p class="text-primary">EVENTO PROXIMO</p>
+                            </div>
+                            <span class="text-primary font-weight-bold">79</span>
+                        </div>
+
+                    </div>
+                </main>
+                <!-- End Main -->
+
+    </div>
+    <script src="/public/js/interacciones.js"></script>
+</body>
+
+</html>

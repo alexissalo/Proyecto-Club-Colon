@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <title>Usuarios</title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId,rolNombre:rolNombre, disciplinas:disciplinas }) %>
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>USUARIOS</h2>
+                    </div>
+                    <div class="container-tablas">
+                        <div class="tabla-header">
+                            <div class="search-bar">
+                                <input type="text" class="search-input" placeholder="Buscar socio...">
+                                <button class="search-button">Buscar</button>
+                            </div>
+                            <button>Nuevo usuario</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% usuarios.forEach(function(usuario) { %>
+                                    <tr>
+                                        <td>
+                                            <%= usuario.id %>
+                                        </td>
+                                        <td>
+                                            <%= usuario.nombre %>
+                                        </td>
+                                        <td>
+                                            <%= usuario.email %>
+                                        </td>
+                                        <td>
+                                            <%= usuario.rol_nombre %>
+                                        </td>
+                                        <td>
+                                            Borrar <i class="bi bi-trash-fill"></i>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+
+                            </tbody>
+                        </table>
+                </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/public/js/interacciones.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+                
+                function crearUsuario() {
+                    Swal.fire({
+                        html: `
+                        <h2>Crear Evento</h2>
+                        <form id="eventForm">
+                            <label for="title">Título:</label>
+                            <input type="text" id="title" name="title" required>
+
+                            <label for="start">Fecha de Inicio:</label>
+                            <input type="date" id="start" name="start" value=${info.dateStr} required>
+
+                            <label for="end">Fecha de Fin:</label>
+                            <input type="date" id="end" value=${info.dateStr} name="end">
+
+                            <label for="description">Descripción:</label>
+                            <textarea id="description" name="description"></textarea>
+
+                            <button>Guardar Evento</button>
+                        </form>
+                    `,
+                        showCloseButton: true,
+                        focusConfirm: false,
+                        showConfirmButton: false,
+                    });
+                }
+        })
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,319 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <title>Socios</title>
+    <style>
+        td .bi-three-dots-vertical {
+            cursor: pointer;
+            padding: 5px;
+            font-size: 20px;
+        }
+
+        td .bi-three-dots-vertical:hover {
+            background-color: #ddd;
+            border-radius: 10px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            list-style: none;
+            padding: 0;
+        }
+
+        .dropdown-menu li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .dropdown-menu li:hover {
+            background-color: #ccc;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId,rolNombre:rolNombre, disciplinas:disciplinas }) %>
+
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>SOCIOS</h2>
+                    </div>
+                    <div class="container-tablas">
+                        <div class="tabla-header">
+                            <div class="search-bar">
+                                <input type="text" class="search-input" placeholder="Buscar socio...">
+                                <button class="search-button">Buscar</button>
+                            </div>
+                            <button onclick="añadirSocio()">Nuevo socio</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Dni</th>
+                                    <th>Fec.Nac</th>
+                                    <th>Telefono</th>
+                                    <th>Domicilio</th>
+                                    <th>Fec.Inscripcion</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% socios.forEach(function(socio) { %>
+                                    <tr>
+                                        <td>
+                                            <%= socio.nombre %>
+                                        </td>
+                                        <td>
+                                            <%= socio.dni %>
+                                        </td>
+                                        <td>
+                                            <%= socio.fechaNacimiento %>
+                                        </td>
+                                        <td>
+                                            <%= socio.telefono %>
+                                        </td>
+                                        <td>
+                                            <%= socio.domicilio %>
+                                        </td>
+                                        <td>
+                                            <%= socio.fechaInscripcion %>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                            <ul class="dropdown-menu">
+                                                <li class="detalle">Detalle <i class="bi bi-eye-fill"></i></li>
+                                                <li>Editar <i class="bi bi-pencil-fill"></i></li>
+                                                <li>Borrar <i class="bi bi-trash-fill"></i></li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <div class="pagination-select">
+                                Filas por pagina:
+                                <select onchange="window.location.href = '?pagina=1&filasPorPagina=' + this.value">
+                                    <option value="5" <%=filasPorPagina==5 ? 'selected' : '' %>>5</option>
+                                    <option value="10" <%=filasPorPagina==10 ? 'selected' : '' %>>10</option>
+                                    <option value="20" <%=filasPorPagina==20 ? 'selected' : '' %>>20</option>
+                                </select>
+                            </div>
+                            <div class="pagination-buttons">
+                                <button class="pagination-button" onclick="navigatePage('prev')" <%=pagina===1
+                                    ? 'disabled' : '' %>>
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <span>
+                                    <%= (pagina - 1) * filasPorPagina + 1 %> - <%= Math.min(pagina * filasPorPagina,
+                                            totalSocios) %> de <%= totalSocios %>
+                                </span>
+                                <button class="pagination-button" onclick="navigatePage('next')" <%=pagina *
+                                    filasPorPagina>=
+                                    totalSocios ? 'disabled' : '' %>>
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!-- End Main -->
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/public/js/interacciones.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const boton = document.querySelector('.bi-three-dots-vertical')
+            const menu = document.querySelector(".dropdown-menu")
+            boton.addEventListener('click', (e) => {
+                menu.classList.toggle('show');
+            });
+
+            function navigatePage(direction) {
+                const paginaActual = <%= pagina %>;
+                const filasPorPagina = <%= filasPorPagina %>;
+                let nuevaPagina;
+
+                if (direction === 'prev') {
+                    nuevaPagina = paginaActual - 1;
+                } else if (direction === 'next') {
+                    nuevaPagina = paginaActual + 1;
+                }
+
+                window.location.href = `?pagina=${nuevaPagina}&filasPorPagina=${filasPorPagina}`;
+            }
+
+            // Selecciona todos los botones de tres puntos verticales
+            const botones = document.querySelectorAll('.bi-three-dots-vertical');
+
+            botones.forEach((boton, index) => {
+                if (index == 0) {
+                    boton.addEventListener('click', (e) => {
+                        const td = boton.parentNode;
+                        const menu = td.querySelector('.dropdown-menu');
+                        menu.classList.toggle('show');
+                    });
+                }
+                boton.addEventListener('click', (e) => {
+                    const td = boton.parentNode;
+                    const menu = td.querySelector('.dropdown-menu');
+                    menu.classList.toggle('show');
+                });
+            });
+
+            // Agrega un evento click al botón "Detalle" en el menú
+            document.querySelectorAll('.dropdown-menu .detalle').forEach((boton) => {
+                boton.addEventListener('click', (e) => {
+                    const menu = document.querySelector('.dropdown-menu');
+                    menu.classList.toggle('show');
+                    const contenido = `
+                        <p>Nombre: a</p>
+                        <p>Apellido: a</p>
+                        <p>DNI: a</p>
+                        <p>Fecha de nacimiento: a</p>
+                        <h2>Pagos de la cuota</h2>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Fecha de pago</th>
+                                <th>Monto</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td>a</td>
+                                <td>a</td>
+                                </tr>
+                            
+                            </tbody>
+                        </table>
+                        `;
+
+                    // Muestra el modal con SweetAlert
+                    Swal.fire({
+                        title: 'Detalle del socio',
+                        html: contenido,
+                        confirmButtonText: 'Cerrar',
+                    });
+
+
+                });
+            });
+
+            function añadirSocio() {
+                swal({
+                    title: 'Agregar nuevo socio',
+                    html: `
+    <form>
+      <div class="form-group">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="domicilio">Domicilio:</label>
+        <input type="text" id="domicilio" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="dni">DNI:</label>
+        <input type="number" id="dni" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="fechaNacimiento">Fecha de nacimiento:</label>
+        <input type="date" id="fechaNacimiento" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="disciplina">Disciplina:</label>
+        <select id="disciplina" class="form-control" required>
+          <option value="">Seleccione una disciplina</option>
+          <option value="Futbol">Futbol</option>
+          <option value="Basquet">Basquet</option>
+          <option value="Tenis">Tenis</option>
+          <!-- Agrega más opciones según sea necesario -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="tipoSocio">Tipo de socio:</label>
+        <select id="tipoSocio" class="form-control" required>
+          <option value="">Seleccione un tipo de socio</option>
+          <option value="Activo">Activo</option>
+          <option value="Pasivo">Pasivo</option>
+          <option value="Honorario">Honorario</option>
+          <!-- Agrega más opciones según sea necesario -->
+        </select>
+      </div>
+    </form>
+  `,
+                    confirmButtonText: 'Agregar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const nombre = document.getElementById('nombre').value;
+                        const telefono = document.getElementById('telefono').value;
+                        const domicilio = document.getElementById('domicilio').value;
+                        const dni = document.getElementById('dni').value;
+                        const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+                        const disciplina = document.getElementById('disciplina').value;
+                        const tipoSocio = document.getElementById('tipoSocio').value;
+
+                        // Verifica que todos los campos estén completos
+                        if (!nombre || !telefono || !domicilio || !dni || !fechaNacimiento || !disciplina || !tipoSocio) {
+                            swal.showValidationError('Por favor, complete todos los campos');
+                            return false;
+                        }
+
+                        // Agrega la lógica para agregar el nuevo socio a la base de datos
+                        // Por ejemplo, puedes hacer una petición AJAX a tu API
+                        fetch('/api/socios', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                nombre,
+                                telefono,
+                                domicilio,
+                                dni,
+                                fechaNacimiento,
+                                disciplina,
+                                tipoSocio,
+                            }),
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    swal('Socio agregado con éxito!', '', 'success');
+                                } else {
+                                    swal('Error al agregar socio', '', 'error');
+                                }
+                            })
+                            .catch((error) => console.error(error));
+                    },
+                });
+            }
+        });
+
+    </script>
+</body>
+
+</html>

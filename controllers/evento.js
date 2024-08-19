@@ -1,11 +1,26 @@
 const modelEvento = require("../models/evento");
 const eventoModel = new modelEvento();
+const modelDisciplina = require("../models/disciplina");
+const disciplinaModel = new modelDisciplina();
 
 class EventoController {
 
 	mostrarEventos (req, res) {
-		const rolId = req.rolId;
-		res.render("dashboard/eventos",{rolId});
+		disciplinaModel.listarDisciplinas((disciplinaData) => {
+			if (disciplinaData === null) {
+			  return res
+				.status(500)
+				.send("Error al obtener los datos de los socios");
+			}
+			const rolId = req.rolId;
+			const rolNombre=req.rolNombre
+	
+			res.render("dashboard/eventos", {
+			  rolId: rolId,
+			  rolNombre:rolNombre,
+			  disciplinas:disciplinaData
+			});
+		  });
 	}
 
 	listarEventos(req,res){
