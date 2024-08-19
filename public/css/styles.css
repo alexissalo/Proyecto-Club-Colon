@@ -32,9 +32,21 @@ body {
     box-shadow: 0 6px 7px -4px rgba(0, 0, 0, 0.2);
 }
 
+.header a{
+    color: #000000;
+}
+
+.header-right {
+    margin-left: auto; 
+}
+
 .menu-icon {
     display: none;
     cursor: pointer;
+}
+
+.menu-icon i{
+    color: #000000;
 }
 
 
@@ -61,10 +73,12 @@ body {
 
 .sidebar-logo i{
     position: absolute;
-    top: 5;
-    right: 5;
+    top: 0;
+    right: 0;
     display: none;
     cursor: pointer;
+    font-size: 30px;
+    color: white;
 }
 
 .sidebar-logo i:hover{
@@ -87,11 +101,21 @@ body {
     cursor: pointer;
 }
 
+/* Quitar efecto hover cuando el submenú está activo */
+.sidebar-list-item.active {
+    background-color: #000000; /* Mantiene el color de fondo cuando está activo */
+}
+
+.sidebar-list-item.active:hover {
+    background-color: #000000; /* Evita cambiar el color de fondo al hacer hover */
+}
+
 .sidebar-list-item>a {
     text-decoration: none;
     color: #ffffff;
     display: block;
     padding: 20px;
+    text-transform: capitalize;
 }
 
 .sidebar-responsive {
@@ -100,6 +124,37 @@ body {
     z-index: 12 !important;
 }
 
+.sidebar-list-item {
+    position: relative;
+}
+
+.sub-menu {
+    display: none; 
+    list-style: circle;
+    margin-top: 10px;
+    padding: 0;
+}
+
+.sub-menu-item {
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+.sub-menu-item:hover{
+    background-color: rgba(255, 255, 255, 0.2);;
+}
+
+.sub-menu-item a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    padding: 20px;
+}
+
+/* Mostrar el submenú cuando está activo */
+.sidebar-list-item.active .sub-menu {
+    display: block;
+}
 
 /* ---------- MAIN ---------- */
 
@@ -118,14 +173,14 @@ body {
     font-size: 20px;
 }
 
-/* .main-cards {
+.inicio-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
     margin: 20px 0;
-} */
+} 
 
-/* .card {
+.card {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -172,7 +227,7 @@ body {
     font-size: 35px;
 }
 
-.charts {
+/* .charts {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
@@ -205,7 +260,7 @@ body {
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .tabla-header{
@@ -214,8 +269,13 @@ body {
 }
 
 .tabla-header button{
-    background-color: #246dec;
+    background-color: #4CAF50;
     margin-bottom: 10px;
+    margin-left: auto;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid black;
 }
 
 .container-tablas h1 {
@@ -225,14 +285,18 @@ body {
 
 .container-tablas table {
     width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
-    overflow: scroll;
+    overflow-x: auto;
+    display: block;
 }
 
 .container-tablas th, td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    
 }
 
 .container-tablas th {
@@ -311,10 +375,40 @@ body {
     margin: 0;
 }
 
-.modal-open{
-    display: block;
+td .bi-three-dots-vertical {
+    cursor: pointer;
+    padding: 5px;
+    font-size: 20px;
 }
 
+td .bi-three-dots-vertical:hover {
+    background-color: #ddd;
+    border-radius: 10px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    list-style: none;
+    padding: 0;
+}
+
+.dropdown-menu li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.dropdown-menu li:hover {
+    background-color: #ccc;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
 
 
 /* ---------- SCROLLBARS ---------- */
@@ -332,46 +426,6 @@ body {
 ::-webkit-scrollbar-thumb {
     background-color: #bb0000;
     border-radius: 10px;
-}
-
-/* ---------- MODAL ------------*/
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 100000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.4);
-    padding-top: 60px;
-}
-
-.modal-content {
-    display: flex;
-    flex-direction: column;
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
 }
 
 

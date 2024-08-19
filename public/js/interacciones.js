@@ -17,4 +17,12 @@ function closeSidebar() {
   }
 }
 
+function toggleSubMenu() {
+  const subMenu = document.getElementById('subMenu');
+  const listItem = subMenu.parentElement;
+
+  // Alterna la clase "active" para mostrar/ocultar el submenú
+  listItem.classList.toggle('active');
+}
+
 
