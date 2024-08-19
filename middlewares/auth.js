@@ -19,6 +19,7 @@ class authMiddlewares {
         }
         req.userId = decoded.userId;
         req.rolId = decoded.rolId;
+        req.rolNombre=decoded.rolNombre
         next();
       });
     } catch (error) {
@@ -32,7 +33,7 @@ class authMiddlewares {
         const rol = await usuarioModel.validarRol(req.rolId);
         if (!rol) return res.status(404).send({ message: "Rol no encontrado" });
 
-        if (roles.includes(rol.nombre)) {
+        if (roles.includes(rol.nombre) || roles.includes("todos")) {
           next();
         } else {
           res
