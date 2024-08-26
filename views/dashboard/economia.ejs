@@ -1,0 +1,75 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <title>Economia</title>
+    <style>
+
+    .main-title {
+    margin-bottom: 20px;
+    }
+
+
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+    
+}
+
+button:hover {
+    background-color: #45a049;
+    
+}
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar') %>
+
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>ECONOMÍA</h2>
+                    </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="display: flex; flex-direction: column;">
+                        <h3>Ingreso</h3>
+                        <input type="number" name="" id="">
+                        <textarea name="" id=""></textarea>
+                        <button>Añadir ingreso</button>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <h3>Egreso</h3>
+                        <input type="number" name="" id="">
+                        <textarea name="" id=""></textarea>
+                        <button class="boton">Añadir egreso</button>
+                    </div>
+                </div>    
+                </main>
+                <!-- End Main -->
+    </div>
+    <script src="/public/js/interacciones.js"></script>
+</body>
+
+</html>

@@ -3,8 +3,8 @@ const app = express();
 const port = 3000;
 
 const rutasUsuarios = require('./routes/usuario');
-const rutasSocios= require("./routes/socio")
 const rutasEventos= require("./routes/evento")
+const rutasEconomia = require("./routes/economia")
 
 // MiddleWare
 app.use(express.urlencoded({
@@ -18,8 +18,8 @@ app.set('view engine', 'ejs');
 
 //Rutas
 app.use("/",rutasUsuarios);
-app.use("/",rutasSocios);
 app.use("/",rutasEventos)
+app.use("/", rutasEconomia)
 
 
 app.listen(port, () => {
