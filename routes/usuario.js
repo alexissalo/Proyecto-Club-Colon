@@ -8,6 +8,6 @@ const usuarioController = new controllerUsuario();
 router.get('/login', usuarioController.mostrarFormulario);
 router.post('/login', usuarioController.login);
 router.get("/logout", usuarioController.logout);
-router.get("/admin",[authMiddlewares.verificarSesion,authMiddlewares.verificarRol(["admin_general"])],usuarioController.adminContent)
+
 
 module.exports = router;
