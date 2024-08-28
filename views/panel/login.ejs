@@ -13,8 +13,8 @@
 			justify-content: center;
 			height: 100vh;
 			margin: 0;
-			background: rgb(0,0,0);
-			background: linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(255,0,0,1) 47%, rgba(0,0,0,1) 100%);
+			background: rgb(0, 0, 0);
+			background: linear-gradient(90deg, rgba(0, 0, 0, 1) 0%, rgba(255, 0, 0, 1) 47%, rgba(0, 0, 0, 1) 100%);
 
 		}
 
@@ -26,7 +26,7 @@
 			text-align: center;
 		}
 
-		h1{
+		h1 {
 			color: white;
 		}
 
@@ -58,6 +58,10 @@
 		button:hover {
 			background-color: #860000;
 		}
+
+		.error-message {
+			color: red;
+		}
 	</style>
 </head>
 
@@ -66,16 +70,17 @@
 		<img src="/public/img/logo_colon_sin_fondo.png" alt="Logo">
 		<h1>Login</h1>
 		<div>
-			<input type="email" placeholder="Username" id="usuario_email" required>
-			<input type="password" placeholder="Password" id="usuario_password" required>
+			<input type="email" placeholder="Email" id="usuario_email" required>
+			<input type="password" placeholder="Contraseña" id="usuario_password" required>
 			<button type="submit" class="enviar">Login</button>
 		</div>
-		<div id="error-message"></div>
+		<div class="error-message"></div>
 	</div>
 	<script type="text/javascript">
 		const inputEmail = document.querySelector("#usuario_email");
 		const inputPassword = document.querySelector("#usuario_password");
 		const buttonEnviar = document.querySelector(".enviar");
+		const errorMessage = document.querySelector(".error-message")
 
 		buttonEnviar.addEventListener("click", () => {
 			fetch("/login", {
@@ -87,15 +92,19 @@
 					email: inputEmail.value,
 					password: inputPassword.value
 				}),
-			}).then((response)=>{
+			}).then((response) => {
 				console.log(response);
 				if (response.ok) {
-					window.location.href = '/dashboard/socios';
+					window.location.href = '/dashboard/inicio';
+				} else {
+					response.json().then((res) => {
+						errorMessage.textContent = res.message
+					})
 				}
 			})
-			.catch((err)=>{
-				console.error(err)
-			})
+				.catch((err) => {
+					console.error(err)
+				})
 		});
 	</script>
 </body>

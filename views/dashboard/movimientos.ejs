@@ -1,0 +1,249 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        .tabla-header i {
+            font-size: 36px;
+            cursor: pointer;
+        }
+
+        #filtro-menu {
+            position: absolute;
+            top: 230px;
+            right: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            z-index: 1;
+        }
+
+        #filtro-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #filtro-menu li {
+            margin-bottom: 10px;
+        }
+
+        #filtro-menu a {
+            text-decoration: none;
+            color: #337ab7;
+        }
+
+        #filtro-menu a:hover {
+            color: #23527c;
+        }
+
+        .dropdown-header {
+            margin-top: 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        select{
+            padding: 0;
+        }
+
+        .form-control {
+            height: 35px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-control:focus {
+            border-color: #aaa;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabla-header button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #01ad0f;
+        }
+
+        .tabla-header button:hover{
+            background-color: #00880b;
+        }
+    </style>
+    <title>Movimientos</title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar') %>
+
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>MOVIMIENTOS</h2>
+                    </div>
+                    <div class="container-tablas">
+                        <div class="tabla-header">
+                            <div class="search-bar">
+                                <input type="text" class="search-input" placeholder="Buscar...">
+                                <button class="search-button">Buscar</button>
+                            </div>
+                            <div>
+                                <i class="bi bi-filter" id="filtro-icono"></i>
+                                <div id="filtro-menu" style="display: none;">
+                                    <h4 class="dropdown-header">Filtrar por:</h4>
+                                    <div class="form-group">
+                                        <label for="tipo">Tipo de movimiento:</label>
+                                        <select id="tipo" class="form-control">
+                                            <option value="">Todos</option>
+                                            <option value="ingreso">Ingreso</option>
+                                            <option value="egreso">Egreso</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fecha">Fecha:</label>
+                                        <input type="date" id="fecha" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="disciplina">Disciplina:</label>
+                                        <select id="disciplina" class="form-control">
+                                            <option value="">Todas</option>
+                                            <% disciplinas.forEach(function(disciplina) { %>
+                                                <option value="<%= disciplina.id %>">
+                                                    <%= disciplina.nombre %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div>
+                                    <button id="aplicar-filtro">Aplicar filtro</button>
+                                    <button id="limpiar-filtro">Limpiar filtro</button>
+                                </div>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Responsable</th>
+                                    <th>Disciplina</th>
+                                    <th>Tipo Movimiento</th>
+                                    <th>Valor</th>
+                                    <th>Fecha</th>
+                                    <th>Descripcion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (movimientos.length> 0) { %>
+                                    <% movimientos.forEach((movimiento)=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= movimiento.responsable %>
+                                            </td>
+                                            <td style="text-transform: capitalize;">
+                                                <%= movimiento.disciplina %>
+                                            </td>
+                                            <td>
+                                                <% if(movimiento.es_ingreso) { %>
+                                                    <div class="status-badge active">
+                                                        Ingreso
+                                                    </div>
+                                                    <% } else { %>
+                                                        <div class="status-badge banned">
+                                                            Egreso
+                                                        </div>
+                                                        <% } %>
+                                            </td>
+                                            <td>$<%= movimiento.valor %>
+                                            </td>
+                                            <td>
+                                                <%= movimiento.fecha %>
+                                            </td>
+                                            <td style="text-transform: capitalize;">
+                                                <%= movimiento.descripcion %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="8" style="text-align: center;">No hay movimientos
+                                                        registrados</td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <div class="pagination-select">
+                                Filas por pagina:
+                                <select
+                                    onchange="window.location.href = '?pagina=1&filasPorPagina=' + this.value + '&buscar=<%= typeof buscar !== 'undefined' ? buscar : '' %>'">
+                                    <option value="5" <%=filasPorPagina==5 ? 'selected' : '' %>>5</option>
+                                    <option value="10" <%=filasPorPagina==10 ? 'selected' : '' %>>10</option>
+                                    <option value="20" <%=filasPorPagina==20 ? 'selected' : '' %>>20</option>
+                                </select>
+                            </div>
+                            <div class="pagination-buttons">
+                                <button class="pagination-button" onclick="navigatePage('prev')" <%=pagina===1
+                                    ? 'disabled' : '' %>>
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <span>
+                                    <%= (pagina - 1) * filasPorPagina + 1 %> - <%= Math.min(pagina * filasPorPagina,
+                                            totalMovimientos) %> de <%= totalMovimientos %>
+                                </span>
+                                <button class="pagination-button" onclick="navigatePage('next')" <%=pagina>=
+                                    Math.ceil(totalMovimientos / filasPorPagina) ? 'disabled' : '' %>>
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!-- End Main -->
+    </div>
+    <script src="/public/js/interacciones.js"></script>
+    <script>
+        function navigatePage(direction) {
+            const paginaActual = <%= pagina %>;
+            const filasPorPaginas = <%= filasPorPagina %>;
+            const buscar = '<%= typeof buscar !== "undefined" ? buscar : "" %>';
+            let nuevaPagina;
+
+            if (direction === 'prev') {
+                nuevaPagina = paginaActual - 1;
+            } else if (direction === 'next') {
+                nuevaPagina = paginaActual + 1;
+            }
+
+            window.location.href = `?pagina=${nuevaPagina}&filasPorPagina=${filasPorPaginas}&buscar=${buscar}`;
+        }
+
+        const filtroIcono = document.getElementById('filtro-icono');
+        const filtroMenu = document.getElementById('filtro-menu');
+
+        filtroIcono.addEventListener('click', () => {
+            if (filtroMenu.style.display === 'none') {
+                filtroMenu.style.display = 'block';
+            } else {
+                filtroMenu.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

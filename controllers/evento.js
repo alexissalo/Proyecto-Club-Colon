@@ -1,55 +1,115 @@
+// Importamos los modelos de evento y disciplina
 const modelEvento = require("../models/evento");
 const eventoModel = new modelEvento();
 const modelDisciplina = require("../models/disciplina");
 const disciplinaModel = new modelDisciplina();
 
+// Creamos la clase EventoController
 class EventoController {
+  // Metodo para mostrar todos los eventos
+  mostrarEventos(req, res) {
+    // Consulta para obtener todos los eventos
+    eventoModel.listarEventos((eventoData) => {
+      if (!eventoData) {
+        return res.status(500).send("Error al obtener los datos de los eventos");
+      }
+      // Consulta para obtener todas las disciplinas
+      disciplinaModel.listarDisciplinas((disciplinaData) => {
+        if (!disciplinaData) {
+          return res
+            .status(500)
+            .send("Error al obtener los datos de las disciplinas");
+        }
+        // Obtenemos el rol del usuario
+        const rolId = req.rolId;
+        const rolNombre = req.rolNombre;
 
-	mostrarEventos (req, res) {
-		disciplinaModel.listarDisciplinas((disciplinaData) => {
-			if (disciplinaData === null) {
-			  return res
-				.status(500)
-				.send("Error al obtener los datos de los socios");
-			}
-			const rolId = req.rolId;
-			const rolNombre=req.rolNombre
-	
-			res.render("dashboard/eventos", {
-			  rolId: rolId,
-			  rolNombre:rolNombre,
-			  disciplinas:disciplinaData
-			});
-		  });
-	}
+        // Renderizamos la vista de eventos con los datos obtenidos
+        res.render("dashboard/eventos", {
+          eventos: eventoData,
+          rolId: rolId,
+          rolNombre: rolNombre,
+          disciplinas: disciplinaData,
+          disciplina: null, // No se selecciono una disciplina específica
+        });
+      });
+    });
+  }
 
-	listarEventos(req,res){
-		eventoModel.listarEventos((eventoData)=>{
-			console.log(eventoData)
-			res.json(eventoData)
-		})
-	}
+  // Método para mostrar eventos por disciplina
+  mostrarEventosPorDisciplina(req, res) {
+    const { disciplina } = req.params; // Obtenemos la disciplina seleccionada
 
-	añadirEvento(req,res){
-		const {nombre,descripcion,fechaInicio,fechaFin}=req.body
+    // Consulta para obtener los eventos de la disciplina seleccionada
+    eventoModel.listarEventosPorDisciplina(disciplina, (eventoData) => {
+      if (!eventoData) {
+        return res
+          .status(500)
+          .send("Error al obtener los datos de los eventos de la disciplina");
+      }
+      // Consulta para obtener todas las disciplinas
+      disciplinaModel.listarDisciplinas((disciplinaData) => {
+        if (!disciplinaData) {
+          return res
+            .status(500)
+            .send("Error al obtener los datos de las disciplinas");
+        }
+        // Obtenemos el rol del usuario
+        const rolId = req.rolId;
+        const rolNombre = req.rolNombre;
 
-		console.log(fechaFin);
-		
+        // Renderizamos la vista de eventos con los datos obtenidos
+        res.render("dashboard/eventosPorDisciplina", {
+          eventos: eventoData,
+          rolId: rolId,
+          rolNombre: rolNombre,
+          disciplinas: disciplinaData,
+          disciplina: disciplina, // Seleccionamos la disciplina especifica
+        });
+      });
+    });
+  }
 
-		eventoModel.añadirEvento(nombre,descripcion,fechaInicio,fechaFin,(eventoData)=>{
-			res.json(eventoData)
-			console.log(eventoData);
-		})
-	}
+  // Metodo para agregar un nuevo evento
+  añadirEvento(req, res) {
+    const { nombre, descripcion, fechaInicio, fechaFin} = req.body;
 
-	borrarEvento(req,res){
-		const {id}=req.params
+    eventoModel.añadirEvento(
+      nombre,
+      descripcion,
+      fechaInicio,
+      fechaFin,
+      (eventoData) => {
+        res.json(eventoData);
+      }
+    );
+  }
 
-		eventoModel.borrarEvento(id,(eventoData)=>{
-			console.log(eventoData);
-			
-		})
-	}
+  añadirEventoPorDisciplina(req,res){
+    const { nombre, descripcion, fechaInicio, fechaFin,disciplina } = req.body;
+
+    eventoModel.añadirEventoPorDisciplina(
+      nombre,
+      descripcion,
+      fechaInicio,
+      fechaFin,
+      disciplina,
+      (eventoData) => {
+        res.json(eventoData);
+      }
+    );
+
+  }
+
+  // Metodo para eliminar un evento
+  borrarEvento(req, res) {
+    const { id } = req.params;
+
+    eventoModel.borrarEvento(id, (eventoData) => {
+      console.log(eventoData);
+    });
+  }
 }
 
+// Exportamos la clase EventoController
 module.exports = EventoController;

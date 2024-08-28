@@ -285,7 +285,6 @@ body {
 
 .container-tablas table {
     width: 100%;
-    min-width: 800px;
     border-collapse: collapse;
     overflow-x: auto;
     display: block;
@@ -296,7 +295,17 @@ body {
     text-align: left;
     border-bottom: 1px solid #ddd;
     white-space: nowrap;
-    
+}
+
+.container-tablas td i {
+    cursor: pointer;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.container-tablas td i:hover {
+    background-color: #ccc;
 }
 
 .container-tablas th {
@@ -506,5 +515,13 @@ td .bi-three-dots-vertical:hover {
 
     .container-tablas thead{
         overflow-x: hidden;
+    }
+
+    .fc-toolbar{
+        flex-direction: column;
+    }
+
+    .fc-toolbar-chunk{
+        margin-bottom: 15px;
     }
 }

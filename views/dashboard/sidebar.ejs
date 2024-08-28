@@ -11,10 +11,8 @@
             </a>
         </li>
         <% if(rolNombre==="admin_general" || rolNombre==="admin_secretaria") { %>
-            <li class="sidebar-list-item">
-                <a href="/dashboard/socios">
-                    Socios
-                </a>
+            <li class="sidebar-list-item" onclick="toggleSubMenu()">
+                <a href="/dashboard/socios">Socios</a>
             </li>
         <% } %>
 
@@ -25,7 +23,7 @@
         </li>
         <% if(rolNombre==="admin_general") { %>
             <li class="sidebar-list-item">
-                <a href="#">
+                <a href="/dashboard/movimientos">
                     Movimientos
                 </a>
             </li>
@@ -46,20 +44,20 @@
                     <ul class="sub-menu" id="subMenu">
                         <% if(rolNombre===`coordinador_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
-                                <a href="/dashboard/deportistas">Deportistas</a>
+                                <a href="/dashboard/deportistas/<%= disciplina.nombre %>">Deportistas</a>
                             </li>
                         <% } %>
                         <li class="sub-menu-item">
-                            <a href="/dashboard/eventos">Eventos</a>
+                            <a href="/dashboard/eventos/<%= disciplina.nombre %>">Eventos</a>
                         </li>
                         <% if(rolNombre===`admin_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
-                                <a href="/dashboard/economia">Economía</a>
+                                <a href="/dashboard/economia/<%= disciplina.nombre %>">Economía</a>
                             </li>
                         <% } %>
                         <% if(rolNombre===`admin_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
-                                <a href="#">Movimientos</a>
+                                <a href="/dashboard/movimientos/<%= disciplina.nombre %>">Movimientos</a>
                             </li>
                         <% } %>
                     </ul>

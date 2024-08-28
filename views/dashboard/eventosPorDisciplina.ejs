@@ -62,7 +62,8 @@
             border: none;
         }
     </style>
-    <title>Eventos Generales</title>
+    <title>Eventos de <%= disciplina%>
+    </title>
 </head>
 
 <body>
@@ -73,7 +74,8 @@
                 <!-- Main -->
                 <main class="main-container">
                     <div class="main-title">
-                        <h2>EVENTOS GENERALES</h2>
+                        <h2>EVENTOS DE <%= disciplina.toUpperCase()%>
+                        </h2>
                     </div>
                     <div class="calendario-container">
                         <div id='calendar'></div>
@@ -89,6 +91,8 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             const eventosData = <%- JSON.stringify(eventos) %>;
+            const disciplinaActual = "<%= disciplina %>";
+            console.log(disciplinaActual);
 
             var calendarEl = document.getElementById('calendar');
             let rolNombre = '<%= rolNombre %>';
@@ -109,12 +113,12 @@
                 selectable: true,
 
                 dateClick: function (info) {
-                        if (rolNombre === 'admin_general') {
-                            abrirModal(info);
-                            document.getElementById('eventForm').addEventListener('submit', añadirEvento);
-                        } else {
-                            alert("No tienes permisos para añadir eventos.");
-                        }
+                    if (rolNombre === `admin_${disciplinaActual}`) {
+                        abrirModal(info);
+                        document.getElementById('eventForm').addEventListener('submit', añadirEvento);
+                    } else {
+                        alert("No tienes permisos para añadir eventos.");
+                    }
                 },
                 eventClick: function (info) {
                     mostrarEvento(info.event);
@@ -172,7 +176,7 @@
 
                 }).then((result) => {
                     console.log(result.isConfirmed);
-                    if (result.isConfirmed && rolNombre === "admin_general") {
+                    if (result.isConfirmed && rolNombre === `admin_${disciplinaActual}`) {
                         Swal.fire({
                             title: "Estas seguro?",
                             icon: "warning",
@@ -221,13 +225,13 @@
                     fechaInicio: fechaInicio,
                     fechaFin: eventEnd,
                     descripcion: descripcion,
-                    disciplina: null
+                    disciplina: disciplinaActual
                 };
 
                 console.log(eventData);
 
 
-                fetch('/eventos', {
+                fetch(`/eventos/${disciplinaActual}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -242,10 +246,11 @@
                         }
                     })
                     .catch(error => console.error('Error:', error));
+
             }
 
             function borrarEvento(id) {
-                fetch(`/eventos/${id}`, {
+                fetch(`/eventosDisciplina/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'

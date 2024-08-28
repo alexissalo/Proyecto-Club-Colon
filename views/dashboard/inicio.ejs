@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <link rel="stylesheet" href="/public/css/styles.css">
     <title>Inicio</title>
 </head>
@@ -16,7 +17,7 @@
                     <div class="main-title">
                         <h2>INICIO</h2>
                     </div>
-                    <div class="inicio-cards">
+                    <!-- <div class="inicio-cards">
 
                         <div class="card">
                             <div class="card-inner">
@@ -41,12 +42,35 @@
                             <span class="text-primary font-weight-bold">79</span>
                         </div>
 
-                    </div>
+                        <button class="generar-pdf">Generar pdf</button>
+
+                    </div> -->
                 </main>
                 <!-- End Main -->
 
     </div>
     <script src="/public/js/interacciones.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded",()=>{
+            document.querySelector('.generar-pdf').addEventListener('click', function () {
+            fetch('/generarPDF', {
+                method: 'GET',
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'invoice.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error('Error al descargar el PDF:', error));
+        });
+        })
+    </script>
 </body>
 
 </html>

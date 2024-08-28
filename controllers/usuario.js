@@ -1,74 +1,74 @@
+// Importamos los modelos de usuario y disciplina
 const modelUsuario = require("../models/usuario");
 const usuarioModel = new modelUsuario();
 const modelDisciplina = require("../models/disciplina");
 const disciplinaModel = new modelDisciplina();
+
+// Importamos la biblioteca bcrypt para encriptar contraseñas
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { default: nodemon } = require("nodemon");
 
 class UsuarioController {
+  // Muestra el formulario de login
   mostrarFormulario(req, res) {
     res.render("panel/login");
   }
 
+  // Muestra la pagina de inicio del dashboard
   mostrarInicio(req, res) {
+    // Obtenemos la lista de disciplinas
     disciplinaModel.listarDisciplinas((disciplinaData) => {
       if (disciplinaData === null) {
         return res.status(500).send("Error al obtener los datos de los socios");
       }
-      const rolId = req.rolId;
-      const rolNombre = req.rolNombre;
-
+      // Renderizamos la pagina de inicio con los datos de la sesion y las disciplinas
       res.render("dashboard/inicio", {
-        rolId: rolId,
-        rolNombre: rolNombre,
+        rolId: req.rolId,
+        rolNombre: req.rolNombre,
         disciplinas: disciplinaData,
       });
     });
   }
 
+  // Muestra la lista de usuarios
   mostrarUsuarios(req, res) {
+    // Obtenemos la lista de roles
     usuarioModel.listarRoles((rolesData) => {
       if (!rolesData) {
-        return res
-          .status(500)
-          .send("Error al obtener los datos de los socios");
+        return res.status(500).send("Error al obtener los datos de los roles");
       }
+      // Obtenemos la lista de usuarios
       usuarioModel.listarUsuarios((usuariosData) => {
         if (!usuariosData) {
           return res
             .status(500)
-            .send("Error al obtener los datos de los socios");
+            .send("Error al obtener los datos de los usuarios");
         }
+        // Obtenemos la lista de disciplinas
         disciplinaModel.listarDisciplinas((disciplinaData) => {
           if (!disciplinaData) {
             return res
               .status(500)
-              .send("Error al obtener los datos de los socios");
+              .send("Error al obtener los datos de las disciplinas");
           }
-          const rolId = req.rolId;
-          const rolNombre = req.rolNombre;
-
-          console.log(rolesData);
-          
+          // Renderizamos la pagina de usuarios con los datos de la sesion, roles, usuarios y disciplinas
           res.render("dashboard/usuarios", {
             usuarios: usuariosData,
-            rolId: rolId,
-            rolNombre: rolNombre,
+            rolId: req.rolId,
+            rolNombre: req.rolNombre,
             disciplinas: disciplinaData,
-            roles:rolesData
+            roles: rolesData,
           });
         });
       });
     });
   }
 
+  // Maneja el login de un usuario
   login(req, res) {
     const { email, password } = req.body;
 
+    // Validamos el usuario y contraseña
     usuarioModel.validarUsuario(email, password, (usuarioData) => {
-      console.log(usuarioData);
-
       if (usuarioData === null) {
         return res.status(500).send("Error al obtener los datos de los socios");
       }
@@ -79,47 +79,51 @@ class UsuarioController {
           .json({ message: "Correo o contraseña incorrectos" });
       }
 
+      // Verificamos la contraseña
       const isValidContraseña = bcrypt.compare(password, usuarioData.password);
 
       if (!isValidContraseña) {
         return res.status(401).json({ message: "Contraseña incorrecta" });
       }
 
-      const token = jwt.sign(
-        {
-          userId: usuarioData.id,
-          rolId: usuarioData.id_rol,
-          rolNombre: usuarioData.rol_nombre,
-        },
-        "secret",
-        {
-          expiresIn: "1h",
+      // Establecemos la sesión del usuario
+      req.session.userId = usuarioData.id;
+      req.session.rolId = usuarioData.id_rol;
+      req.session.rolNombre = usuarioData.rol_nombre;
+
+      req.session.save((err) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ message: "Error al guardar la sesión" });
         }
-      );
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        res.json({ message: "Logueado correctamente" });
       });
-      res.json({ message: "Logueado correctamente", token: token });
     });
   }
 
+  // Maneja el logout de un usuario
   logout(req, res) {
-    res.cookie("token", "", {
-      httpOnly: true,
-      secure: true,
-      expires: new Date(0),
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Error al cerrar sesión" });
+      }
+      res.redirect("/login");
     });
-    return res.sendStatus(200);
   }
 
+  // Metodo para registrar un nuevo usuario
   async registrarUsuario(req, res) {
-    const { nombre, email, contraseña, id_rol } = req.body;
+    // Obtenemos los datos del formulario de registro
+    const { nombre, email, id_rol } = req.body;
+
+    const contraseña="colon"
 
     try {
+      // Encriptamos la contraseña
       const hashedContraseña = await bcrypt.hash(contraseña, 10);
 
+      // Creamos el usuario
       usuarioModel.crearUsuario(
         nombre,
         email,
@@ -141,6 +145,7 @@ class UsuarioController {
     }
   }
 
+  // Metodo para mostrar la cuenta del usuario
   mostrarCuenta(req, res) {
     const id = req.userId;
     usuarioModel.traerUsuario(id, (usuarioData) => {
@@ -167,10 +172,16 @@ class UsuarioController {
     });
   }
 
-  cambiarContraseña(req, res) {
+  // Metodo para cambiar la contraseña de un usuario
+  async cambiarContraseña(req, res) {
+    // Obtenemos los datos del cuerpo de la solicitud
     const { id, contraseñaActual, nuevaContraseña } = req.body;
 
+    const nuevaContraseñaHasheada = await bcrypt.hash(nuevaContraseña, 10);
+
+    // Verificamos la contraseña actual del usuario
     usuarioModel.verificarContraseña(id, (usuarioData) => {
+      // Si no se encuentra el usuario, devolvemos un error
       if (!usuarioData) {
         console.error("Error al verificar la contraseña actual:");
         res
@@ -179,13 +190,16 @@ class UsuarioController {
         return;
       }
 
+      // Obtenemos la contraseña actual hash del usuario
       const contraseñaActualHash = usuarioData.password;
 
+      // Verificamos si la contraseña actual introducida es correcta
       const esContraseñaCorrecta = bcrypt.compare(
         contraseñaActual,
         contraseñaActualHash
       );
 
+      // Si la contraseña actual es incorrecta, devolvemos un error
       if (!esContraseñaCorrecta) {
         res
           .status(401)
@@ -193,7 +207,9 @@ class UsuarioController {
         return;
       }
 
-      usuarioModel.actualizarContraseña(id, nuevaContraseña, (usuarioData) => {
+      // Actualizamos la contraseña del usuario
+      usuarioModel.actualizarContraseña(id, nuevaContraseñaHasheada, (usuarioData) => {
+        // Si ocurre un error al actualizar la contraseña, devolvemos un error
         if (!usuarioData) {
           console.error("Error al actualizar la contraseña:");
           res
@@ -202,11 +218,13 @@ class UsuarioController {
           return;
         }
 
-        res.send({ mensaje: "Contraseña actualizada con éxito" });
+        // Si todo sale bien, devolvemos un mensaje de exito
+        res.send({ mensaje: "Contraseña actualizada con exito" });
       });
     });
   }
 
+  // Metodo para cambiar el nombre del usuario
   cambiarNombre(req, res) {
     const { id, nuevoNombre } = req.body;
 
@@ -219,6 +237,14 @@ class UsuarioController {
 
       res.send({ mensaje: "Nombre actualizado con éxito" });
     });
+  }
+
+  borrarUsuario(){
+    const {id}=req.params
+
+    usuarioModel.borrarUsuario(id,(usuarioData)=>{
+      res.json(usuarioData)
+    })
   }
 }
 

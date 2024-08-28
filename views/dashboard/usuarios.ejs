@@ -4,7 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+
+            border-radius: 8px;
+
+        }
+
+        form label {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        form input[type="text"],
+        form input[type="email"],
+        select,
+        form textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #333;
+            background-color: #fff;
+        }
+
+        form textarea {
+            resize: none;
+            min-height: 100px;
+        }
+
+        form button {
+            padding: 0.75rem 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        form button:active {
+            background-color: #3e8e41;
+        }
+    </style>
     <title>Usuarios</title>
 </head>
 
@@ -19,10 +74,10 @@
                     <div class="container-tablas">
                         <div class="tabla-header">
                             <div class="search-bar">
-                                <input type="text" class="search-input" placeholder="Buscar socio...">
+                                <input type="text" class="search-input" placeholder="Buscar usuario...">
                                 <button class="search-button">Buscar</button>
                             </div>
-                            <button>Nuevo usuario</button>
+                            <button class="añadir-usuario">Nuevo usuario</button>
                         </div>
                         <table>
                             <thead>
@@ -35,26 +90,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <% usuarios.forEach(function(usuario) { %>
+                                <% if (usuarios.length > 0) { %>
+                                  <% usuarios.forEach(function(usuario) { %>
                                     <tr>
-                                        <td>
-                                            <%= usuario.id %>
-                                        </td>
-                                        <td>
-                                            <%= usuario.nombre %>
-                                        </td>
-                                        <td>
-                                            <%= usuario.email %>
-                                        </td>
-                                        <td>
-                                            <%= usuario.rol_nombre %>
-                                        </td>
-                                        <td>
-                                            Borrar <i class="bi bi-trash-fill"></i>
-                                        </td>
+                                      <td>
+                                        <%= usuario.id %>
+                                      </td>
+                                      <td>
+                                        <%= usuario.nombre %>
+                                      </td>
+                                      <td>
+                                        <%= usuario.email %>
+                                      </td>
+                                      <td>
+                                        <%= usuario.rol_nombre %>
+                                      </td>
+                                      <td>
+                                        <i class="bi bi-pencil-fill" title="Editar"></i>
+                                        <i class="bi bi-trash-fill" title="Eliminar"></i>
+                                      </td>
                                     </tr>
-                                    <% }); %>
-
+                                  <% }); %>
+                                <% } else { %>
+                                  <tr>
+                                    <td colspan="5" style="text-align: center;">No hay usuarios registrados</td>
+                                  </tr>
+                                <% } %>
                             </tbody>
                         </table>
                 </main>
@@ -62,33 +123,121 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/public/js/interacciones.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-                
-                function crearUsuario() {
-                    Swal.fire({
-                        html: `
-                        <h2>Crear Evento</h2>
-                        <form id="eventForm">
-                            <label for="title">Título:</label>
-                            <input type="text" id="title" name="title" required>
+        document.addEventListener("DOMContentLoaded", function () {
 
-                            <label for="start">Fecha de Inicio:</label>
-                            <input type="date" id="start" name="start" value=${info.dateStr} required>
+            const rolesData = <%- JSON.stringify(roles) %>;
 
-                            <label for="end">Fecha de Fin:</label>
-                            <input type="date" id="end" value=${info.dateStr} name="end">
+            console.log(rolesData);
 
-                            <label for="description">Descripción:</label>
-                            <textarea id="description" name="description"></textarea>
 
-                            <button>Guardar Evento</button>
+            const botonAñadir = document.querySelector(".añadir-usuario").addEventListener("click", crearUsuario)
+
+            function crearUsuario() {
+                const rolesHtml = rolesData.map((rol) => {
+                    return `<option value="${rol.id}">${rol.nombre}</option>`;
+                }).join('');
+                Swal.fire({
+                    html: `
+                        <h2>Crear Usuarios</h2>
+                        <form id="usuarioForm">
+                            <label for="title">Nombre:</label>
+                            <input type="text" id="nombre" required>
+
+                            <label for="start">Email:</label>
+                            <input type="email" id="email" required>
+
+                            <label for="end">Rol:</label>
+                            <select id="rol">
+                                ${rolesHtml}
+                            </select>
+                            <button>Guardar Usuario</button>
                         </form>
+                        <div class="error-message"></div>
                     `,
-                        showCloseButton: true,
-                        focusConfirm: false,
-                        showConfirmButton: false,
-                    });
-                }
+                    showCloseButton: true,
+                    focusConfirm: false,
+                    showConfirmButton: false,
+                });
+
+                document.getElementById('usuarioForm').addEventListener('submit', añadirUsuario);
+            }
+
+            function añadirUsuario(e) {
+                e.preventDefault();
+                const nombre = document.getElementById("nombre").value;
+                const email = document.getElementById("email").value;
+                const rol = document.getElementById("rol").value;
+                const errorMessage = document.querySelector(".error-message");
+
+                console.log(rol);
+
+
+                const usuarioData = {
+                    nombre: nombre,
+                    email: email,
+                    id_rol: rol,
+                };
+
+
+                fetch('/crearUsuario', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(usuarioData)
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            response.json().then((res) => {
+                                errorMessage.textContent = res.message
+                            })
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function borrarUsuario(id) {
+                Swal.fire({
+                    title: "Estas seguro?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    cancelButtonText: "Cancelar",
+                    confirmButtonText: "Borrar"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/eventos/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                        }
+                    })
+                    .then((response) => {
+                        if (response.ok) {
+                            Swal.fire({
+                                    title: "Borrado!",
+                                    text: "El usuario ha sido borrado.",
+                                    icon: "success"
+                                }).then((response) => {
+                                    if (result.isConfirmed) {
+                                        window.location.reload()
+                                    }
+                                })
+                        } else {
+                            console.error('Response error:', response.status, response.statusText);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                    }
+                });
+            }
+
+            function editarUsuario() {
+
+            }
         })
     </script>
 </body>

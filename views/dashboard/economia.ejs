@@ -1,0 +1,122 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+    <style>
+        .main-title {
+            margin-bottom: 20px;
+        }
+
+        .cards-economia {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .cards-economia div {
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            resize: none;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            resize: none;
+            height: 100px;
+
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+
+        }
+
+        button:hover {
+            background-color: #45a049;
+
+        }
+
+        @media screen and (max-width: 768px) {
+
+            .cards-economia {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <title>Economia de <%= disciplina%></title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId, rolNombre:rolNombre, disciplinas:disciplinas }) %>
+
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>ECONOMÍA DE <%= disciplina.toUpperCase()%></h2>
+                    </div>
+                    <div class="cards-economia">
+                        <div>
+                            <h3>Ingreso</h3>
+                            <label>Monto</label>
+                            <input type="number" name="" id="">
+                            <label>Documentacion respaldatoria</label>
+                            <input type="file" name="" id="">
+                            <label>Descripcion</label>
+                            <textarea name="" id=""></textarea>
+                            <button class="boton">Añadir ingreso</button>
+                        </div>
+                        <div>
+                            <h3>Egreso</h3>
+                            <label>Monto</label>
+                            <input type="number" name="" id="">
+                            <label>Documentacion respaldatoria</label>
+                            <input type="file" name="" id="">
+                            <label>Descripcion</label>
+                            <textarea name="" id=""></textarea>
+                            <button class="boton">Añadir egreso</button>
+                        </div>
+                    </div>
+                </main>
+
+                <!-- End Main -->
+    </div>
+
+    <script src="/public/js/interacciones.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error <%= status%> - Acceso Denegado</title>
+    <style>
+        .error-container {
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .error-container h1 {
+            font-size: 3em;
+            color: #ff4c4c;
+        }
+
+        .error-container p {
+            font-size: 1.5em;
+        }
+
+        .error-container .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+
+        .error-container .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <h1>Error <%= status%></h1>
+        <p>
+            <%= message %>
+        </p>
+        <a href="/dashboard/inicio" class="btn">Volver al inicio</a>
+    </div>
+</body>
+
+</html>

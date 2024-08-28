@@ -1,14 +1,29 @@
 const express = require('express');
+const session = require('express-session');
 const app = express();
 const port = 3000;
 
 const rutasUsuarios = require('./routes/usuario');
 const rutasSocios= require("./routes/socio")
 const rutasEventos= require("./routes/evento")
+const rutasEconomia= require("./routes/economia")
+const rutasDeportistas= require("./routes/deportistas")
+const rutasMovimientos= require("./routes/movimiento")
 
 // MiddleWare
+
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 3600000, // 1 hora
+  }
+}));
+
+
 app.use(express.urlencoded({
-  extended: false,
+  extended: true,
 }));
 app.use(express.json());
 
@@ -20,6 +35,9 @@ app.set('view engine', 'ejs');
 app.use("/",rutasUsuarios);
 app.use("/",rutasSocios);
 app.use("/",rutasEventos)
+app.use("/",rutasEconomia)
+app.use("/",rutasDeportistas)
+app.use("/", rutasMovimientos)
 
 
 app.listen(port, () => {
