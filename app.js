@@ -2,7 +2,9 @@ const express = require('express');
 const session = require('express-session');
 const app = express();
 const port = 3000;
+const {keysecretsession}=require("./config")
 
+const rutasSocios= require("./routes/socio")
 const rutasUsuarios = require('./routes/usuario');
 const rutasEventos= require("./routes/evento")
 const rutasEconomia= require("./routes/economia")
@@ -12,7 +14,7 @@ const rutasMovimientos= require("./routes/movimiento")
 // MiddleWare
 
 app.use(session({
-  secret: 'secret',
+  secret: keysecretsession,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -31,6 +33,7 @@ app.use('/public', express.static('public'));
 app.set('view engine', 'ejs');
 
 //Rutas
+app.use("/",rutasSocios)
 app.use("/",rutasUsuarios);
 app.use("/",rutasEventos)
 app.use("/",rutasEconomia)
