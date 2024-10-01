@@ -56,32 +56,32 @@ CREATE TABLE `datospersonalesdeportista` (
 
 CREATE TABLE `disciplinas` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL
+  `nombre` VARCHAR(255)
 );
 
 CREATE TABLE `disciplinas_abonos` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `id_disciplina` INT NULL DEFAULT NULL,
-  `valor` DECIMAL(10,2) NULL DEFAULT NULL,
-  `fecha` DATE NULL DEFAULT NULL,
-  `es_ingreso` TINYINT(1) NULL DEFAULT NULL,
-  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
-  `id_responsable` INT NULL DEFAULT NULL,
-  `documentacion` VARCHAR(255) NULL DEFAULT NULL
+  `id_disciplina` INT,
+  `valor` DECIMAL(10,2),
+  `fecha` DATE,
+  `es_ingreso` TINYINT(1),
+  `descripcion` VARCHAR(255),
+  `id_responsable` INT,
+  `documentacion` VARCHAR(255)
 );
 
 CREATE TABLE `eventos` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL,
-  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
-  `fechaInicio` DATE NULL DEFAULT NULL,
-  `fechaFin` DATE NULL DEFAULT NULL,
-  `id_disciplina` INT NULL DEFAULT NULL
+  `nombre` VARCHAR(255),
+  `descripcion` VARCHAR(255),
+  `fechaInicio` DATE,
+  `fechaFin` DATE,
+  `id_disciplina` INT
 );
 
 CREATE TABLE `grupos_familiares` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL
+  `nombre` VARCHAR(255)
 );
 
 CREATE TABLE `lesionesdeportista` (
@@ -98,27 +98,27 @@ CREATE TABLE `patologiasdeportista` (
 
 CREATE TABLE `roles` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL
+  `nombre` VARCHAR(255)
 );
 
 CREATE TABLE `socios` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL,
-  `fechaNacimiento` DATE NULL DEFAULT NULL,
-  `dni` INT NULL DEFAULT NULL,
-  `telefono` VARCHAR(255) NULL DEFAULT NULL,
-  `domicilio` VARCHAR(255) NULL DEFAULT NULL,
-  `fechaInscripcion` DATE NULL DEFAULT NULL,
-  `id_grupo_familiar` INT NULL DEFAULT NULL,
-  `id_disciplina` INT NULL DEFAULT NULL,
-  `id_tipo_socio` INT NULL DEFAULT NULL
+  `nombre` VARCHAR(255),
+  `fechaNacimiento` DATE,
+  `dni` INT,
+  `telefono` VARCHAR(255),
+  `domicilio` VARCHAR(255),
+  `fechaInscripcion` DATE,
+  `id_grupo_familiar` INT,
+  `id_disciplina` INT,
+  `id_tipo_socio` INT
 );
 
 CREATE TABLE `socios_abonos` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `id_socio` INT NULL DEFAULT NULL,
-  `valor` VARCHAR(255) NULL DEFAULT NULL,
-  `fecha` DATETIME NULL DEFAULT NULL
+  `id_socio` INT,
+  `valor` VARCHAR(255),
+  `fecha` DATETIME
 );
 
 CREATE TABLE `tallesdeportista` (
@@ -131,8 +131,8 @@ CREATE TABLE `tallesdeportista` (
 
 CREATE TABLE `tiposdesocios` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL,
-  `valorDeCuota` DECIMAL(10,2) NULL DEFAULT NULL
+  `nombre` VARCHAR(255),
+  `valorDeCuota` DECIMAL(10,2)
 );
 
 CREATE TABLE `tratamientosdeportista` (
@@ -143,10 +143,10 @@ CREATE TABLE `tratamientosdeportista` (
 
 CREATE TABLE `usuarios` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL,
-  `email` VARCHAR(255) NULL DEFAULT NULL,
-  `contraseña` VARCHAR(255) NULL DEFAULT NULL,
-  `id_rol` INT NULL DEFAULT NULL
+  `nombre` VARCHAR(255),
+  `email` VARCHAR(255),
+  `contraseña` VARCHAR(255),
+  `id_rol` INT
 );
 
 
@@ -175,22 +175,23 @@ insert into usuarios(nombre,email,contraseña,id_rol) values
 ("coordinadorfutbol","coordfutbol31@gmail.com","123",9),
 
 
-INSERT INTO socios (nombre, fechaNacimiento, dni, telefono, domicilio, fechaInscripcion, es_deportista, es_general, id_grupo_familiar, id_disciplina) VALUES
-('Juan Pérez', '1990-05-15', 12345678, '1234-5678', 'Calle Falsa 123', '2024-08-01', 1, 0, 1, 3),
-('María García', '1985-10-20', 87654321, '9876-5432', 'Avenida Siempre Viva 456', '2024-08-05', 0, 1, 2, NULL),
-('Pedro López', '2000-02-25', 56781234, '1234-8765', 'Boulevard Central 789', '2024-08-10', 1, 0, 1, 2),
-('Ana Fernández', '1995-07-12', 43218765, '4321-5678', 'Camino Real 234', '2024-08-12', 0, 1, 3, NULL),
-('Lucas Martínez', '2003-11-30', 34561278, '5678-1234', 'Ruta 66, Km 23', '2024-08-13', 1, 0, 2, 1),
-('Sofía Rodríguez', '1992-03-10', 90123456, '9012-3456', 'Calle de la Luna 456', '2024-08-15', 0, 1, 4, NULL),
-('Mateo Gómez', '2001-09-05', 78901234, '7890-1234', 'Avenida del Sol 123', '2024-08-18', 1, 0, 3, 4),
-('Isabella Díaz', '1988-01-25', 45678901, '4567-8901', 'Boulevard de la Paz 234', '2024-08-20', 0, 1, 5, NULL),
-('Julian Castro', '1998-06-15', 23456789, '2345-6789', 'Camino de la Vida 345', '2024-08-22', 1, 0, 4, 2),
-('Valentina Morales', '2002-04-10', 67890123, '6789-0123', 'Ruta 101, Km 12', '2024-08-25', 0, 1, 6, NULL),
-('Gabriel Hernández', '1991-11-20', 34567890, '3456-7890', 'Calle de la Esperanza 567', '2024-08-28', 1, 0, 5, 3),
-('Daniela López', '1989-08-05', 90123456, '9012-3456', 'Avenida de la Libertad 678', '2024-09-01', 0, 1, 7, NULL),
-('Sebastián García', '2004-02-15', 78901234, '7890-1234', 'Boulevard de la Justicia 789', '2024-09-05', 1, 0, 6, 1),
-('Catalina Martínez', '1996-10-25', 45678901, '4567-8901', 'Camino del Progreso 890', '2024-09-10', 0, 1, 8, NULL),
-('Alejandro Díaz', '2000-07-10', 23456789, '2345-6789', 'Ruta 202, Km 15', '2024-09-12', 1, 0, 7, 4);
+INSERT INTO `socios` (`nombre`, `fechaNacimiento`, `dni`, `telefono`, `domicilio`, `fechaInscripcion`, `id_grupo_familiar`, `id_disciplina`, `id_tipo_socio`)
+VALUES 
+('Juan Pérez', '1990-01-15', 12345678, '111-1111', 'Calle Falsa 123', '2020-01-01', 1, 1, 1),
+('María García', '1985-05-25', 23456789, '222-2222', 'Avenida Siempre Viva 456', '2019-03-10', 2, 2, 2),
+('Carlos López', '1992-07-30', 34567890, '333-3333', 'Calle Luna 789', '2021-06-15', 3, 3, 1),
+('Lucía González', '1995-09-10', 45678901, '444-4444', 'Avenida Sol 101', '2020-12-20', 4, 4, 2),
+('Pedro Ramírez', '1998-11-22', 56789012, '555-5555', 'Calle Estrella 202', '2018-11-30', 5, 5, 1),
+('Ana Fernández', '1988-02-18', 67890123, '666-6666', 'Calle Verde 303', '2021-02-05', 1, 1, 2),
+('Martín Sosa', '1993-04-23', 78901234, '777-7777', 'Avenida Azul 404', '2019-07-12', 2, 2, 1),
+('Laura Díaz', '1987-08-17', 89012345, '888-8888', 'Calle Roja 505', '2020-08-30', 3, 3, 2),
+('Javier Castillo', '1991-10-04', 90123456, '999-9999', 'Calle Amarilla 606', '2018-10-22', 4, 4, 1),
+('Carla Herrera', '1996-03-09', 91234567, '101-1010', 'Avenida Blanca 707', '2021-04-19', 5, 5, 2),
+('Santiago Peralta', '1990-06-12', 92345678, '202-2020', 'Calle Gris 808', '2019-05-03', 1, 1, 1),
+('Paula Giménez', '1984-11-03', 93456789, '303-3030', 'Avenida Naranja 909', '2020-07-07', 2, 2, 2),
+('Rodrigo Navarro', '1997-09-16', 94567890, '404-4040', 'Calle Celeste 1010', '2018-09-11', 3, 3, 1),
+('Valentina Vega', '1989-12-28', 95678901, '505-5050', 'Avenida Negra 111', '2021-11-25', 4, 4, 2),
+('Emiliano Luna', '1994-01-07', 96789012, '606-6060', 'Calle Violeta 1212', '2019-12-13', 5, 5, 1);
 
 insert into socios_abonos(id_socio,fecha,valor) values (1,now(),2000);
 
