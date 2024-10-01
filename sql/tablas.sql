@@ -2,68 +2,153 @@ create database admincolon;
 
 use admincolon;
 
-CREATE TABLE disciplinas (
-  id int auto_increment PRIMARY KEY,
-  nombre varchar(255)
+CREATE TABLE `alergiasdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `alergia` VARCHAR(255) NULL DEFAULT NULL
 );
 
-CREATE TABLE disciplinas_abonos (
-  id int auto_increment PRIMARY KEY,
-  id_disciplina int,
-  valor varchar(255),
-  fecha date,
-  es_ingreso tinyint(1),
-  descripcion varchar(255),
-  id_responsable int
+CREATE TABLE `comunicaciondeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `email` VARCHAR(100) NULL DEFAULT NULL,
+  `instagram` VARCHAR(100) NULL DEFAULT NULL,
+  `facebook` VARCHAR(100) NULL DEFAULT NULL,
+  `telefonoJugador` VARCHAR(100) NULL DEFAULT NULL,
+  `telefonoEmergencia` VARCHAR(100) NULL DEFAULT NULL
 );
 
-CREATE TABLE grupos_familiares (
-  id int auto_increment PRIMARY KEY,
-  nombre varchar(255)
+CREATE TABLE `datosfamiliaresdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `domicilio` VARCHAR(255) NULL DEFAULT NULL,
+  `localidad` VARCHAR(255) NULL DEFAULT NULL,
+  `telefono` VARCHAR(100) NULL DEFAULT NULL,
+  `telefonoFijo` VARCHAR(100) NULL DEFAULT NULL,
+  `facebookTutor` VARCHAR(100) NULL DEFAULT NULL,
+  `instagramTutor` VARCHAR(100) NULL DEFAULT NULL,
+  `emailResponsable` VARCHAR(100) NULL DEFAULT NULL
 );
 
-CREATE TABLE socios (
-  id int auto_increment PRIMARY KEY,
-  nombre varchar(255),
-  fechaNacimiento date,
-  dni int(8),
-  telefono varchar(255),
-  domicilio varchar(255),
-  fechaInscripcion date,
-  es_deportista int,
-  es_general int,
-  id_grupo_familiar int,
-  id_disciplina int
+CREATE TABLE `datosmedicosdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `grupoSanguineo` VARCHAR(10) NULL DEFAULT NULL,
+  `factor` VARCHAR(5) NULL DEFAULT NULL,
+  `coberturaMedica` VARCHAR(100) NULL DEFAULT NULL,
+  `numeroAfiliado` VARCHAR(50) NULL DEFAULT NULL
 );
 
-CREATE TABLE socios_abonos (
-  id int auto_increment PRIMARY KEY,
-  id_socio int,
-  valor varchar(255),
-  fecha datetime
+CREATE TABLE `datospersonalesdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NOT NULL,
+  `fechaNacimiento` DATE NOT NULL,
+  `domicilio` VARCHAR(255) NOT NULL,
+  `localidad` VARCHAR(100) NOT NULL,
+  `escolaridad` VARCHAR(100) NULL DEFAULT NULL,
+  `gradoEscolar` VARCHAR(100) NULL DEFAULT NULL,
+  `posicionJuego` VARCHAR(50) NULL DEFAULT NULL,
+  `altura` DECIMAL(5,2) NULL DEFAULT NULL,
+  `peso` DECIMAL(5,2) NULL DEFAULT NULL,
+  `id_disciplina` INT NULL DEFAULT NULL
 );
 
-CREATE TABLE usuarios (
-  id int auto_increment PRIMARY KEY,
-  nombre varchar(255),
-  email varchar(255),
-  contraseña varchar(255),
-  id_rol int
+CREATE TABLE `disciplinas` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL
 );
 
-CREATE TABLE roles (
-  id int auto_increment PRIMARY KEY,
-  nombre varchar(255)
+CREATE TABLE `disciplinas_abonos` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id_disciplina` INT NULL DEFAULT NULL,
+  `valor` DECIMAL(10,2) NULL DEFAULT NULL,
+  `fecha` DATE NULL DEFAULT NULL,
+  `es_ingreso` TINYINT(1) NULL DEFAULT NULL,
+  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
+  `id_responsable` INT NULL DEFAULT NULL,
+  `documentacion` VARCHAR(255) NULL DEFAULT NULL
 );
 
-CREATE TABLE eventos(
-	id int auto_increment primary key,
-    nombre varchar(255),
-    descripcion varchar(255),
-    fechaInicio date,
-    fechaFin date,
-    id_disciplina int
+CREATE TABLE `eventos` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
+  `fechaInicio` DATE NULL DEFAULT NULL,
+  `fechaFin` DATE NULL DEFAULT NULL,
+  `id_disciplina` INT NULL DEFAULT NULL
 );
+
+CREATE TABLE `grupos_familiares` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL
+);
+
+CREATE TABLE `lesionesdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `lesion` VARCHAR(255) NULL DEFAULT NULL
+);
+
+CREATE TABLE `patologiasdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `patologia` VARCHAR(255) NULL DEFAULT NULL
+);
+
+CREATE TABLE `roles` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL
+);
+
+CREATE TABLE `socios` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `fechaNacimiento` DATE NULL DEFAULT NULL,
+  `dni` INT NULL DEFAULT NULL,
+  `telefono` VARCHAR(255) NULL DEFAULT NULL,
+  `domicilio` VARCHAR(255) NULL DEFAULT NULL,
+  `fechaInscripcion` DATE NULL DEFAULT NULL,
+  `id_grupo_familiar` INT NULL DEFAULT NULL,
+  `id_disciplina` INT NULL DEFAULT NULL,
+  `id_tipo_socio` INT NULL DEFAULT NULL
+);
+
+CREATE TABLE `socios_abonos` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id_socio` INT NULL DEFAULT NULL,
+  `valor` VARCHAR(255) NULL DEFAULT NULL,
+  `fecha` DATETIME NULL DEFAULT NULL
+);
+
+CREATE TABLE `tallesdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `talleCalzado` VARCHAR(10) NULL DEFAULT '0.0',
+  `talleCamiseta` VARCHAR(10) NULL DEFAULT NULL,
+  `tallePantalon` VARCHAR(10) NULL DEFAULT NULL
+);
+
+CREATE TABLE `tiposdesocios` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `valorDeCuota` DECIMAL(10,2) NULL DEFAULT NULL
+);
+
+CREATE TABLE `tratamientosdeportista` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `deportistaId` INT NULL DEFAULT NULL,
+  `tratamientoDescripcion` VARCHAR(255) NULL DEFAULT NULL
+);
+
+CREATE TABLE `usuarios` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `email` VARCHAR(255) NULL DEFAULT NULL,
+  `contraseña` VARCHAR(255) NULL DEFAULT NULL,
+  `id_rol` INT NULL DEFAULT NULL
+);
+
 
 insert into roles(nombre) values
 ("admin_general"),

@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        .inicio-graficos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .grafico {
+            background-color: white;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
     <title>Inicio</title>
 </head>
 
@@ -17,59 +31,101 @@
                     <div class="main-title">
                         <h2>INICIO</h2>
                     </div>
-                    <!-- <div class="inicio-cards">
+                    <div class="inicio-cards">
 
                         <div class="card">
                             <div class="card-inner">
                                 <p class="text-primary">SOCIOS</p>
                                 <i class="bi bi-person-fill"></i>
                             </div>
-                            <span class="text-primary font-weight-bold">249</span>
+                            <span class="text-primary font-weight-bold"><%= totalSocios %></span>
                         </div>
 
                         <div class="card">
                             <div class="card-inner">
-                                <p class="text-primary">DISCIPLINAS</p>
+                                <p class="text-primary">DEPORTISTAS</p>
                                 <i class="bi bi-dribbble"></i>
                             </div>
-                            <span class="text-primary font-weight-bold">83</span>
+                            <span class="text-primary font-weight-bold"><%= totalDeportistas %></span>
                         </div>
 
                         <div class="card">
                             <div class="card-inner">
                                 <p class="text-primary">EVENTO PROXIMO</p>
+                                <i class="bi bi-calendar"></i>
                             </div>
-                            <span class="text-primary font-weight-bold">79</span>
+                            <% if (eventoProximo) { %>
+                                <span class="text-primary font-weight-bold"><%= eventoProximo.nombre%> - <%= eventoProximo.fechaInicio%></span>
+                            <% }else{ %>
+                                <span class="text-primary font-weight-bold">Sin eventos proximos</span>
+                            <% } %>
                         </div>
 
-                        <button class="generar-pdf">Generar pdf</button>
+                    </div>
 
-                    </div> -->
+                    <div class="charts">
+                        <div class="charts-card">
+                            <p>Cantidad de socios</p>
+                            <canvas id="myChartCantidadSocios"></canvas>
+                        </div>
+                        <div class="charts-card">
+                            <p>Cantidad de deportistas</p>
+                            <canvas id="myChartCantidadDeportistas"></canvas>
+                        </div>
+                    </div>
                 </main>
                 <!-- End Main -->
 
     </div>
     <script src="/public/js/interacciones.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded",()=>{
-            document.querySelector('.generar-pdf').addEventListener('click', function () {
-            fetch('/generarPDF', {
-                method: 'GET',
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(new Blob([blob]));
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'invoice.pdf';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => console.error('Error al descargar el PDF:', error));
-        });
-        })
+        const ctxCantidadSocios = document.getElementById('myChartCantidadSocios');
+        const ctxCantidadDeportistas = document.getElementById('myChartCantidadDeportistas');
+        const deportistaPorDisciplinaData=<%- JSON.stringify(deportistaPorDisciplina) %>;
+        const cantidadSociosData=<%- JSON.stringify(cantidadDeSocios) %>;
+
+        const labelsSocios = cantidadSociosData.map(socio => socio.nombre);
+        const dataSocios = cantidadSociosData.map(socio => socio.cantidad_socios);
+        new Chart(ctxCantidadSocios, {
+            type: 'pie',
+            data: {
+                labels: labelsSocios,
+                datasets: [{
+                    label: 'Total',
+                    data: dataSocios,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }); 
+
+        const labelsDeportistas = deportistaPorDisciplinaData.map(deportista => deportista.nombre);
+        const dataDeportistas = deportistaPorDisciplinaData.map(deportista => deportista.cantidad_deportistas);
+        new Chart(ctxCantidadDeportistas, {
+            type: 'doughnut',
+            data: {
+                labels: labelsDeportistas,
+                datasets: [{
+                    label: 'Total',
+                    data: dataDeportistas,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }); 
     </script>
 </body>
 

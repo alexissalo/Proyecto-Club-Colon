@@ -14,11 +14,11 @@ class UsuarioModel {
       `;
   
       const [result] = await pool.query(sql, [email, password]);
-  
+      
       callback(result[0]);
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.log(error);
+      callback(null)
     }
   }
 
@@ -30,8 +30,8 @@ class UsuarioModel {
       const [result] = await pool.query(sql, [rolId]);
       return result[0];
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.log(error);
+      throw error
     }
   }
 
@@ -43,23 +43,61 @@ class UsuarioModel {
       const [result]= await pool.query(sql,[])
       callback(result)
     } catch (error) {
-      console.error(error)
-      throw error
+      console.log(error)
+      callback(null)
     }
   }
 
   //query para listar los usuarios
 
-  async listarUsuarios(callback) {
+  async listarUsuarios(pagina, filasPorPagina, buscar, callback) {
     try {
+      const offset = (pagina - 1) * filasPorPagina;
+
       let sql = `SELECT u.id, u.nombre, u.email, u.contraseña AS password, u.id_rol, r.nombre AS rol_nombre
         FROM usuarios u
         JOIN roles r ON u.id_rol = r.id`;
-      const [result] = await pool.query(sql, []);
+
+        // Agregamos la cláusula WHERE si se proporciona un término de búsqueda
+      if (buscar) {
+        sql += ` WHERE u.nombre LIKE ?`;
+      }
+
+      // Agregamos la cláusula LIMIT y OFFSET para la paginación
+      sql += ` LIMIT ? OFFSET ?`;
+
+      // Preparamos los parámetros para la consulta
+      let params = [];
+
+      if (buscar) {
+        params = [`%${buscar}%`, filasPorPagina, offset];
+      } else {
+        params = [filasPorPagina, offset];
+      }
+      const [result] = await pool.query(sql, params);
       callback(result)
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.log(error);
+      callback(null)
+    }
+  }
+
+  async getTotalUsuarios(buscar, callback) {
+    try {
+      let sql = `SELECT COUNT(*) AS total FROM usuarios`;
+
+      if (buscar) {
+        sql += ` WHERE nombre LIKE ?`;
+        const params = [`%${buscar}%`];
+        const [result] = await pool.query(sql, params);
+        callback(result[0].total);
+      } else {
+        const [result] = await pool.query(sql);
+        callback(result[0].total);
+      }
+    } catch (error) {
+      console.log(error);
+      callback(null)
     }
   }
 
@@ -71,8 +109,8 @@ class UsuarioModel {
       const [result] = await pool.query(sql, [nombre,email,contraseña,id_rol]);
       callback(result)
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.log(error);
+      callback(null)
     }
   }
 
@@ -86,8 +124,8 @@ class UsuarioModel {
       const [result] = await pool.query(sql, [id]);
       callback(result[0])
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.log(error);
+      callback(null)
     }
   }
 
@@ -100,8 +138,8 @@ class UsuarioModel {
       const [result]= await pool.query(sql, [nombre, id])
       callback(result)
     } catch (error) {
-      console.error(error)
-      throw error
+      console.log(error)
+      callback(null)
     }
   }
 
@@ -114,8 +152,8 @@ class UsuarioModel {
       const [result]= await pool.query(sql, [contraseña, id])
       callback(result)
     } catch (error) {
-      console.error(error)
-      throw error
+      console.log(error)
+      callback(null)
     }
   }
 
@@ -129,8 +167,8 @@ class UsuarioModel {
       
       callback(result[0])
     } catch (error) {
-      console.error(error)
-      throw error
+      console.log(error)
+      callback(null)
     }
   }
 
@@ -142,8 +180,8 @@ class UsuarioModel {
 
       callback(result);
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.log(error)
+      callback(null)
     }
   }
 }

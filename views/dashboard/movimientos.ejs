@@ -3,21 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <link rel="stylesheet" href="/public/css/styles.css">
     <style>
         .tabla-header i {
             font-size: 36px;
             cursor: pointer;
+            margin-right: auto;
+        }
+
+        .filter-container {
+            position: relative;
+            /* Contenedor relativo */
         }
 
         #filtro-menu {
             position: absolute;
-            top: 230px;
-            right: 20px;
+            top: 100%;
+            left: -200px;
+            display: none;
             background-color: #fff;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
+            z-index: 100;
+            width: 300px;
             padding: 10px;
-            z-index: 1;
         }
 
         #filtro-menu ul {
@@ -55,12 +64,12 @@
             display: block;
         }
 
-        select{
+        select {
             padding: 0;
         }
 
         .form-control {
-            height: 35px;
+            height: 40px;
             padding: 10px;
             font-size: 14px;
             border: 1px solid #ccc;
@@ -79,11 +88,81 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            background-color: #01ad0f;
         }
 
-        .tabla-header button:hover{
+        #limpiar-filtro {
+            background-color: red;
+        }
+
+        #limpiar-filtro:hover {
+            background-color: rgb(206, 0, 0);
+        }
+
+        #aplicar-filtro {
+            background-color: #00b30f;
+        }
+
+        #aplicar-filtro:hover {
             background-color: #00880b;
+        }
+
+        .container-buttons button {
+            background-color: #2889dd;
+            border: none;
+            margin: 10px 10px 10px 0px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .container-buttons button:hover {
+            background-color: #2772b3;
+        }
+
+        .container-tablas table a {
+            color: black;
+        }
+
+        .formBalancePersonalizado {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .formBalancePersonalizado label {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .formBalancePersonalizado input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .formBalancePersonalizado button {
+            padding: 0.75rem 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .formBalancePersonalizado button:hover {
+            background-color: #45a049;
+        }
+
+        .formBalancePersonalizado button:active {
+            background-color: #3e8e41;
         }
     </style>
     <title>Movimientos</title>
@@ -100,12 +179,8 @@
                         <h2>MOVIMIENTOS</h2>
                     </div>
                     <div class="container-tablas">
-                        <div class="tabla-header">
-                            <div class="search-bar">
-                                <input type="text" class="search-input" placeholder="Buscar...">
-                                <button class="search-button">Buscar</button>
-                            </div>
-                            <div>
+                        <div class="tabla-header" style="justify-content: right;">
+                            <div class="filter-container">
                                 <i class="bi bi-filter" id="filtro-icono"></i>
                                 <div id="filtro-menu" style="display: none;">
                                     <h4 class="dropdown-header">Filtrar por:</h4>
@@ -121,19 +196,21 @@
                                         <label for="fecha">Fecha:</label>
                                         <input type="date" id="fecha" class="form-control">
                                     </div>
-                                    <div class="form-group">
-                                        <label for="disciplina">Disciplina:</label>
-                                        <select id="disciplina" class="form-control">
-                                            <option value="">Todas</option>
-                                            <% disciplinas.forEach(function(disciplina) { %>
-                                                <option value="<%= disciplina.id %>">
-                                                    <%= disciplina.nombre %>
-                                                </option>
-                                                <% }); %>
-                                        </select>
-                                    </div>
-                                    <button id="aplicar-filtro">Aplicar filtro</button>
-                                    <button id="limpiar-filtro">Limpiar filtro</button>
+                                    <% if (!disciplina) { %>
+                                        <div class="form-group">
+                                            <label for="disciplina">Disciplina:</label>
+                                            <select id="disciplina" class="form-control">
+                                                <option value="">Todas</option>
+                                                <% disciplinas.forEach(function(disciplina) { %>
+                                                    <option value="<%= disciplina.id %>">
+                                                        <%= disciplina.nombre %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                        </div>
+                                        <% } %>
+                                            <button id="aplicar-filtro">Aplicar filtro</button>
+                                            <button id="limpiar-filtro">Limpiar filtro</button>
                                 </div>
                             </div>
                         </div>
@@ -146,6 +223,7 @@
                                     <th>Valor</th>
                                     <th>Fecha</th>
                                     <th>Descripcion</th>
+                                    <th>Documentacion</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -176,6 +254,14 @@
                                             </td>
                                             <td style="text-transform: capitalize;">
                                                 <%= movimiento.descripcion %>
+                                            </td>
+                                            <td>
+                                                <% if (movimiento.documentacion) { %>
+                                                    <a href="<%= movimiento.documentacion %>" target="_blank">Ver
+                                                        Adjunto</a>
+                                                    <% }else{ %>
+                                                        <p>Sin documentacion</p>
+                                                        <% } %>
                                             </td>
                                         </tr>
                                         <% }) %>
@@ -212,12 +298,24 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="balances">
+                            <h4>Balances</h4>
+                            <div class="container-buttons">
+                                <button id="last-30-days">Ultimos 30 dias</button>
+                                <button id="last-90-days">Ultimos 90 dias</button>
+                                <button id="annual-balance">Balance del año</button>
+                                <button onclick="showBalancePersonalizado()">Personalizado</button>
+                            </div>
+                        </div>
                     </div>
                 </main>
                 <!-- End Main -->
     </div>
     <script src="/public/js/interacciones.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const disciplinaActual = '<%= disciplina %>';
+
         function navigatePage(direction) {
             const paginaActual = <%= pagina %>;
             const filasPorPaginas = <%= filasPorPagina %>;
@@ -242,6 +340,197 @@
             } else {
                 filtroMenu.style.display = 'none';
             }
+        });
+
+        document.addEventListener('click', function (event) {
+            const target = event.target;
+
+            // Verifica si el clic está fuera del sidebar y si la resolución es menor a 992px
+            if (filtroMenu.style.display === 'block' && !filtroMenu.contains(target)) {
+                filtroMenu.style.display = 'none';
+            }
+        });
+
+        filtroIcono.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (filtroMenu.style.display == "block") {
+                filtroMenu.style.display = 'block';
+            }
+        });
+
+        // Agregamos un evento al botón "Aplicar filtro"
+        document.getElementById('aplicar-filtro').addEventListener('click', () => {
+            const tipo = document.getElementById('tipo').value;
+            const fecha = document.getElementById('fecha').value;
+            if (!disciplinaActual) {
+                const disciplina = document.getElementById('disciplina').value;
+                window.location.href = `?tipo=${tipo}&fecha=${fecha}&disciplina=${disciplina}`;
+            } else {
+                window.location.href = `?tipo=${tipo}&fecha=${fecha}`;
+            }
+
+            // Redireccionamos a la ruta con los parámetros de filtro
+        });
+
+        // Agregamos un evento al botón "Limpiar filtro"
+        document.getElementById('limpiar-filtro').addEventListener('click', () => {
+            // Redireccionamos a la ruta sin parámetros de filtro
+            window.location.href = '/dashboard/movimientos';
+        });
+
+        function showBalancePersonalizado() {
+            Swal.fire({
+                title: 'Generar balance personalizado',
+                html: `
+                    <form class="formBalancePersonalizado">
+                        <label for="startDate">Fecha de inicio:</label>
+                        <input type="date" id="startDate" required>
+                        <label for="endDate">Fecha final:</label>
+                        <input type="date" id="endDate" required>
+                        <button type="submit">Aceptar</button>
+                    </form>
+                    <div class="error-message"></div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
+            });
+
+            document.querySelector(".formBalancePersonalizado").addEventListener("submit", (e) => {
+                e.preventDefault()
+
+                const startDate= document.querySelector("#startDate").value
+                const endDate= document.querySelector("#endDate").value
+
+                let consulta = '/personalizado';
+                if (disciplinaActual) {
+                    consulta = `/personalizado/${disciplinaActual}`
+                }
+                fetch(consulta, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json' // Especificar que se envían datos JSON
+                    },
+                    responseType: 'blob',
+                    body:JSON.stringify({
+                        fechaInicio: startDate,
+                        fechaFin: endDate,
+                    })
+                })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        console.log('Blob:', blob);
+                        const url = window.URL.createObjectURL(new Blob([blob]));
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        const hoy = new Date();
+                        const hoyFormateado = hoy.toLocaleDateString();
+                        if (disciplinaActual) {
+                            a.download = `Balance personalizado ${disciplinaActual} ${hoyFormateado}.pdf`;
+                        } else {
+                            a.download = `Balance personalizado ${hoyFormateado}.pdf`;
+                        }
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(error => console.error('Error al descargar el PDF:', error));
+            });
+        }
+
+
+        const last30DaysButton = document.getElementById('last-30-days');
+        const last90DaysButton = document.getElementById('last-90-days');
+        const annualBalanceButton = document.getElementById('annual-balance');
+
+        last30DaysButton.addEventListener('click', () => {
+            let consulta = '/ultimos-30-dias';
+            if (disciplinaActual) {
+                consulta = `/ultimos-30-dias/${disciplinaActual}`
+            }
+            fetch(consulta, {
+                method: 'GET',
+                responseType: 'blob'
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    console.log('Blob:', blob);
+                    const url = window.URL.createObjectURL(new Blob([blob]));
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    const hoy = new Date();
+                    const hoyFormateado = hoy.toLocaleDateString();
+                    if (disciplinaActual) {
+                        a.download = `Balance ultimos 30 dias ${disciplinaActual} ${hoyFormateado}.pdf`;
+                    } else {
+                        a.download = `Balance ultimos 30 dias ${hoyFormateado}.pdf`;
+                    }
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => console.error('Error al descargar el PDF:', error));
+        });
+        last90DaysButton.addEventListener('click', () => {
+            let consulta = '/ultimos-90-dias';
+            if (disciplinaActual) {
+                consulta = `/ultimos-90-dias/${disciplinaActual}`
+            }
+            fetch(consulta, {
+                method: 'GET',
+                responseType: 'blob'
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    console.log('Blob:', blob);
+                    const url = window.URL.createObjectURL(new Blob([blob]));
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    const hoy = new Date();
+                    const hoyFormateado = hoy.toLocaleDateString();
+                    if (disciplinaActual) {
+                        a.download = `Balance ultimos 90 dias ${disciplinaActual} ${hoyFormateado}.pdf`;
+                    } else {
+                        a.download = `Balance ultimos 90 dias ${hoyFormateado}.pdf`;
+                    }
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => console.error('Error al descargar el PDF:', error));
+        });
+        annualBalanceButton.addEventListener('click', () => {
+            let consulta = "/anual"
+            if (disciplinaActual) {
+                consulta = `/anual/${disciplinaActual}`;
+            }
+
+            fetch(consulta, {
+                method: 'GET',
+                responseType: 'blob'
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    console.log('Blob:', blob);
+                    const url = window.URL.createObjectURL(new Blob([blob]));
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    const hoy = new Date();
+                    const hoyFormateado = hoy.toLocaleDateString();
+                    if (disciplinaActual) {
+                        a.download = `Balance anual ${disciplinaActual} ${hoyFormateado}.pdf`;
+                    } else {
+                        a.download = `Balance anual ${hoyFormateado}.pdf`;
+                    }
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => console.error('Error al descargar el PDF:', error));
         });
     </script>
 </body>

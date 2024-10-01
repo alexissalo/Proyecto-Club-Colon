@@ -10,6 +10,8 @@ const authMiddlewares = new middlewaresAuth();
 const controllerSocio = require("../controllers/socio");
 const socioController = new controllerSocio();
 
+const { generarTicketPago } = require('../middlewares/generarPdf');
+
 // Ruta para listar socios (requiere sesión y rol "admin_general" o "admin_secretaria")
 router.get(
   "/dashboard/socios",
@@ -20,10 +22,27 @@ router.get(
   socioController.listarSocios
 );
 
+router.get(
+  "/dashboard/tiposdesocios",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general"]),
+  ],
+  socioController.listarTiposDeSocios
+);
+
+router.post("/crearSocio",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_secretaria","admin_general"])
+],
+socioController.crearSocio
+)
+
+
 //Ruta para actualizar informacion del socio(requiere sesion y rol "admin_secretaria")
 router.put("/actualizarSocio/:id",[
   authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_secretaria"])
+  authMiddlewares.verificarRol(["admin_secretaria","admin_general"])
 ],
 socioController.actualizarSocio
 )
@@ -31,10 +50,46 @@ socioController.actualizarSocio
 //Ruta para borrar el socio(requiere sesion y rol "admin_secretaria")
 router.delete("/borrarSocio/:id",[
   authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_secretaria"])
+  authMiddlewares.verificarRol(["admin_secretaria", "admin_general"])
 ],
 socioController.borrarSocio
 )
+
+router.post("/crearPago",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_secretaria", "admin_general"])
+],
+socioController.crearPago
+)
+
+router.post("/crearTipoSocio",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general"])
+],
+socioController.crearTipoDeSocio
+)
+
+router.put("/editarTipoSocio/:id",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general"])
+],
+socioController.editarTipoDeSocio
+)
+
+router.delete("/borrarTipoSocio/:id",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general"])
+],
+socioController.borrarTipoDeSocio
+)
+
+router.post('/descargarTicket/:id', (req, res) => {
+  const idSocio = req.params.id;
+  const {socio,infoPago}=req.body;
+
+  // Generar el ticket de pago
+  generarTicketPago(socio, infoPago, (chunk) => res.write(chunk), () => res.end());
+});
 
 // Exportamos el router
 module.exports = router;

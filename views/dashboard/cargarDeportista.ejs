@@ -1,0 +1,480 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        /* Estilos para el formulario */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            /* display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-areas:
+                "personales personales familiares familiares"
+                "personales personales familiares familiares"
+                "comunicacion comunicacion talles talles"
+                "medicos medicos lesiones lesiones"; */
+        }
+
+        fieldset {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .datos-personales {
+            grid-area: personales;
+        }
+
+        .datos-talles {
+            grid-area: talles;
+        }
+
+        .datos-comunicacion {
+            grid-area: comunicacion;
+        }
+
+        .datos-familiares {
+            grid-area: familiares;
+        }
+
+        .datos-medicos {
+            grid-area: medicos;
+        }
+
+        .datos-lesiones {
+            grid-area: lesiones;
+        }
+
+        legend {
+            font-weight: bold;
+            color: #2980b9;
+            padding: 0 10px;
+            margin-left: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 100px;
+            resize: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            border-color: #2980b9;
+            outline: none;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            background-color: #2980b9;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #1a5987;
+        }
+
+        #lesiones-container,
+        #tratamientos-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .lesion-input,
+        .tratamiento-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #add-lesion-btn {
+            background-color: #2980b9;
+            color: #fff;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Ajustes de diseño para pantallas más pequeñas */
+        @media (max-width: 600px) {
+            form {
+                padding: 15px;
+            }
+
+            fieldset {
+                padding: 15px;
+            }
+
+            legend {
+                font-size: 1.2em;
+            }
+        }
+
+        .cargarDeportista {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* Dos columnas de igual ancho */
+            grid-template-rows: auto;
+            /* Filas automáticas */
+            gap: 20px;
+            /* Espacio entre columnas y filas */
+            grid-template-areas:
+                "datos-personales datos-personales"
+                "datos-talles datos-comunicacion"
+                "datos-familiares datos-medicos"
+                "datos-lesiones datos-lesiones"
+                "boton boton";
+        }
+
+        .datos-personales {
+            grid-area: datos-personales;
+        }
+
+        .datos-talles {
+            grid-area: datos-talles;
+        }
+
+        .datos-comunicacion {
+            grid-area: datos-comunicacion;
+        }
+
+        .datos-familiares {
+            grid-area: datos-familiares;
+        }
+
+        .datos-medicos {
+            grid-area: datos-medicos;
+        }
+
+        .datos-lesiones {
+            grid-area: datos-lesiones;
+        }
+
+        button {
+            grid-area: boton;
+            justify-self: center;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Ajustar los fieldsets para que queden organizados */
+        fieldset {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        legend {
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* Ajustar el grid para pantallas más pequeñas */
+        @media (max-width: 768px) {
+            .cargarDeportista {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "datos-personales"
+                    "datos-talles"
+                    "datos-comunicacion"
+                    "datos-familiares"
+                    "datos-medicos"
+                    "datos-lesiones"
+                    "boton";
+            }
+        }
+    </style>
+    <title>Deportistas</title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId, rolNombre:rolNombre, disciplinas:disciplinas }) %>
+
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>CARGA DE DEPORTISTA</h2>
+                    </div>
+                    <form class="cargarDeportista">
+                        <!-- Datos Personales -->
+                        <fieldset class="datos-personales">
+                            <legend>Datos Personales</legend>
+                            <label for="nombre">Nombre Completo:</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                    
+                            <label for="fechaNacimiento">Fecha de Nacimiento:</label>
+                            <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
+                    
+                            <label for="domicilio">Domicilio:</label>
+                            <input type="text" id="domicilio" name="domicilio" required>
+                    
+                            <label for="localidad">Localidad:</label>
+                            <input type="text" id="localidad" name="localidad" required>
+                    
+                            <label for="escolaridad">Escolaridad (Opcional):</label>
+                            <input type="text" id="escolaridad" name="escolaridad">
+                    
+                            <label for="gradoEscolar">Grado Escolar (Opcional):</label>
+                            <input type="text" id="gradoEscolar" name="gradoEscolar">
+                    
+                            <label for="posicionJuego">Posición de Juego (Opcional):</label>
+                            <input type="text" id="posicionJuego" name="posicionJuego">
+                    
+                            <label for="altura">Altura (cm) (Opcional):</label>
+                            <input type="number" step="0.01" id="altura" name="altura">
+                    
+                            <label for="peso">Peso (kg) (Opcional):</label>
+                            <input type="number" step="0.01" id="peso" name="peso">
+                        </fieldset>
+                    
+                        <!-- Talles Deportista -->
+                        <fieldset class="datos-talles">
+                            <legend>Talles</legend>
+                            <label for="talleCalzado">Talle de Calzado (Opcional):</label>
+                            <input type="text" id="talleCalzado" name="talleCalzado">
+                    
+                            <label for="talleCamiseta">Talle de Camiseta (Opcional):</label>
+                            <input type="text" id="talleCamiseta" name="talleCamiseta">
+                    
+                            <label for="tallePantalon">Talle de Pantalón (Opcional):</label>
+                            <input type="text" id="tallePantalon" name="tallePantalon">
+                        </fieldset>
+                    
+                        <!-- Comunicación Deportista -->
+                        <fieldset class="datos-comunicacion">
+                            <legend>Comunicación</legend>
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email">
+                    
+                            <label for="instagram">Instagram (Opcional):</label>
+                            <input type="text" id="instagram" name="instagram">
+                    
+                            <label for="facebook">Facebook (Opcional):</label>
+                            <input type="text" id="facebook" name="facebook">
+                    
+                            <label for="telefonoJugador">Teléfono del Jugador:</label>
+                            <input type="text" id="telefonoJugador" name="telefonoJugador">
+                    
+                            <label for="telefonoEmergencia">Teléfono de Emergencia:</label>
+                            <input type="text" id="telefonoEmergencia" name="telefonoEmergencia">
+                        </fieldset>
+                    
+                        <!-- Datos Familiares -->
+                        <fieldset class="datos-familiares">
+                            <legend>Datos Familiares</legend>
+                            <label for="tutorNombre">Nombre Completo:</label>
+                            <input type="text" id="tutorNombre" name="tutorNombre">
+                    
+                            <label for="domicilioTutor">Domicilio:</label>
+                            <input type="text" id="domicilioTutor" name="domicilioTutor">
+                    
+                            <label for="localidadTutor">Localidad:</label>
+                            <input type="text" id="localidadTutor" name="localidadTutor">
+                    
+                            <label for="telefonoTutor">Teléfono del Tutor:</label>
+                            <input type="text" id="telefonoTutor" name="telefonoTutor">
+                    
+                            <label for="telefonoFijoTutor">Teléfono Fijo (Opcional):</label>
+                            <input type="text" id="telefonoFijoTutor" name="telefonoFijoTutor">
+                    
+                            <label for="facebookTutor">Facebook del Tutor (Opcional):</label>
+                            <input type="text" id="facebookTutor" name="facebookTutor">
+                    
+                            <label for="instagramTutor">Instagram del Tutor (Opcional):</label>
+                            <input type="text" id="instagramTutor" name="instagramTutor">
+                    
+                            <label for="emailResponsable">Email del Responsable:</label>
+                            <input type="email" id="emailResponsable" name="emailResponsable">
+                        </fieldset>
+                    
+                        <!-- Datos Médicos -->
+                        <fieldset class="datos-medicos">
+                            <legend>Datos Médicos</legend>
+                            <label for="grupoSanguineo">Grupo Sanguíneo:</label>
+                            <input type="text" id="grupoSanguineo" name="grupoSanguineo">
+                    
+                            <label for="factor">Factor:</label>
+                            <input type="text" id="factor" name="factor">
+                    
+                            <label for="coberturaMedica">Cobertura Médica:</label>
+                            <input type="text" id="coberturaMedica" name="coberturaMedica">
+                    
+                            <label for="numeroAfiliado">Número de Afiliado:</label>
+                            <input type="text" id="numeroAfiliado" name="numeroAfiliado">
+                        </fieldset>
+                    
+                        <!-- Lesiones, Alergias, Patologías y Tratamientos -->
+                        <fieldset class="datos-lesiones">
+                            <legend>Lesiones, Alergias, Patologías y Tratamientos</legend>
+                            <label for="lesiones">Lesiones:</label>
+                            <textarea id="lesiones" name="lesiones"></textarea>
+                    
+                            <label for="alergias">Alergias:</label>
+                            <textarea id="alergias" name="alergias"></textarea>
+                    
+                            <label for="patologias">Patologías:</label>
+                            <textarea id="patologias" name="patologias"></textarea>
+                    
+                            <label for="tratamientos">Tratamientos:</label>
+                            <textarea id="tratamientos" name="tratamientos"></textarea>
+                        </fieldset>
+                    
+                        <button type="submit">Registrar Deportista</button>
+                    </form>
+                    
+
+                </main>
+                <!-- End Main -->
+    </div>
+
+    <script src="/public/js/interacciones.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Lesiones
+        const addLesionBtn = document.getElementById('add-lesion-btn');
+        const lesionesContainer = document.getElementById('lesiones-container');
+
+        addLesionBtn.addEventListener('click', function () {
+            const inputDiv = document.createElement('div');
+            inputDiv.classList.add('lesion-input');
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'lesiones[]'; // Use array notation to gather all inputs
+            input.placeholder = 'Ingrese una lesión';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.textContent = 'Eliminar';
+            removeBtn.addEventListener('click', function () {
+                lesionesContainer.removeChild(inputDiv);
+            });
+
+            inputDiv.appendChild(input);
+            inputDiv.appendChild(removeBtn);
+            lesionesContainer.appendChild(inputDiv);
+        });
+
+
+        document.querySelector(".cargarDeportista").addEventListener("submit", (e) => {
+            e.preventDefault()
+
+            const form = document.querySelector(".cargarDeportista");
+            const formData = new FormData(form); // Esto crea un objeto con todos los inputs y sus valores.
+
+            const datos = {};
+
+            // Recorremos todos los pares clave/valor del FormData
+            for (let [key, value] of formData.entries()) {
+                datos[key] = value;
+            }
+
+            fetch("/cargarDeportista", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(datos)
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deportista cargado',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                        });
+                    }
+                    else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al cargar el deportista',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                        });
+                    }
+                })
+        })
+    </script>
+</body>
+
+</html>

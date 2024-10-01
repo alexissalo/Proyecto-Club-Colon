@@ -12,7 +12,19 @@
         </li>
         <% if(rolNombre==="admin_general" || rolNombre==="admin_secretaria") { %>
             <li class="sidebar-list-item" onclick="toggleSubMenu()">
-                <a href="/dashboard/socios">Socios</a>
+                <a>Socios</a>
+                <ul class="sub-menu" id="subMenu">
+                    <li class="sub-menu-item">
+                        <a href="/dashboard/socios">
+                            Lista de socios
+                        </a>
+                    </li>
+                    <li class="sub-menu-item">
+                        <a href="/dashboard/tiposdesocios">
+                            Tipos de socios
+                        </a>
+                    </li>
+                </ul>
             </li>
         <% } %>
 
@@ -44,7 +56,12 @@
                     <ul class="sub-menu" id="subMenu">
                         <% if(rolNombre===`coordinador_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
-                                <a href="/dashboard/deportistas/<%= disciplina.nombre %>">Deportistas</a>
+                                <a href="/dashboard/deportistas/<%= disciplina.nombre %>">Lista de Deportistas</a>
+                            </li>
+                        <% } %>
+                        <% if(rolNombre===`coordinador_${disciplina.nombre}`) { %>
+                            <li class="sub-menu-item">
+                                <a href="/dashboard/cargardeportista/<%= disciplina.nombre %>">Cargar deportista</a>
                             </li>
                         <% } %>
                         <li class="sub-menu-item">

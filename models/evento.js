@@ -85,13 +85,7 @@ class EventoModel {
   }
 
   // Método para agregar un evento sin disciplina
-  async añadirEvento(
-    nombre,
-    descripcion,
-    fechaInicio,
-    fechaFin,
-    callback
-  ) {
+  async añadirEvento(nombre, descripcion, fechaInicio, fechaFin, callback) {
     try {
       // Insertamos el evento sin id_disciplina
       let sql =
@@ -125,6 +119,19 @@ class EventoModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
+    }
+  }
+
+  async getEventoProximo(callback) {
+    try {
+      let sql = `SELECT nombre, DATE_FORMAT(fechaInicio, '%d-%m-%Y') AS fechaInicio FROM eventos WHERE id_disciplina IS NULL AND fechaInicio >= CURDATE() ORDER BY fechaInicio ASC LIMIT 1;`;
+
+      const [result] = await pool.query(sql, []);
+      
+      callback(result[0]);
+    } catch (error) {
+      console.log(error);
+      callback(null);
     }
   }
 }

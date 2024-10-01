@@ -16,16 +16,19 @@
             gap: 20px;
         }
 
-        .cards-economia div {
+        .card-economia {
             background-color: white;
             border-radius: 5px;
-            display: flex;
-            flex-direction: column;
             padding: 10px;
         }
 
+        .card-economia form{
+            display: flex;
+            flex-direction: column;
+        }
 
-        input[type="number"] {
+
+        input[type="number"],select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -44,6 +47,7 @@
             margin-bottom: 10px;
             resize: none;
             height: 100px;
+            font-family: sans-serif;
 
         }
 
@@ -75,7 +79,8 @@
             }
         }
     </style>
-    <title>Economia de <%= disciplina%></title>
+    <title>Economia de <%= disciplina%>
+    </title>
 </head>
 
 <body>
@@ -86,29 +91,25 @@
                 <!-- Main -->
                 <main class="main-container">
                     <div class="main-title">
-                        <h2>ECONOMÍA DE <%= disciplina.toUpperCase()%></h2>
+                        <h2>ECONOMÍA DE <%= disciplina.toUpperCase()%>
+                        </h2>
                     </div>
-                    <div class="cards-economia">
-                        <div>
-                            <h3>Ingreso</h3>
+                    <div class="card-economia">
+                        <form id="form-movimientos">
+                            <h3>Nuevo movimiento</h3>
                             <label>Monto</label>
-                            <input type="number" name="" id="">
+                            <input type="number" name="monto" id="" min="0" required>
                             <label>Documentacion respaldatoria</label>
-                            <input type="file" name="" id="">
+                            <input type="file" name="documentacion" id="">
                             <label>Descripcion</label>
-                            <textarea name="" id=""></textarea>
-                            <button class="boton">Añadir ingreso</button>
-                        </div>
-                        <div>
-                            <h3>Egreso</h3>
-                            <label>Monto</label>
-                            <input type="number" name="" id="">
-                            <label>Documentacion respaldatoria</label>
-                            <input type="file" name="" id="">
-                            <label>Descripcion</label>
-                            <textarea name="" id=""></textarea>
-                            <button class="boton">Añadir egreso</button>
-                        </div>
+                            <textarea name="descripcion" id="" required></textarea>
+                            <label>Tipo de movimiento</label>
+                            <select name="" id="tipoMovimiento" required>
+                                <option value="1">Ingreso</option>
+                                <option value="0">Egreso</option>
+                            </select>
+                            <button class="boton" type="submit">Añadir movimiento</button>
+                        </form>
                     </div>
                 </main>
 
@@ -117,6 +118,152 @@
 
     <script src="/public/js/interacciones.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const disciplinaActual = '<%= disciplina %>';
+        // document.querySelector("#form-ingreso").addEventListener("submit",async (e)=>{
+        //     e.preventDefault()
+
+        //     const inputMonto=document.querySelector(`#form-ingreso input[name="monto"]`)
+        //     const inputDocumentacion=document.querySelector(`#form-ingreso input[name="documentacion"]`)
+        //     const inputDescripcion=document.querySelector(`#form-ingreso textarea`)
+
+        //     let fd= new FormData()
+        //     fd.append("monto",inputMonto.value)
+        //     fd.append("documentacion",inputDocumentacion.files[0])
+        //     fd.append("descripcion",inputDescripcion.value)
+        //     fd.append("disciplina",disciplinaActual)
+        //     fd.append("es_ingreso",1)
+
+        //     const ajax=await fetch(`/nuevoMovimiento/${disciplinaActual}`,{
+        //         method:"POST",
+        //         body:fd,
+        //     })
+
+        //     const result = await ajax.json()
+        //     if(result.ok)
+        //     {
+        //         Swal.fire({
+        //         icon: 'success',
+        //         title: 'Ingreso creado',
+        //         text: result.message,
+        //         showConfirmButton: false,
+        //         timer: 2000,
+        //         timerProgressBar: true,
+        //         didClose: () => {
+        //             // Recargar la página cuando termine el timer
+        //             window.location.reload();
+        //         }
+        //     });
+        //     }
+        //     else {
+        //         Swal.fire({
+        //         icon: 'error',
+        //         title: 'Error al crear el ingreso',
+        //         text: result.message,
+        //         showConfirmButton: false,
+        //         timer: 2000,
+        //         timerProgressBar: true,
+        //     });
+        //     }
+            
+            
+        // })
+
+        // document.querySelector("#form-egreso").addEventListener("submit",async (e)=>{
+        //     e.preventDefault()
+
+        //     const inputMonto=document.querySelector(`#form-egreso input[name="monto"]`)
+        //     const inputDocumentacion=document.querySelector(`#form-egreso input[name="documentacion"]`)
+        //     const inputDescripcion=document.querySelector(`#form-egreso textarea`)
+
+        //     let fd= new FormData()
+        //     fd.append("monto",inputMonto.value)
+        //     fd.append("documentacion",inputDocumentacion.files[0])
+        //     fd.append("descripcion",inputDescripcion.value)
+        //     fd.append("disciplina",disciplinaActual)
+        //     fd.append("es_ingreso",0)
+
+        //     const ajax=await fetch(`/nuevoMovimiento/${disciplinaActual}`,{
+        //         method:"POST",
+        //         body:fd,
+        //     })
+
+        //     const result = await ajax.json()
+        //     if(result.ok)
+        //     {
+        //         Swal.fire({
+        //         icon: 'success',
+        //         title: 'Egreso creado',
+        //         text: result.message,
+        //         showConfirmButton: false,
+        //         timer: 2000,
+        //         timerProgressBar: true,
+        //         didClose: () => {
+        //             window.location.reload();
+        //         }
+        //     });
+        //     }
+        //     else {
+        //         Swal.fire({
+        //         icon: 'error',
+        //         title: 'Error al crear el egreso',
+        //         text: result.message,
+        //         showConfirmButton: false,
+        //         timer: 2000,
+        //         timerProgressBar: true,
+        //     });
+        //     }
+            
+        // })
+
+        document.querySelector("#form-movimientos").addEventListener("submit",async (e)=>{
+            e.preventDefault()
+
+            const inputMonto=document.querySelector(`#form-movimientos input[name="monto"]`)
+            const inputDocumentacion=document.querySelector(`#form-movimientos input[name="documentacion"]`)
+            const inputDescripcion=document.querySelector(`#form-movimientos textarea`)
+            const tipoMovimiento=document.querySelector("#tipoMovimiento").value
+
+            let fd= new FormData()
+            fd.append("monto",inputMonto.value)
+            fd.append("documentacion",inputDocumentacion.files[0])
+            fd.append("descripcion",inputDescripcion.value)
+            fd.append("disciplina",disciplinaActual)
+            fd.append("es_ingreso",tipoMovimiento)
+
+            const ajax=await fetch(`/nuevoMovimiento/${disciplinaActual}`,{
+                method:"POST",
+                body:fd,
+            })
+
+            const result = await ajax.json()
+            if(result.ok)
+            {
+                Swal.fire({
+                icon: 'success',
+                title: 'Movimiento creado',
+                text: result.message,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                didClose: () => {
+                    window.location.reload();
+                }
+            });
+            }
+            else {
+                Swal.fire({
+                icon: 'error',
+                title: 'Error al crear el movimiento',
+                text: result.message,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+            });
+            }
+            
+        })
+    </script>
 </body>
 
 </html>

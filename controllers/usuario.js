@@ -3,6 +3,12 @@ const modelUsuario = require("../models/usuario");
 const usuarioModel = new modelUsuario();
 const modelDisciplina = require("../models/disciplina");
 const disciplinaModel = new modelDisciplina();
+const modelSocio = require("../models/socio");
+const socioModel = new modelSocio();
+const modelEvento = require("../models/evento");
+const eventoModel = new modelEvento();
+const modelDeportista = require("../models/deportistas");
+const deportistaModel = new modelDeportista();
 
 // Importamos la biblioteca bcrypt para encriptar contraseñas
 const bcrypt = require("bcrypt");
@@ -15,51 +21,95 @@ class UsuarioController {
 
   // Muestra la pagina de inicio del dashboard
   mostrarInicio(req, res) {
-    // Obtenemos la lista de disciplinas
-    disciplinaModel.listarDisciplinas((disciplinaData) => {
-      if (disciplinaData === null) {
-        return res.status(500).send("Error al obtener los datos de los socios");
-      }
-      // Renderizamos la pagina de inicio con los datos de la sesion y las disciplinas
-      res.render("dashboard/inicio", {
-        rolId: req.rolId,
-        rolNombre: req.rolNombre,
-        disciplinas: disciplinaData,
-      });
-    });
+    deportistaModel.getCantidadDeportistaPorDisciplina((cantidadDeportistaData)=>{
+      deportistaModel.getTotalDeportistas(null,(totalDeportistasData)=>{
+        socioModel.getTotalSocios(null,(totalSociosData)=>{
+          eventoModel.getEventoProximo((eventoData)=>{
+            socioModel.getTiposDeSocios((tiposDeSocioData) => {
+              if (tiposDeSocioData === null) {
+                return res
+                  .status(500)
+                  .send("Error al obtener los datos de los tipos desocios");
+              }
+              // Obtenemos la lista de disciplinas
+              disciplinaModel.listarDisciplinas((disciplinaData) => {
+                if (disciplinaData === null) {
+                  return res
+                    .status(500)
+                    .send("Error al obtener los datos de los socios");
+                }
+                socioModel.listarCantidadDeSociosPorTipo((dataCantidad) => {
+                  if (dataCantidad === null) {
+                    return res.status(500).send("Error al obtener los datos");
+                  }
+                  // Renderizamos la pagina de inicio con los datos de la sesion y las disciplinas
+                  res.render("dashboard/inicio", {
+                    rolId: req.rolId,
+                    rolNombre: req.rolNombre,
+                    disciplinas: disciplinaData,
+                    tiposdesocios:tiposDeSocioData,
+                    cantidadDeSocios:dataCantidad,
+                    eventoProximo:eventoData,
+                    totalSocios:totalSociosData,
+                    totalDeportistas:totalDeportistasData,
+                    deportistaPorDisciplina: cantidadDeportistaData
+                  });
+                });
+              });
+            });
+          })
+        })
+      })
+    })
   }
 
   // Muestra la lista de usuarios
   mostrarUsuarios(req, res) {
+    const pagina = parseInt(req.query.pagina) || 1;
+    const filasPorPagina = parseInt(req.query.filasPorPagina) || 5;
+    const buscar = req.query.buscar || "";
+
     // Obtenemos la lista de roles
     usuarioModel.listarRoles((rolesData) => {
       if (!rolesData) {
         return res.status(500).send("Error al obtener los datos de los roles");
       }
       // Obtenemos la lista de usuarios
-      usuarioModel.listarUsuarios((usuariosData) => {
-        if (!usuariosData) {
-          return res
-            .status(500)
-            .send("Error al obtener los datos de los usuarios");
-        }
-        // Obtenemos la lista de disciplinas
-        disciplinaModel.listarDisciplinas((disciplinaData) => {
-          if (!disciplinaData) {
+      usuarioModel.listarUsuarios(
+        pagina,
+        filasPorPagina,
+        buscar,
+        (usuariosData) => {
+          if (!usuariosData) {
             return res
               .status(500)
-              .send("Error al obtener los datos de las disciplinas");
+              .send("Error al obtener los datos de los usuarios");
           }
-          // Renderizamos la pagina de usuarios con los datos de la sesion, roles, usuarios y disciplinas
-          res.render("dashboard/usuarios", {
-            usuarios: usuariosData,
-            rolId: req.rolId,
-            rolNombre: req.rolNombre,
-            disciplinas: disciplinaData,
-            roles: rolesData,
+
+          usuarioModel.getTotalUsuarios(buscar, (usuariosTotalData) => {
+            // Obtenemos la lista de disciplinas
+            disciplinaModel.listarDisciplinas((disciplinaData) => {
+              if (!disciplinaData) {
+                return res
+                  .status(500)
+                  .send("Error al obtener los datos de las disciplinas");
+              }
+              // Renderizamos la pagina de usuarios con los datos de la sesion, roles, usuarios y disciplinas
+              res.render("dashboard/usuarios", {
+                usuarios: usuariosData,
+                rolId: req.rolId,
+                rolNombre: req.rolNombre,
+                disciplinas: disciplinaData,
+                roles: rolesData,
+                pagina: pagina,
+                filasPorPagina: filasPorPagina,
+                buscar: buscar,
+                totalUsuarios: usuariosTotalData,
+              });
+            });
           });
-        });
-      });
+        }
+      );
     });
   }
 
@@ -70,20 +120,24 @@ class UsuarioController {
     // Validamos el usuario y contraseña
     usuarioModel.validarUsuario(email, password, (usuarioData) => {
       if (usuarioData === null) {
-        return res.status(500).send("Error al obtener los datos de los socios");
+        return res
+          .status(500)
+          .json({ message: "Error del servidor", ok: false });
       }
 
       if (!usuarioData) {
         return res
           .status(401)
-          .json({ message: "Correo o contraseña incorrectos" });
+          .json({ message: "Correo o contraseña incorrectos", ok: false });
       }
 
       // Verificamos la contraseña
       const isValidContraseña = bcrypt.compare(password, usuarioData.password);
 
       if (!isValidContraseña) {
-        return res.status(401).json({ message: "Contraseña incorrecta" });
+        return res
+          .status(401)
+          .json({ message: "Contraseña incorrecta", ok: false });
       }
 
       // Establecemos la sesión del usuario
@@ -97,7 +151,7 @@ class UsuarioController {
             .status(500)
             .json({ message: "Error al guardar la sesión" });
         }
-        res.json({ message: "Logueado correctamente" });
+        res.json({ message: "Logueado correctamente", ok: true });
       });
     });
   }
@@ -117,7 +171,7 @@ class UsuarioController {
     // Obtenemos los datos del formulario de registro
     const { nombre, email, id_rol } = req.body;
 
-    const contraseña="colon"
+    const contraseña = "colon";
 
     try {
       // Encriptamos la contraseña
@@ -130,13 +184,16 @@ class UsuarioController {
         hashedContraseña,
         id_rol,
         (usuarioData) => {
-          if (!usuarioData) {
-            return res
-              .status(500)
-              .json({ message: "Error al crear el usuario" });
+          if (usuarioData == null) {
+            return res.status(500).json({
+              message: "Error del servidor al crear el usuario",
+              ok: false,
+            });
           }
 
-          res.json({ message: "Usuario registrado correctamente" });
+          res
+            .status(200)
+            .json({ message: "Usuario registrado correctamente", ok: true });
         }
       );
     } catch (error) {
@@ -182,12 +239,11 @@ class UsuarioController {
     // Verificamos la contraseña actual del usuario
     usuarioModel.verificarContraseña(id, (usuarioData) => {
       // Si no se encuentra el usuario, devolvemos un error
-      if (!usuarioData) {
-        console.error("Error al verificar la contraseña actual:");
-        res
-          .status(500)
-          .send({ mensaje: "Error al verificar la contraseña actual" });
-        return;
+      if (usuarioData == null) {
+        return res.status(500).json({
+          message: "Error al verificar la contraseña actual",
+          ok: false,
+        });
       }
 
       // Obtenemos la contraseña actual hash del usuario
@@ -201,26 +257,31 @@ class UsuarioController {
 
       // Si la contraseña actual es incorrecta, devolvemos un error
       if (!esContraseñaCorrecta) {
-        res
-          .status(401)
-          .send({ mensaje: "La contraseña actual introducida es incorrecta" });
-        return;
+        return res.status(401).json({
+          message: "La contraseña actual introducida es incorrecta",
+          ok: false,
+        });
       }
 
       // Actualizamos la contraseña del usuario
-      usuarioModel.actualizarContraseña(id, nuevaContraseñaHasheada, (usuarioData) => {
-        // Si ocurre un error al actualizar la contraseña, devolvemos un error
-        if (!usuarioData) {
-          console.error("Error al actualizar la contraseña:");
-          res
-            .status(500)
-            .send({ mensaje: "Error al actualizar la contraseña" });
-          return;
-        }
+      usuarioModel.actualizarContraseña(
+        id,
+        nuevaContraseñaHasheada,
+        (usuarioData) => {
+          // Si ocurre un error al actualizar la contraseña, devolvemos un error
+          if (usuarioData == null) {
+            return res.status(500).json({
+              message: "Error del servidor al actualizar la contraseña",
+              ok: false,
+            });
+          }
 
-        // Si todo sale bien, devolvemos un mensaje de exito
-        res.send({ mensaje: "Contraseña actualizada con exito" });
-      });
+          // Si todo sale bien, devolvemos un mensaje de exito
+          res
+            .status(200)
+            .json({ message: "Contraseña actualizada con exito", ok: true });
+        }
+      );
     });
   }
 
@@ -229,22 +290,31 @@ class UsuarioController {
     const { id, nuevoNombre } = req.body;
 
     usuarioModel.actualizarNombre(id, nuevoNombre, (usuarioData) => {
-      if (!usuarioData) {
-        console.error("Error al actualizar el nombre:");
-        res.status(500).send({ mensaje: "Error al actualizar el nombre" });
-        return;
+      if (usuarioData == null) {
+        return res.status(500).json({
+          message: "Error del servidor al actualizar el nombre",
+          ok: false,
+        });
       }
 
-      res.send({ mensaje: "Nombre actualizado con éxito" });
+      res
+        .status(200)
+        .json({ message: "Nombre actualizado con éxito", ok: true });
     });
   }
 
-  borrarUsuario(){
-    const {id}=req.params
+  borrarUsuario(req, res) {
+    const { id } = req.params;
 
-    usuarioModel.borrarUsuario(id,(usuarioData)=>{
-      res.json(usuarioData)
-    })
+    usuarioModel.borrarUsuario(id, (usuarioData) => {
+      if (usuarioData == null) {
+        return res.status(500).json({
+          message: "Error del servidor al borrar el usuario",
+          ok: false,
+        });
+      }
+      res.status(200).json({ message: "Usuario borrado con exito", ok: true });
+    });
   }
 }
 

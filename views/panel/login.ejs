@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
 	<title>Login</title>
 	<style>
 		body {
@@ -92,16 +93,14 @@
 					email: inputEmail.value,
 					password: inputPassword.value
 				}),
-			}).then((response) => {
-				console.log(response);
-				if (response.ok) {
-					window.location.href = '/dashboard/inicio';
-				} else {
-					response.json().then((res) => {
-						errorMessage.textContent = res.message
-					})
-				}
-			})
+			}).then((response) => response.json())
+				.then((data) => {
+					if (data.ok) {
+						window.location.href = '/dashboard/inicio';
+					} else {
+						errorMessage.textContent = data.message
+					}
+				})
 				.catch((err) => {
 					console.error(err)
 				})

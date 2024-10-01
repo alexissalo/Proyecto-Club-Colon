@@ -17,6 +17,64 @@
         td i:hover {
             background-color: #ccc;
         }
+
+        .formSocio,
+        .formSocioEditar,
+        .formSocioPago {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .formSocio label,
+        .formSocioEditar label,
+        .formSocioPago label {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .formSocio input,
+        .formSocioEditar input,
+        .formSocioPago input,
+        #tipoSocio,
+        #deporte,
+        #tipoSocioEditar,
+        #deporteEditar {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .formSocio button,
+        .formSocioEditar button,
+        .formSocioPago button {
+            padding: 0.75rem 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .formSocio button:hover,
+        .formSocioEditar button:hover,
+        .formSocioPago button:hover {
+            background-color: #45a049;
+        }
+
+        .formSocio button:active,
+        .formSocioEditar button:active,
+        .formSocioPago button:active {
+            background-color: #3e8e41;
+        }
     </style>
 </head>
 
@@ -51,6 +109,8 @@
                                     <th>Telefono</th>
                                     <th>Domicilio</th>
                                     <th>Fec.Inscripcion</th>
+                                    <th>Tipo de socio</th>
+                                    <th>Deporte</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -76,11 +136,26 @@
                                             <td>
                                                 <%= socio.fechaInscripcion %>
                                             </td>
-                                            <td style="text-align: center;">
+                                            <td style="text-transform: capitalize;">
+                                                <%= socio.tipodesocio %>
+                                            </td>
+                                            <td style="text-transform: capitalize;">
+                                                <% if (socio.deporte) { %>
+                                                    <%= socio.deporte %>
+
+                                                        <% }else{ %>
+                                                            No realiza deporte
+                                                            <% } %>
+                                            </td>
+                                            <td>
                                                 <i class="bi bi-eye-fill" title="Ver detalles"
                                                     onclick="verDetalle(<%= JSON.stringify(socio) %>)"></i>
-                                                <i class="bi bi-pencil-fill" title="Editar"></i>
-                                                <i class="bi bi-trash-fill" title="Eliminar" onclick="borrarSocio(<%= socio.id%>)"></i>
+                                                <i class="bi bi-cash" title="Pagos"
+                                                    onclick="crearPago(<%= JSON.stringify(socio) %>)"></i>
+                                                <i class="bi bi-pencil-fill" title="Editar"
+                                                    onclick="editarSocio(<%= JSON.stringify(socio) %>)"></i>
+                                                <i class="bi bi-trash-fill" title="Eliminar"
+                                                    onclick="borrarSocio(<%= socio.id%>)"></i>
                                             </td>
                                         </tr>
                                         <% }); %>
@@ -124,6 +199,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/public/js/interacciones.js"></script>
     <script>
+
+        const tiposDeSociosData = <%- JSON.stringify(tiposdesocios) %>;
+        const disciplinaData = <%- JSON.stringify(disciplinas) %>;
 
         function navigatePage(direction) {
             const paginaActual = <%= pagina %>;
@@ -176,103 +254,97 @@
             Swal.fire({
                 title: 'Detalle del socio',
                 html: contenido,
-                confirmButtonText: 'Cerrar',
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
             });
         }
 
         function añadirSocio() {
-            swal({
+            const tiposDeSociosHtml = tiposDeSociosData.map((tipoSocio) => {
+                return `<option value="${tipoSocio.id}">${tipoSocio.nombre}</option>`;
+            }).join('');
+            const disciplinasHtml = disciplinaData.map((disciplina) => {
+                return `<option value="${disciplina.id}">${disciplina.nombre}</option>`;
+            }).join('');
+            Swal.fire({
                 title: 'Agregar nuevo socio',
                 html: `
-                    <form>
-                    <div class="form-group">
+                    <form class="formSocio">
                         <label for="nombre">Nombre:</label>
-                        <input type="text" id="nombre" class="form-control" required>
-                    </div>
-                    <div class="form-group">
+                        <input type="text" id="nombre" required>
                         <label for="telefono">Teléfono:</label>
-                        <input type="tel" id="telefono" class="form-control" required>
-                    </div>
-                    <div class="form-group">
+                        <input type="tel" id="telefono" required>
                         <label for="domicilio">Domicilio:</label>
-                        <input type="text" id="domicilio" class="form-control" required>
-                    </div>
-                    <div class="form-group">
+                        <input type="text" id="domicilio" required>
                         <label for="dni">DNI:</label>
-                        <input type="number" id="dni" class="form-control" required>
-                    </div>
-                    <div class="form-group">
+                        <input type="number" id="dni" required>
                         <label for="fechaNacimiento">Fecha de nacimiento:</label>
-                        <input type="date" id="fechaNacimiento" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="disciplina">Disciplina:</label>
-                        <select id="disciplina" class="form-control" required>
-                        <option value="">Seleccione una disciplina</option>
-                        <option value="Futbol">Futbol</option>
-                        <option value="Basquet">Basquet</option>
-                        <option value="Tenis">Tenis</option>
-                        <!-- Agrega más opciones según sea necesario -->
-                        </select>
-                    </div>
-                    <div class="form-group">
+                        <input type="date" id="fechaNacimiento" required>
                         <label for="tipoSocio">Tipo de socio:</label>
-                        <select id="tipoSocio" class="form-control" required>
-                        <option value="">Seleccione un tipo de socio</option>
-                        <option value="Activo">Activo</option>
-                        <option value="Pasivo">Pasivo</option>
-                        <option value="Honorario">Honorario</option>
-                        <!-- Agrega más opciones según sea necesario -->
+                        <select id="tipoSocio" required>
+                            ${tiposDeSociosHtml}
                         </select>
-                    </div>
+                        <label for="deporte">Deporte:</label>
+                        <select id="deporte" required>
+                            <option value=0>No realiza deporte</option>
+                            ${disciplinasHtml}
+                        </select>
+                        <button type="submit">Guardar Socio</button>
                     </form>
+                    <div class="error-message"></div>
                 `,
-                confirmButtonText: 'Agregar',
-                showCancelButton: true,
-                cancelButtonText: 'Cancelar',
-                preConfirm: () => {
-                    const nombre = document.getElementById('nombre').value;
-                    const telefono = document.getElementById('telefono').value;
-                    const domicilio = document.getElementById('domicilio').value;
-                    const dni = document.getElementById('dni').value;
-                    const fechaNacimiento = document.getElementById('fechaNacimiento').value;
-                    const disciplina = document.getElementById('disciplina').value;
-                    const tipoSocio = document.getElementById('tipoSocio').value;
-
-                    // Verifica que todos los campos estén completos
-                    if (!nombre || !telefono || !domicilio || !dni || !fechaNacimiento || !disciplina || !tipoSocio) {
-                        swal.showValidationError('Por favor, complete todos los campos');
-                        return false;
-                    }
-
-                    // Agrega la lógica para agregar el nuevo socio a la base de datos
-                    // Por ejemplo, puedes hacer una petición AJAX a tu API
-                    fetch('/api/socios', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            nombre,
-                            telefono,
-                            domicilio,
-                            dni,
-                            fechaNacimiento,
-                            disciplina,
-                            tipoSocio,
-                        }),
-                    })
-                        .then((response) => response.json())
-                        .then((data) => {
-                            if (data.success) {
-                                swal('Socio agregado con éxito!', '', 'success');
-                            } else {
-                                swal('Error al agregar socio', '', 'error');
-                            }
-                        })
-                        .catch((error) => console.error(error));
-                },
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
             });
+
+            document.querySelector(".formSocio").addEventListener("submit", (e) => {
+                e.preventDefault()
+
+                const nombre = document.getElementById('nombre').value;
+                const telefono = document.getElementById('telefono').value;
+                const domicilio = document.getElementById('domicilio').value;
+                const dni = document.getElementById('dni').value;
+                const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+                const tipoSocio = document.getElementById('tipoSocio').value;
+                const deporte = document.getElementById('deporte').value;
+                const errorMessage = document.querySelector(".error-message");
+
+                fetch('/crearSocio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        telefono: telefono,
+                        domicilio: domicilio,
+                        dni: dni,
+                        fechaNacimiento: fechaNacimiento,
+                        tipodesocio: tipoSocio,
+                        deporte: deporte
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log(data);
+                        errorMessage.textContent = data
+                        if (data.ok) {
+                            Swal.fire({
+                                title: "Socio creado!",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonColor: "#4CAF50",
+                            }).then((response) => {
+                                if (response.isConfirmed) {
+                                    window.location.reload()
+                                }
+                            })
+                        }
+                    })
+                    .catch((error) => console.error(error));
+            })
         }
 
         function borrarSocio(id) {
@@ -291,26 +363,223 @@
                         headers: {
                             'Content-Type': 'application/json'
                         }
-                    }).then((response) => {
-                        if (response.ok) {
-                            Swal.fire({
-                                title: "Borrado!",
-                                text: "Tu evento ha sido borrado.",
-                                icon: "success"
-                            }).then((response) => {
-                                if (result.isConfirmed) {
-                                    window.location.reload()
-                                }
-                            })
-                        } else {
-                            console.error('Response error:', response.status, response.statusText);
-                        }
-                    })
+                    }).then((response) => response.json())
+                        .then((data) => {
+                            if (data.ok) {
+                                Swal.fire({
+                                    title: "Borrado!",
+                                    text: `${data.message}`,
+                                    icon: "success"
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.reload()
+                                    }
+                                })
+                            } else {
+                                console.error('Response error:', data.message);
+                            }
+                        })
                         .catch(error => console.error('Error:', error));
                 }
             });
-
         }
+
+        function editarSocio(socio) {
+            const tiposDeSociosHtml = tiposDeSociosData.map((tipoSocio) => {
+                const selected = socio.tipodesocio === tipoSocio.nombre ? 'selected' : '';
+                return `<option value="${tipoSocio.id}" ${selected}>${tipoSocio.nombre}</option>`;
+            }).join('');
+
+            const disciplinasHtml = disciplinaData.map((disciplina) => {
+                const selected = socio.deporte === disciplina.nombre ? 'selected' : '';
+                return `<option value="${disciplina.id}" ${selected}>${disciplina.nombre}</option>`;
+            }).join('');
+
+            Swal.fire({
+                title: 'Editar socio',
+                html: `
+            <form class="formSocioEditar">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombreEditar" value="${socio.nombre}" required>
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefonoEditar" value="${socio.telefono}" required>
+                <label for="domicilio">Domicilio:</label>
+                <input type="text" id="domicilioEditar" value="${socio.domicilio}" required>
+                <label for="tipoSocio">Tipo de socio:</label>
+                <select id="tipoSocioEditar" required>
+                    ${tiposDeSociosHtml}
+                </select>
+                <label for="deporte">Deporte:</label>
+                <select id="deporteEditar" required>
+                    <option value="0" ${socio.deporte === 0 ? 'selected' : ''}>No realiza deporte</option>
+                    ${disciplinasHtml}
+                </select>
+                <button type="submit">Guardar Cambios</button>
+            </form>
+            <div class="error-message" style="color: red; margin-top: 10px;"></div>
+        `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
+            });
+
+            document.querySelector(".formSocioEditar").addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const nombre = document.getElementById('nombreEditar').value;
+                const telefono = document.getElementById('telefonoEditar').value;
+                const domicilio = document.getElementById('domicilioEditar').value;
+                const tipoSocio = document.getElementById('tipoSocioEditar').value;
+                const deporte = document.getElementById('deporteEditar').value;
+                const errorMessage = document.querySelector(".error-message");
+
+                fetch(`/actualizarSocio/${socio.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        telefono: telefono,
+                        domicilio: domicilio,
+                        tipodesocio: tipoSocio,
+                        deporte: deporte,
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.ok) {
+                            Swal.fire({
+                                title: "Socio actualizado!",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonColor: "#4CAF50",
+                            }).then((response) => {
+                                if (response.isConfirmed) {
+                                    window.location.reload();
+                                }
+                            });
+                        } else {
+                            // Mostrar el mensaje de error en el modal
+                            errorMessage.textContent = data.message;
+                        }
+                    })
+                    .catch((error) => {
+                        // En caso de error en la petición, mostrar mensaje en el modal
+                        errorMessage.textContent = "Error en la actualización. Inténtalo nuevamente.";
+                    });
+            });
+        }
+
+        function crearPago(socio) {
+
+            const errorMessage = document.querySelector(".error-message")
+            // Buscar el tipo de socio en el array usando el id_tipo_socio del objeto socio
+            const tipoSocio = tiposDeSociosData.find(tipo => tipo.nombre === socio.tipodesocio);
+
+            // Obtener el valor de la cuota o establecer un valor predeterminado si no se encuentra el tipo de socio
+            const valorCuota = tipoSocio ? tipoSocio.valorDeCuota : 0;
+
+            // Obtener la fecha actual correctamente en formato YYYY-MM-DD según la zona horaria local
+            const fechaActual = new Date();
+            const anio = fechaActual.getFullYear();
+            const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Los meses en JavaScript empiezan desde 0
+            const dia = fechaActual.getDate().toString().padStart(2, '0');
+            const fechaFormateada = `${anio}-${mes}-${dia}`;
+
+            Swal.fire({
+                title: 'Crear pago',
+                html: `
+                    <form class="formSocioPago">
+                        <label>Valor de la cuota:</label>
+                        <input type="number" value="${valorCuota}" disabled required>
+                        <label>Fecha del pago:</label>
+                        <input type="date" value="${fechaFormateada}" disabled required>
+                        <button type="submit">Guardar Pago</button>
+                    </form>
+                    <div class="error-message" style="color: red; margin-top: 10px;"></div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
+            });
+
+            document.querySelector(".formSocioPago").addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const infoPago = {
+                    monto: valorCuota,
+                    fechaPago: fechaFormateada,
+                    metodoPago: "Efectivo"
+                }
+
+                fetch(`/crearPago`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id_socio: socio.id,
+                        valor: valorCuota,
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.ok) {
+                            Swal.fire({
+                                title: "Pago realizado!",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonColor: "#4CAF50",
+                                showCancelButton: true,
+                                cancelButtonText: "Cerrar",
+                                confirmButtonText: "Descargar Ticket",
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    descargarTicketPago(socio, infoPago);
+                                }
+                                // Recargar página después de cerrar el modal
+                                if (result.dismiss) {
+                                    window.location.reload();
+                                }
+                            });
+                        } else {
+                            // Mostrar el mensaje de error en el modal
+                            errorMessage.textContent = data.message;
+                        }
+                    })
+                    .catch((error) => {
+                        // En caso de error en la petición, mostrar mensaje en el modal
+                        errorMessage.textContent = "Error en el pago. Inténtalo nuevamente.";
+                    });
+            });
+        }
+
+
+        function descargarTicketPago(socio, infoPago) {
+            fetch(`/descargarTicket/${socio.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ socio, infoPago }),
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `ticket_pago_${socio.id}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch((error) => {
+                    console.error('Error descargando el ticket:', error);
+                });
+        }
+
 
     </script>
 </body>
