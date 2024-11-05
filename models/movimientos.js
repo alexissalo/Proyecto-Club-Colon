@@ -104,6 +104,8 @@ class MovimientoModel {
     disciplina,
     pagina,
     filasPorPagina,
+    tipo,
+    fecha,
     callback
   ) {
     try {
@@ -117,15 +119,33 @@ class MovimientoModel {
         FROM disciplinas_abonos da 
         JOIN usuarios u ON da.id_responsable = u.id
         JOIN disciplinas d ON da.id_disciplina = d.id
-        WHERE d.nombre = ? LIMIT ? OFFSET ?
       `;
 
+      // Agregamos los filtros a la consulta
+      let condiciones = [];
+      let params = [];
+      if (tipo) {
+        condiciones.push(`da.es_ingreso = ?`);
+        params.push(tipo === "ingreso" ? 1 : 0);
+      }
+      if (fecha) {
+        condiciones.push(`da.fecha = ?`);
+        params.push(fecha);
+      }
+      if (disciplina) {
+        condiciones.push(`d.nombre = ?`);
+        params.push(disciplina);
+      }
+      if (condiciones.length > 0) {
+        sql += ` WHERE ${condiciones.join(" AND ")}`;
+      }
+
+      sql += ` LIMIT ? OFFSET ?`;
+      params.push(filasPorPagina);
+      params.push(offset);
+
       // Ejecutamos la consulta utilizando el pool de conexiones
-      const [result] = await pool.query(sql, [
-        disciplina,
-        filasPorPagina,
-        offset,
-      ]);
+      const [result] = await pool.query(sql, params);
 
       // Pasamos el resultado a la función callback
       callback(result);
@@ -137,18 +157,36 @@ class MovimientoModel {
   }
 
   // Método para obtener el total de movimientos por disciplina
-  async getTotalMovimientosPorDisciplina(disciplinaNombre, callback) {
+  async getTotalMovimientosPorDisciplina(disciplinaNombre,tipo,fecha, callback) {
     try {
       // Creamos la consulta SQL para contar el total de movimientos de una disciplina específica
-      const sql = `
+      let sql = `
         SELECT COUNT(*) AS total
         FROM disciplinas_abonos
         INNER JOIN disciplinas ON disciplinas_abonos.id_disciplina = disciplinas.id
-        WHERE disciplinas.nombre = ?
       `;
 
+      let condiciones = [];
+      let params = [];
+      if (tipo) {
+        condiciones.push(`es_ingreso = ?`);
+        params.push(tipo === "ingreso" ? 1 : 0);
+      }
+      if (fecha) {
+        condiciones.push(`fecha = ?`);
+        params.push(fecha);
+      }
+      if (disciplinaNombre) {
+        condiciones.push(`disciplinas.nombre = ?`);
+        params.push(disciplinaNombre);
+      }
+
+      if (condiciones.length > 0) {
+        sql += ` WHERE ${condiciones.join(" AND ")}`;
+      }
+
       // Ejecutamos la consulta utilizando el pool de conexiones
-      const [result] = await pool.query(sql, [disciplinaNombre]);
+      const [result] = await pool.query(sql, params);
 
       // Pasamos el resultado a la función callback
       callback(result[0].total);
@@ -332,7 +370,7 @@ class MovimientoModel {
           da.descripcion
       `;
       let params = [];
-  
+
       if (disciplina) {
         sql += `, d.nombre AS disciplina
         FROM disciplinas_abonos da
@@ -345,12 +383,12 @@ class MovimientoModel {
         WHERE da.fecha BETWEEN ? AND ?`;
         params.push(fechaInicio, fechaFin);
       }
-  
+
       const [result] = await pool.query(sql, params);
-  
+
       const ingresos = result.filter((item) => item.es_ingreso === 1);
       const egresos = result.filter((item) => item.es_ingreso === 0);
-  
+
       const totalIngresos = ingresos.reduce(
         (acc, item) => acc + parseFloat(item.valor),
         0
@@ -360,7 +398,7 @@ class MovimientoModel {
         0
       );
       const total = totalIngresos - totalEgresos;
-  
+
       const response = {
         total,
         ingresos,
@@ -368,16 +406,15 @@ class MovimientoModel {
         totalIngresos,
         totalEgresos,
       };
-  
+
       console.log(response);
-  
+
       return response;
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
-  
 }
 
 // Exportamos la clase MovimientoModel

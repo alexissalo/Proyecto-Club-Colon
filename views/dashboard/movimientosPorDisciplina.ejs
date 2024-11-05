@@ -198,21 +198,8 @@
                                         <label for="fecha">Fecha:</label>
                                         <input type="date" id="fecha" class="form-control">
                                     </div>
-                                    <% if (!disciplina) { %>
-                                        <div class="form-group">
-                                            <label for="disciplina">Disciplina:</label>
-                                            <select id="disciplina" class="form-control">
-                                                <option value="">Todas</option>
-                                                <% disciplinas.forEach(function(disciplina) { %>
-                                                    <option value="<%= disciplina.id %>">
-                                                        <%= disciplina.nombre %>
-                                                    </option>
-                                                    <% }); %>
-                                            </select>
-                                        </div>
-                                        <% } %>
-                                            <button id="aplicar-filtro">Aplicar filtro</button>
-                                            <button id="limpiar-filtro">Limpiar filtro</button>
+                                        <button id="aplicar-filtro">Aplicar filtro</button>
+                                        <button id="limpiar-filtro">Limpiar filtro</button>
                                 </div>
                             </div>
                         </div>
@@ -285,8 +272,7 @@
                                 <select onchange="
                                     const tipo = document.getElementById('tipo') ? document.getElementById('tipo').value : '';
                                     const fecha = document.getElementById('fecha') ? document.getElementById('fecha').value : '';
-                                    const disciplina = document.getElementById('disciplina') ? document.getElementById('disciplina').value : '';
-                                    window.location.href = '?pagina=1&filasPorPagina=' + this.value + '&buscar=<%= typeof buscar !== 'undefined' ? buscar : '' %>&tipo=' + tipo + '&fecha=' + fecha + '&disciplina=' + disciplina;
+                                    window.location.href = '?pagina=1&filasPorPagina=' + this.value + '&buscar=<%= typeof buscar !== 'undefined' ? buscar : '' %>&tipo=' + tipo + '&fecha=';
                                 ">
                                     <option value="5" <%=filasPorPagina==5 ? 'selected' : '' %>>5</option>
                                     <option value="10" <%=filasPorPagina==10 ? 'selected' : '' %>>10</option>
@@ -335,7 +321,6 @@
             // Obtener valores de los filtros actuales desde los inputs
             const tipo = document.getElementById('tipo') ? document.getElementById('tipo').value : '';
             const fecha = document.getElementById('fecha') ? document.getElementById('fecha').value : '';
-            const disciplina = document.getElementById('disciplina') ? document.getElementById('disciplina').value : '';
 
             if (direction === 'prev') {
                 nuevaPagina = paginaActual - 1;
@@ -343,7 +328,7 @@
                 nuevaPagina = paginaActual + 1;
             }
 
-            window.location.href = `?pagina=${nuevaPagina}&filasPorPagina=${filasPorPaginas}&buscar=${buscar}&tipo=${tipo}&fecha=${fecha}&disciplina=${disciplina}`;
+            window.location.href = `?pagina=${nuevaPagina}&filasPorPagina=${filasPorPaginas}&buscar=${buscar}&tipo=${tipo}&fecha=${fecha}`;
         }
 
         window.onload = function () {
@@ -351,16 +336,12 @@
 
             const tipo = urlParams.get('tipo');
             const fecha = urlParams.get('fecha');
-            const disciplina = urlParams.get('disciplina');
 
             if (tipo) {
                 document.getElementById('tipo').value = tipo;
             }
             if (fecha) {
                 document.getElementById('fecha').value = fecha;
-            }
-            if (disciplina && document.getElementById('disciplina')) {
-                document.getElementById('disciplina').value = disciplina;
             }
         };
 
@@ -396,13 +377,8 @@
         document.getElementById('aplicar-filtro').addEventListener('click', () => {
             const tipo = document.getElementById('tipo').value;
             const fecha = document.getElementById('fecha').value;
-            if (!disciplinaActual) {
-                const disciplina = document.getElementById('disciplina').value;
-                window.location.href = `?tipo=${tipo}&fecha=${fecha}&disciplina=${disciplina}`;
-            } else {
-                window.location.href = `?tipo=${tipo}&fecha=${fecha}`;
-            }
-
+            
+            window.location.href = `?tipo=${tipo}&fecha=${fecha}`;
             // Redireccionamos a la ruta con los parámetros de filtro
         });
 
@@ -436,10 +412,8 @@
                 const startDate = document.querySelector("#startDate").value
                 const endDate = document.querySelector("#endDate").value
 
-                let consulta = '/personalizado';
-                if (disciplinaActual) {
-                    consulta = `/personalizado/${disciplinaActual}`
-                }
+                let consulta = `/personalizado/${disciplinaActual}`;
+                
                 fetch(consulta, {
                     method: 'POST',
                     headers: {
@@ -479,10 +453,8 @@
         const annualBalanceButton = document.getElementById('annual-balance');
 
         last30DaysButton.addEventListener('click', () => {
-            let consulta = '/ultimos-30-dias';
-            if (disciplinaActual) {
-                consulta = `/ultimos-30-dias/${disciplinaActual}`
-            }
+            let consulta = `/ultimos-30-dias/${disciplinaActual}`;
+            
             fetch(consulta, {
                 method: 'GET',
                 responseType: 'blob'
@@ -508,10 +480,8 @@
                 .catch(error => console.error('Error al descargar el PDF:', error));
         });
         last90DaysButton.addEventListener('click', () => {
-            let consulta = '/ultimos-90-dias';
-            if (disciplinaActual) {
-                consulta = `/ultimos-90-dias/${disciplinaActual}`
-            }
+            let consulta = `/ultimos-90-dias/${disciplinaActual}`;
+            
             fetch(consulta, {
                 method: 'GET',
                 responseType: 'blob'
@@ -537,10 +507,7 @@
                 .catch(error => console.error('Error al descargar el PDF:', error));
         });
         annualBalanceButton.addEventListener('click', () => {
-            let consulta = "/anual"
-            if (disciplinaActual) {
-                consulta = `/anual/${disciplinaActual}`;
-            }
+            let consulta = `/anual/${disciplinaActual}`
 
             fetch(consulta, {
                 method: 'GET',

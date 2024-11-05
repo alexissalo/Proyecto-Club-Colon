@@ -17,7 +17,8 @@ class SocioModel {
           s.dni, 
           DATE_FORMAT(s.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento,
           s.telefono, 
-          s.domicilio, 
+          s.domicilio,
+          s.email, 
           DATE_FORMAT(s.fechaInscripcion, '%d-%m-%Y') AS fechaInscripcion,
           d.nombre AS deporte,
           ts.nombre AS tipodesocio
@@ -53,7 +54,8 @@ class SocioModel {
       const arregloSocios = await Promise.all(
         socios.map(async (socio) => {
           let sql = `
-            SELECT 
+            SELECT
+              sa.id,
               DATE_FORMAT(sa.fecha, '%d-%m-%Y') AS fecha,
               sa.valor
             FROM 
@@ -71,10 +73,12 @@ class SocioModel {
             fechaNacimiento: socio.fechaNacimiento,
             telefono: socio.telefono,
             domicilio: socio.domicilio,
+            email:socio.email,
             fechaInscripcion: socio.fechaInscripcion,
             deporte: socio.deporte,
             tipodesocio: socio.tipodesocio,
             pagos: pagos.map((pago) => ({
+              idPago:pago.id,
               fecha: pago.fecha,
               valor: pago.valor,
             })),
@@ -87,6 +91,7 @@ class SocioModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
+      callback(null)
     }
   }
 
@@ -106,6 +111,7 @@ class SocioModel {
       }
     } catch (error) {
       console.error(error);
+      callback(null)
     }
   }
 
@@ -115,12 +121,13 @@ class SocioModel {
     telefono,
     fechaNacimiento,
     domicilio,
+    email,
     deporte,
     tipodesocio,
     callback
   ) {
     try {
-      let sql = `INSERT INTO socios(nombre,dni,telefono,fechaNacimiento,domicilio,id_tipo_socio,id_disciplina,fechaInscripcion) VALUES (?,?,?,?,?,?,?,now())`;
+      let sql = `INSERT INTO socios(nombre,dni,telefono,fechaNacimiento,domicilio,id_tipo_socio,id_disciplina,email,fechaInscripcion) VALUES (?,?,?,?,?,?,?,?,now())`;
 
       const [result] = await pool.query(sql, [
         nombre,
@@ -130,6 +137,7 @@ class SocioModel {
         domicilio,
         tipodesocio,
         deporte,
+        email
       ]);
 
       callback(result);
@@ -145,14 +153,15 @@ class SocioModel {
     nombre,
     telefono,
     domicilio,
+    email,
     tipodesocio,
     deporte,
     callback
   ) {
     try {
-      let sql = `UPDATE socios SET nombre = ?, telefono = ?, domicilio = ?, id_tipo_socio= ?, id_disciplina= ? WHERE id = ?`;
+      let sql = `UPDATE socios SET nombre = ?, telefono = ?, domicilio = ?, id_tipo_socio= ?, id_disciplina= ?, email= ? WHERE id = ?`;
 
-      const params = [nombre, telefono, domicilio,tipodesocio,deporte, id];
+      const params = [nombre, telefono, domicilio,tipodesocio,deporte,email, id];
 
       const [result] = await pool.query(sql, params);
 
@@ -173,7 +182,7 @@ class SocioModel {
       callback(result);
     } catch (error) {
       console.error(error);
-      throw error;
+      callback(null)
     }
   }
 
@@ -186,17 +195,16 @@ class SocioModel {
       callback(result);
     } catch (error) {
       console.log(error);
-      throw error;
+      callback(null)
     }
   }
 
-  async insertPago(id_socio,valor,callback){
+  async insertPago(id_socio,valor,fechaPago,callback){
 
     try{
-      let sql= "INSERT INTO socios_abonos(id_socio,valor,fecha) VALUES (?,?,now())"
+      let sql= "INSERT INTO socios_abonos(id_socio,valor,fecha) VALUES (?,?,?)"
 
-      const [result]=await pool.query(sql,[id_socio,valor])
-      console.log(result);
+      const [result]=await pool.query(sql,[id_socio,valor,fechaPago])
       
       callback(result)
     }catch(error){

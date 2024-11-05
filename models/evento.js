@@ -18,7 +18,7 @@ class EventoModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
-      throw error;
+      callback(null)
     }
   }
 
@@ -43,7 +43,7 @@ class EventoModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
-      throw error;
+      callback(null)
     }
   }
 
@@ -81,6 +81,8 @@ class EventoModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
+      callback(null)
+
     }
   }
 
@@ -102,6 +104,7 @@ class EventoModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
+      callback(null)
     }
   }
 
@@ -119,6 +122,7 @@ class EventoModel {
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
+      callback(null)
     }
   }
 

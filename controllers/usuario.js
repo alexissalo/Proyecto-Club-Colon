@@ -118,7 +118,7 @@ class UsuarioController {
     const { email, password } = req.body;
 
     // Validamos el usuario y contraseña
-    usuarioModel.validarUsuario(email, password, (usuarioData) => {
+    usuarioModel.validarUsuario(email, password, async (usuarioData) => {
       if (usuarioData === null) {
         return res
           .status(500)
@@ -132,7 +132,7 @@ class UsuarioController {
       }
 
       // Verificamos la contraseña
-      const isValidContraseña = bcrypt.compare(password, usuarioData.password);
+      const isValidContraseña =await  bcrypt.compare(password, usuarioData.password);
 
       if (!isValidContraseña) {
         return res
@@ -234,12 +234,19 @@ class UsuarioController {
     // Obtenemos los datos del cuerpo de la solicitud
     const { id, contraseñaActual, nuevaContraseña } = req.body;
 
+    if (!contraseñaActual || !nuevaContraseña) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
+
     const nuevaContraseñaHasheada = await bcrypt.hash(nuevaContraseña, 10);
 
     // Verificamos la contraseña actual del usuario
-    usuarioModel.verificarContraseña(id, (usuarioData) => {
+    usuarioModel.verificarContraseña(id, async (usuarioData) => {
       // Si no se encuentra el usuario, devolvemos un error
-      if (usuarioData == null) {
+      if (!usuarioData) {
         return res.status(500).json({
           message: "Error al verificar la contraseña actual",
           ok: false,
@@ -250,7 +257,7 @@ class UsuarioController {
       const contraseñaActualHash = usuarioData.password;
 
       // Verificamos si la contraseña actual introducida es correcta
-      const esContraseñaCorrecta = bcrypt.compare(
+      const esContraseñaCorrecta =await bcrypt.compare(
         contraseñaActual,
         contraseñaActualHash
       );
@@ -288,6 +295,13 @@ class UsuarioController {
   // Metodo para cambiar el nombre del usuario
   cambiarNombre(req, res) {
     const { id, nuevoNombre } = req.body;
+
+    if (!nuevoNombre) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
 
     usuarioModel.actualizarNombre(id, nuevoNombre, (usuarioData) => {
       if (usuarioData == null) {

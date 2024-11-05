@@ -83,9 +83,17 @@ class SocioController {
       domicilio,
       dni,
       fechaNacimiento,
+      email,
       deporte,
       tipodesocio,
     } = req.body;
+
+    if (!nombre || !telefono || !domicilio || !dni || !fechaNacimiento) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
 
     socioModel.insertSocio(
       nombre,
@@ -93,6 +101,7 @@ class SocioController {
       telefono,
       fechaNacimiento,
       domicilio,
+      email,
       deporte,
       tipodesocio,
       (socioData) => {
@@ -107,13 +116,21 @@ class SocioController {
 
   actualizarSocio(req, res) {
     const { id } = req.params;
-    const { nombre, telefono, domicilio, tipodesocio,deporte } = req.body;
+    const { nombre, telefono, domicilio, tipodesocio,deporte,email } = req.body;
+
+    if (!nombre || !telefono || !domicilio) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
 
     socioModel.updateSocio(
       id,
       nombre,
       telefono,
       domicilio,
+      email,
       tipodesocio,
       deporte,
       (socioData) => {
@@ -140,19 +157,33 @@ class SocioController {
   }
 
   crearPago(req,res){
-    const {id_socio,valor}=req.body
+    const {id_socio,valor,fechaPago}=req.body
 
-    socioModel.insertPago(id_socio,valor,(socioData)=>{
+    if (!id_socio || !valor || !fechaPago) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
+
+    socioModel.insertPago(id_socio,valor,fechaPago,(socioData)=>{
       if (socioData==null) {
         return res.status(500).json({message:"Error del servidor al crear el pago", ok:false})
       }
 
-      res.status(200).json({message:"Pago creado con exito", ok: true})
+      res.status(200).json({message:"Pago creado con exito", ok: true, idPago:socioData.insertId})
     })
   }
 
   crearTipoDeSocio(req,res){
     const {nombre,valordecuota}=req.body;
+
+    if (!nombre || !valordecuota) {
+        return res.status(500).json({
+          message: "Falta completar campos obligatorios",
+          ok: false,
+        });
+    }
 
     socioModel.insertTipoDeSocio(nombre,valordecuota,(tiposDeSocioData)=>{
       if (tiposDeSocioData==null) {
@@ -166,6 +197,13 @@ class SocioController {
   editarTipoDeSocio(req,res){
     const {id}=req.params;
     const {nombre,valordecuota}=req.body;
+
+    if (!nombre || !valordecuota) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+  }
 
     socioModel.updateTipoDeSocio(id,nombre,valordecuota,(tiposDeSocioData)=>{
       if (tiposDeSocioData==null) {

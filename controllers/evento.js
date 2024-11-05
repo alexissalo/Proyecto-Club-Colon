@@ -74,6 +74,13 @@ class EventoController {
   añadirEvento(req, res) {
     const { nombre, descripcion, fechaInicio, fechaFin} = req.body;
 
+    if (!nombre || !descripcion || !fechaInicio) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+  }
+
     eventoModel.añadirEvento(
       nombre,
       descripcion,
@@ -87,6 +94,13 @@ class EventoController {
 
   añadirEventoPorDisciplina(req,res){
     const { nombre, descripcion, fechaInicio, fechaFin,disciplina } = req.body;
+
+    if (!nombre || !descripcion || !fechaInicio) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+  }
 
     eventoModel.añadirEventoPorDisciplina(
       nombre,

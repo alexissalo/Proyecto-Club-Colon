@@ -10,7 +10,7 @@ const authMiddlewares = new middlewaresAuth();
 const controllerSocio = require("../controllers/socio");
 const socioController = new controllerSocio();
 
-const { generarTicketPago } = require('../middlewares/generarPdf');
+const { generarTicketPagoSocial, generarTicketPagoDeportista } = require('../middlewares/generarPdf');
 
 // Ruta para listar socios (requiere sesión y rol "admin_general" o "admin_secretaria")
 router.get(
@@ -84,11 +84,17 @@ socioController.borrarTipoDeSocio
 )
 
 router.post('/descargarTicket/:id', (req, res) => {
-  const idSocio = req.params.id;
-  const {socio,infoPago}=req.body;
+  const {socio,infoPago, idPago}=req.body;
 
   // Generar el ticket de pago
-  generarTicketPago(socio, infoPago, (chunk) => res.write(chunk), () => res.end());
+  generarTicketPagoSocial(socio, infoPago, idPago, (chunk) => res.write(chunk), () => res.end());
+});
+
+router.post('/descargarTicketDeportista/:id', (req, res) => {
+  const {deportista,infoPago, idPago}=req.body;
+
+  // Generar el ticket de pago
+  generarTicketPagoDeportista(deportista, infoPago, idPago, (chunk) => res.write(chunk), () => res.end());
 });
 
 // Exportamos el router

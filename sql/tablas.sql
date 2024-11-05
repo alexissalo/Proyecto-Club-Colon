@@ -2,11 +2,6 @@ create database admincolon;
 
 use admincolon;
 
-CREATE TABLE `alergiasdeportista` (
-  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `deportistaId` INT NULL DEFAULT NULL,
-  `alergia` VARCHAR(255) NULL DEFAULT NULL
-);
 
 CREATE TABLE `comunicaciondeportista` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -35,9 +30,13 @@ CREATE TABLE `datosmedicosdeportista` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `deportistaId` INT NULL DEFAULT NULL,
   `grupoSanguineo` VARCHAR(10) NULL DEFAULT NULL,
-  `factor` VARCHAR(5) NULL DEFAULT NULL,
+  `factor` VARCHAR(10) NULL DEFAULT NULL,
   `coberturaMedica` VARCHAR(100) NULL DEFAULT NULL,
-  `numeroAfiliado` VARCHAR(50) NULL DEFAULT NULL
+  `numeroAfiliado` VARCHAR(50) NULL DEFAULT NULL,
+  `alergias` TEXT,
+  `lesiones` TEXT,
+  `patologias` TEXT,
+  `trataminetos` TEXT
 );
 
 CREATE TABLE `datospersonalesdeportista` (
@@ -51,7 +50,8 @@ CREATE TABLE `datospersonalesdeportista` (
   `posicionJuego` VARCHAR(50) NULL DEFAULT NULL,
   `altura` DECIMAL(5,2) NULL DEFAULT NULL,
   `peso` DECIMAL(5,2) NULL DEFAULT NULL,
-  `id_disciplina` INT NULL DEFAULT NULL
+  `id_disciplina` INT NULL DEFAULT NULL,
+  `categoria` VARCHAR(25)
 );
 
 CREATE TABLE `disciplinas` (
@@ -84,18 +84,6 @@ CREATE TABLE `grupos_familiares` (
   `nombre` VARCHAR(255)
 );
 
-CREATE TABLE `lesionesdeportista` (
-  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `deportistaId` INT NULL DEFAULT NULL,
-  `lesion` VARCHAR(255) NULL DEFAULT NULL
-);
-
-CREATE TABLE `patologiasdeportista` (
-  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `deportistaId` INT NULL DEFAULT NULL,
-  `patologia` VARCHAR(255) NULL DEFAULT NULL
-);
-
 CREATE TABLE `roles` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nombre` VARCHAR(255)
@@ -103,12 +91,13 @@ CREATE TABLE `roles` (
 
 CREATE TABLE `socios` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(255),
-  `fechaNacimiento` DATE,
-  `dni` INT,
-  `telefono` VARCHAR(255),
-  `domicilio` VARCHAR(255),
-  `fechaInscripcion` DATE,
+  `nombre` VARCHAR(255) NOT NULL,
+  `fechaNacimiento` DATE NOT NULL,
+  `dni` INT UNIQUE NOT NULL,
+  `telefono` VARCHAR(255) NOT NULL,
+  `domicilio` VARCHAR(255) NOT NULL,
+  `fechaInscripcion` DATE NOT NULL,
+  `email` VARCHAR(255),
   `id_grupo_familiar` INT,
   `id_disciplina` INT,
   `id_tipo_socio` INT
@@ -135,18 +124,19 @@ CREATE TABLE `tiposdesocios` (
   `valorDeCuota` DECIMAL(10,2)
 );
 
-CREATE TABLE `tratamientosdeportista` (
-  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `deportistaId` INT NULL DEFAULT NULL,
-  `tratamientoDescripcion` VARCHAR(255) NULL DEFAULT NULL
-);
-
 CREATE TABLE `usuarios` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nombre` VARCHAR(255),
   `email` VARCHAR(255),
   `contraseña` VARCHAR(255),
   `id_rol` INT
+);
+
+CREATE TABLE `deportistas_abonos` (
+   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   `id_deportista` INT,
+   `valor` VARCHAR(255),
+   `fecha` DATETIME
 );
 
 
@@ -172,7 +162,7 @@ insert into usuarios(nombre,email,contraseña,id_rol) values
 ("admingeneral","admingeneral31@gmail.com","123",1),
 ("adminsecretaria","adminsecretaria31@gmail.com","123",2),
 ("adminfutbol","adminfutbol31@gmail.com","123",3),
-("coordinadorfutbol","coordfutbol31@gmail.com","123",9),
+("coordinadorfutbol","coordfutbol31@gmail.com","123",9);
 
 
 INSERT INTO `socios` (`nombre`, `fechaNacimiento`, `dni`, `telefono`, `domicilio`, `fechaInscripcion`, `id_grupo_familiar`, `id_disciplina`, `id_tipo_socio`)

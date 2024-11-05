@@ -38,6 +38,7 @@
         .formSocio input,
         .formSocioEditar input,
         .formSocioPago input,
+        .formSocioPago select,
         #tipoSocio,
         #deporte,
         #tipoSocioEditar,
@@ -109,6 +110,7 @@
                                     <th>Telefono</th>
                                     <th>Domicilio</th>
                                     <th>Fec.Inscripcion</th>
+                                    <th>Email</th>
                                     <th>Tipo de socio</th>
                                     <th>Deporte</th>
                                     <th>Acciones</th>
@@ -136,6 +138,9 @@
                                             <td>
                                                 <%= socio.fechaInscripcion %>
                                             </td>
+                                            <td>
+                                                <%= socio.email %>
+                                            </td>
                                             <td style="text-transform: capitalize;">
                                                 <%= socio.tipodesocio %>
                                             </td>
@@ -148,7 +153,7 @@
                                                             <% } %>
                                             </td>
                                             <td>
-                                                <i class="bi bi-eye-fill" title="Ver detalles"
+                                                <i class="bi bi-clipboard" title="Ver Pagos"
                                                     onclick="verDetalle(<%= JSON.stringify(socio) %>)"></i>
                                                 <i class="bi bi-cash" title="Pagos"
                                                     onclick="crearPago(<%= JSON.stringify(socio) %>)"></i>
@@ -220,45 +225,43 @@
 
         function verDetalle(socio) {
             const contenido = `
-                <p>Nombre: ${socio.nombre}</p>
-                <p>DNI: ${socio.dni}</p>
-                <p>Telefono: ${socio.telefono}</p>
-                <p>Domicilio: ${socio.domicilio}</p>
-                <p>Fecha de nacimiento: ${socio.fechaNacimiento}</p>
-                <p>Fecha de inscripcion: ${socio.fechaInscripcion}</p>
-                <h2>Pagos de la cuota</h2>
-                <table style="margin: 0 auto; height: 60px; overflow-y: auto; display:inline-block;">
-                <thead>
-                    <tr>
-                    <th>Fecha de pago</th>
-                    <th>Monto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${socio.pagos && socio.pagos.length > 0 ? socio.pagos.map((pago) => `
-                    <tr>
-                        <td>${pago.fecha}</td>
-                        <td>$${pago.valor}</td>
-                    </tr>
-                    `).join('')
-                    : `
-                    <tr>
-                        <td colspan="2">Sin Pagos registrados</td>
-                    </tr>`
-                }
-                </tbody>
-                </table>
-            `;
+                    <h2 style="text-align:center; margin-bottom: 20px;">Pagos de la cuota</h2>
+                    <div style="max-height: 300px; overflow-y: auto;"> <!-- Limitar la altura con scrollbar -->
+                        <table style="width:100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ccc; text-align:left; background-color: #f4f4f4;">N° de Referencia</th>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ccc; text-align:left; background-color: #f4f4f4;">Fecha de pago</th>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ccc; text-align:left; background-color: #f4f4f4;">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${socio.pagos && socio.pagos.length > 0 ? socio.pagos.map((pago) => `
+                                <tr>
+                                    <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">${pago.idPago}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">${pago.fecha}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">$${pago.valor}</td>
+                                </tr>
+                                `).join('')
+                                : `
+                                <tr>
+                                    <td colspan="2" style="padding: 10px; text-align: center; color: #999;">Sin pagos registrados</td>
+                                </tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
 
             // Muestra el modal con SweetAlert
             Swal.fire({
-                title: 'Detalle del socio',
                 html: contenido,
                 showConfirmButton: false,
                 showCloseButton: true,
                 showCancelButton: false,
             });
         }
+
+
 
         function añadirSocio() {
             const tiposDeSociosHtml = tiposDeSociosData.map((tipoSocio) => {
@@ -281,6 +284,8 @@
                         <input type="number" id="dni" required>
                         <label for="fechaNacimiento">Fecha de nacimiento:</label>
                         <input type="date" id="fechaNacimiento" required>
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
                         <label for="tipoSocio">Tipo de socio:</label>
                         <select id="tipoSocio" required>
                             ${tiposDeSociosHtml}
@@ -297,6 +302,7 @@
                 showConfirmButton: false,
                 showCloseButton: true,
                 showCancelButton: false,
+                allowOutsideClick: false,
             });
 
             document.querySelector(".formSocio").addEventListener("submit", (e) => {
@@ -307,6 +313,7 @@
                 const domicilio = document.getElementById('domicilio').value;
                 const dni = document.getElementById('dni').value;
                 const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+                const email = document.getElementById("email").value
                 const tipoSocio = document.getElementById('tipoSocio').value;
                 const deporte = document.getElementById('deporte').value;
                 const errorMessage = document.querySelector(".error-message");
@@ -322,14 +329,13 @@
                         domicilio: domicilio,
                         dni: dni,
                         fechaNacimiento: fechaNacimiento,
+                        email: email,
                         tipodesocio: tipoSocio,
                         deporte: deporte
                     }),
                 })
                     .then((response) => response.json())
                     .then((data) => {
-                        console.log(data);
-                        errorMessage.textContent = data
                         if (data.ok) {
                             Swal.fire({
                                 title: "Socio creado!",
@@ -341,6 +347,8 @@
                                     window.location.reload()
                                 }
                             })
+                        } else {
+                            errorMessage.textContent = data.message
                         }
                     })
                     .catch((error) => console.error(error));
@@ -405,6 +413,8 @@
                 <input type="tel" id="telefonoEditar" value="${socio.telefono}" required>
                 <label for="domicilio">Domicilio:</label>
                 <input type="text" id="domicilioEditar" value="${socio.domicilio}" required>
+                <label for="emailEditar">Email:</label>
+                <input type="email" id="emailEditar" value="${socio.email || ""}" required>
                 <label for="tipoSocio">Tipo de socio:</label>
                 <select id="tipoSocioEditar" required>
                     ${tiposDeSociosHtml}
@@ -421,6 +431,7 @@
                 showConfirmButton: false,
                 showCloseButton: true,
                 showCancelButton: false,
+                allowOutsideClick: false,
             });
 
             document.querySelector(".formSocioEditar").addEventListener("submit", (e) => {
@@ -429,6 +440,7 @@
                 const nombre = document.getElementById('nombreEditar').value;
                 const telefono = document.getElementById('telefonoEditar').value;
                 const domicilio = document.getElementById('domicilioEditar').value;
+                const email = document.getElementById("emailEditar").value
                 const tipoSocio = document.getElementById('tipoSocioEditar').value;
                 const deporte = document.getElementById('deporteEditar').value;
                 const errorMessage = document.querySelector(".error-message");
@@ -444,6 +456,7 @@
                         domicilio: domicilio,
                         tipodesocio: tipoSocio,
                         deporte: deporte,
+                        email: email
                     }),
                 })
                     .then((response) => response.json())
@@ -492,9 +505,14 @@
                 html: `
                     <form class="formSocioPago">
                         <label>Valor de la cuota:</label>
-                        <input type="number" value="${valorCuota}" disabled required>
+                        <input type="number" value="${valorCuota}" class="monto" required>
                         <label>Fecha del pago:</label>
-                        <input type="date" value="${fechaFormateada}" disabled required>
+                        <input type="date" value="${fechaFormateada}" class="fechaPago" required>
+                        <label>Metodo de pago:</label>
+                        <select required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                        </select>
                         <button type="submit">Guardar Pago</button>
                     </form>
                     <div class="error-message" style="color: red; margin-top: 10px;"></div>
@@ -502,15 +520,21 @@
                 showConfirmButton: false,
                 showCloseButton: true,
                 showCancelButton: false,
+                allowOutsideClick: false,
             });
 
             document.querySelector(".formSocioPago").addEventListener("submit", (e) => {
                 e.preventDefault();
 
+                const monto = document.querySelector(".formSocioPago .monto").value
+                const fechaPago = document.querySelector(".formSocioPago .fechaPago").value
+                const metodoDePago = document.querySelector(".formSocioPago select").value
+
                 const infoPago = {
-                    monto: valorCuota,
-                    fechaPago: fechaFormateada,
-                    metodoPago: "Efectivo"
+                    id_socio: socio.id,
+                    valor: monto,
+                    fechaPago: fechaPago,
+                    metodoPago: metodoDePago
                 }
 
                 fetch(`/crearPago`, {
@@ -518,10 +542,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        id_socio: socio.id,
-                        valor: valorCuota,
-                    }),
+                    body: JSON.stringify(infoPago),
                 })
                     .then((response) => response.json())
                     .then((data) => {
@@ -536,7 +557,7 @@
                                 confirmButtonText: "Descargar Ticket",
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    descargarTicketPago(socio, infoPago);
+                                    descargarTicketPago(socio, infoPago, data.idPago);
                                 }
                                 // Recargar página después de cerrar el modal
                                 if (result.dismiss) {
@@ -556,13 +577,13 @@
         }
 
 
-        function descargarTicketPago(socio, infoPago) {
+        function descargarTicketPago(socio, infoPago, idPago) {
             fetch(`/descargarTicket/${socio.id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ socio, infoPago }),
+                body: JSON.stringify({ socio, infoPago, idPago }),
             })
                 .then(response => response.blob())
                 .then(blob => {
@@ -570,7 +591,9 @@
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = url;
-                    a.download = `ticket_pago_${socio.id}.pdf`;
+                    const hoy = new Date();
+                    const hoyFormateado = hoy.toLocaleDateString();
+                    a.download = `ticket_pago_${socio.id}-${hoyFormateado}.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);

@@ -41,7 +41,12 @@ class EconomiaController {
     const id_responsable = req.userId;
     const documentacion = req.file ? "/" + req.file.path : null;
 
-    console.log(documentacion);
+    if (!monto || !descripcion || !es_ingreso) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
 
     economiaModel.nuevoMovimiento(
       monto,

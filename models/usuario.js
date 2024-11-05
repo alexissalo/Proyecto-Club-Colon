@@ -10,7 +10,7 @@ class UsuarioModel {
         SELECT u.id, u.nombre, u.email, u.contraseña AS password, u.id_rol, r.nombre AS rol_nombre
         FROM usuarios u
         JOIN roles r ON u.id_rol = r.id
-        WHERE u.email = ? AND u.contraseña = ?
+        WHERE u.email = ?
       `;
   
       const [result] = await pool.query(sql, [email, password]);

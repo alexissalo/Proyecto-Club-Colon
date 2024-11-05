@@ -12,7 +12,6 @@ class MovimientoController {
     // Obtenemos la página y filas por página desde la solicitud
     const pagina = parseInt(req.query.pagina) || 1;
     const filasPorPagina = parseInt(req.query.filasPorPagina) || 5;
-    const buscar = req.query.buscar || "";
     const tipo = req.query.tipo || "";
     const fecha = req.query.fecha || "";
     const disciplina = req.query.disciplina || "";
@@ -70,19 +69,24 @@ class MovimientoController {
     // Obtenemos la página y filas por página desde la solicitud
     const pagina = parseInt(req.query.pagina) || 1;
     const filasPorPagina = parseInt(req.query.filasPorPagina) || 5;
-    const buscar = req.query.buscar || "";
+    const tipo = req.query.tipo || "";
+    const fecha = req.query.fecha || "";
 
     // Llamamos al método listarDisciplinas del modelo de disciplina
     disciplinaModel.listarDisciplinas((disciplinasData) => {
       // Consulta para contar el número total de registros por disciplina
       movimientoModel.getTotalMovimientosPorDisciplina(
         disciplina,
+        tipo,
+        fecha,
         (totalMovimientos) => {
           // Llamamos al método listarMovimientosPorDisciplina del modelo de movimientos
           movimientoModel.listarMovimientosPorDisciplina(
             disciplina,
             pagina,
             filasPorPagina,
+            tipo,
+            fecha,
             (movimientosData) => {
               // Verificamos si hubo un error al obtener los datos
               if (!movimientosData) {
@@ -96,7 +100,7 @@ class MovimientoController {
               const rolNombre = req.rolNombre;
 
               // Renderizamos la vista "dashboard/movimientos" con los datos obtenidos
-              res.render("dashboard/movimientos", {
+              res.render("dashboard/movimientosPorDisciplina", {
                 movimientos: movimientosData,
                 pagina: pagina,
                 filasPorPagina: filasPorPagina,

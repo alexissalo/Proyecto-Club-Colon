@@ -34,12 +34,22 @@ openSidebarButton.addEventListener('click', function(event) {
   openSidebar();            // Abre el sidebar
 });
 
+
 function toggleSubMenu() {
   const subMenu = document.getElementById('subMenu');
   const listItem = subMenu.parentElement;
+  const arrowIcon = document.getElementById('arrowIcon');
 
   // Alterna la clase "active" para mostrar/ocultar el submenú
   listItem.classList.toggle('active');
+
+  // Cambia la dirección de la flecha
+  if (listItem.classList.contains('active')) {
+    arrowIcon.classList.replace('bi-chevron-right', 'bi-chevron-down');
+  } else {
+    arrowIcon.classList.replace('bi-chevron-down', 'bi-chevron-right');
+  }
 }
+
 
 

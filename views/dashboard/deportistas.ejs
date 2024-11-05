@@ -6,8 +6,49 @@
     <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <link rel="stylesheet" href="/public/css/styles.css">
     <style>
+        .formDeportistaPago {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .formDeportistaPago label {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .formDeportistaPago input, .formDeportistaPago select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .formDeportistaPago button {
+            padding: 0.75rem 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .formDeportistaPago button:hover {
+            background-color: #45a049;
+        }
+
+        .formDeportistaPago button:active {
+            background-color: #3e8e41;
+        }
     </style>
-    <title>Deportistas</title>
+    <title>Deportistas de <%= disciplina %></title>
 </head>
 
 <body>
@@ -18,7 +59,7 @@
                 <!-- Main -->
                 <main class="main-container">
                     <div class="main-title">
-                        <h2>DEPORTISTAS</h2>
+                        <h2>DEPORTISTAS DE <%= disciplina.toUpperCase() %></h2>
                     </div>
                     <div class="container-tablas">
                         <div class="tabla-header">
@@ -38,21 +79,12 @@
                                     <th>Fecha de Nacimiento</th>
                                     <th>Domicilio</th>
                                     <th>Localidad</th>
-                                    <th>Altura</th>
-                                    <th>Peso</th>
-                                    <th>Talle Calzado</th>
-                                    <th>Talle Camiseta</th>
-                                    <th>Talle Pantalon</th>
+                                    <% if (disciplina=="futbol") { %>
+                                        <th>Categoria</th>
+                                    <% } %>
+                                    <th>Email</th>
                                     <th>Tel. Jugador</th>
                                     <th>Tel. Emergencia</th>
-                                    <th>Grupo Sanguíneo</th>
-                                    <th>Factor</th>
-                                    <th>Cobertura Médica</th>
-                                    <th>Número Afiliado</th>
-                                    <th>Lesiones</th>
-                                    <th>Alergias</th>
-                                    <th>Patologías</th>
-                                    <th>Tratamientos</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -72,20 +104,13 @@
                                             <td>
                                                 <%= deportista.localidad %>
                                             </td>
+                                            <% if (disciplina=="futbol") { %>
+                                                <td>
+                                                    <%= deportista.categoria %>
+                                                </td>
+                                            <% } %>
                                             <td>
-                                                <%= deportista.altura %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.peso %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.talleCalzado %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.talleCamiseta %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.tallePantalon %>
+                                                <%= deportista.email %>
                                             </td>
                                             <td>
                                                 <%= deportista.telefonoJugador %>
@@ -93,34 +118,16 @@
                                             <td>
                                                 <%= deportista.telefonoEmergencia %>
                                             </td>
-                                            <td>
-                                                <%= deportista.grupoSanguineo %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.factor %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.coberturaMedica %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.numeroAfiliado %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.lesiones %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.alergias %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.patologias %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.tratamientos %>
-                                            </td>
                                             <td style="text-align: center;">
                                                 <i class="bi bi-eye-fill" title="Ver detalles"
                                                     onclick="verDetalle(<%= JSON.stringify(deportista) %>)"></i>
-                                                <i class="bi bi-pencil-fill" title="Editar"></i>
+                                                <i class="bi bi-clipboard" onclick="getPagosPorDeportista(<%= deportista.id%>)" title="Ver Pagos"></i>
+                                                <i class="bi bi-cash" title="Crear pagos"
+                                                    onclick="crearPago(<%= JSON.stringify(deportista) %>)">
+                                                </i>
+                                                <i class="bi bi-pencil-fill" title="Editar"
+                                                    onclick="window.location.href='/dashboard/editardeportista/<%= disciplina %>/<%= deportista.id %>'">
+                                                </i>
                                                 <i class="bi bi-trash-fill" title="Eliminar"
                                                     onclick="borrarDeportista(<%= deportista.id %>)"></i>
                                             </td>
@@ -168,6 +175,21 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
 
+        function navigatePage(direction) {
+            const paginaActual = <%= pagina %>;
+            const filasPorPaginas = <%= filasPorPagina %>;
+            const buscar = '<%= typeof buscar !== "undefined" ? buscar : "" %>';
+            let nuevaPagina;
+
+            if (direction === 'prev') {
+                nuevaPagina = paginaActual - 1;
+            } else if (direction === 'next') {
+                nuevaPagina = paginaActual + 1;
+            }
+
+            window.location.href = `?pagina=${nuevaPagina}&filasPorPagina=${filasPorPaginas}&buscar=${buscar}`;
+        }
+
         function borrarDeportista(id) {
             Swal.fire({
                 title: "Estas seguro?",
@@ -179,7 +201,7 @@
                 confirmButtonText: "Borrar"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/borrarSocio/${id}`, {
+                    fetch(`/borrarDeportista/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'
@@ -203,7 +225,285 @@
                 }
             });
         }
+
+        function crearPago(deportista) {
+
+            // Obtener la fecha actual correctamente en formato YYYY-MM-DD según la zona horaria local
+            const fechaActual = new Date();
+            const anio = fechaActual.getFullYear();
+            const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Los meses en JavaScript empiezan desde 0
+            const dia = fechaActual.getDate().toString().padStart(2, '0');
+            const fechaFormateada = `${anio}-${mes}-${dia}`;
+
+            Swal.fire({
+                title: 'Crear pago',
+                html: `
+                    <form class="formDeportistaPago">
+                        <label>Monto:</label>
+                        <input type="number" class="monto" required>
+                        <label>Fecha del pago:</label>
+                        <input type="date" class="fecha" value="${fechaFormateada}" required>
+                        <label>Metodo de pago:</label>
+                        <select required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                        </select>
+                        <button type="submit">Guardar Pago</button>
+                    </form>
+                    <div class="error-message" style="color: red; margin-top: 10px;"></div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
+                allowOutsideClick: false,
+            });
+
+            document.querySelector(".formDeportistaPago").addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const monto = document.querySelector(".formDeportistaPago .monto").value
+                const fecha = document.querySelector(".formDeportistaPago .fecha").value
+                const metodoDePago= document.querySelector(".formDeportistaPago select").value
+
+                const errorMessage = document.querySelector(".error-message")
+
+                const infoPago = {
+                    id_deportista: deportista.id,
+                    valor: monto,
+                    fechaPago: fecha,
+                    metodoPago: metodoDePago
+                }
+
+                fetch(`/crearPagoDeportista`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(infoPago),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.ok) {
+                            Swal.fire({
+                                title: "Pago realizado!",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonColor: "#4CAF50",
+                                showCancelButton: true,
+                                cancelButtonText: "Cerrar",
+                                confirmButtonText: "Descargar Ticket",
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    descargarTicketPago(deportista, infoPago, data.idPago);
+                                }
+                                // Recargar página después de cerrar el modal
+                                if (result.dismiss) {
+                                    window.location.reload();
+                                }
+                            });
+                        } else {
+                            // Mostrar el mensaje de error en el modal
+                            errorMessage.textContent = data.message;
+                        }
+                    })
+                    .catch((error) => {
+                        // En caso de error en la petición, mostrar mensaje en el modal
+                        errorMessage.textContent = "Error en el pago. Inténtalo nuevamente.";
+                    });
+            });
+        }
+
+        function descargarTicketPago(deportista, infoPago, idPago) {
+            fetch(`/descargarTicketDeportista/${deportista.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ deportista, infoPago, idPago }),
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    const hoy = new Date();
+                    const hoyFormateado = hoy.toLocaleDateString();
+                    a.download = `ticket_pago_${deportista.id}-${hoyFormateado}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch((error) => {
+                    console.error('Error descargando el ticket:', error);
+                });
+        }
+
+
+        function verDetalle(deportista){
+            Swal.fire({
+                title: 'Selecciona la sección de datos',
+                input: 'select',
+                inputOptions: {
+                    personales: 'Datos Personales',
+                    comunicacion: 'Comunicación',
+                    medicos: 'Datos Médicos',
+                    talles: 'Talles',
+                    familiares: 'Datos Familiares',
+                },
+                inputPlaceholder: 'Seleccionar',
+                showCancelButton: true,
+                confirmButtonText: 'Ver Datos',
+                confirmButtonColor: "#3e8e41",
+                cancelButtonColor: "#d33",
+                cancelButtonText: 'Cancelar',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Por favor, selecciona una opción';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Según la selección, se renderizan los datos correspondientes
+                    let selectedData = result.value;
+                    renderData(selectedData,deportista);
+                }
+            });
+        }
+
+        function renderData(section,deportista) {
+            let dataHtml = '';
+
+            switch(section) {
+                case 'personales':
+                    dataHtml = `
+                        <ul>
+                            <li><strong>Nombre:</strong> ${deportista.nombre || "Dato no registrado"}</li>
+                            <li><strong>Fecha de Nacimiento:</strong> ${deportista.fechaNacimiento || "Dato no registrado"}</li>
+                            <li><strong>Domicilio:</strong> ${deportista.domicilio || "Dato no registrado"}</li>
+                            <li><strong>Escolaridad:</strong> ${deportista.escolaridad || "Dato no registrado"}</li>
+                            <li><strong>Grado Escolar:</strong> ${deportista.gradoEscolar || "Dato no registrado"}</li>
+                            <li><strong>Altura:</strong> ${deportista.altura || "Dato no registrado"}</li>
+                            <li><strong>Peso:</strong> ${deportista.peso || "Dato no registrado"}</li>
+                            <li><strong>Altura:</strong> ${deportista.altura || "Dato no registrado"}</li>
+                        </ul>`;
+                    break;
+
+                case 'medicos':
+                    dataHtml = `
+                        <ul>
+                            <li><strong>Grupo Sanguíneo:</strong> ${deportista.grupoSanguineo || "Dato no registrado"}</li>
+                            <li><strong>Factor:</strong> ${deportista.factor || "Dato no registrado"}</li>
+                            <li><strong>Cobertura Medica:</strong> ${deportista.coberturaMedica || "Dato no registrado"}</li>
+                            <li><strong>Numero de afiliado:</strong> ${deportista.numeroAfiliado || "Dato no registrado"}</li>
+                            <li><strong>Alergias:</strong> ${deportista.alergias || "Dato no registrado"}</li>
+                            <li><strong>Lesiones:</strong> ${deportista.lesiones || "Dato no registrado"}</li>
+                            <li><strong>Patologias:</strong> ${deportista.patologias || "Dato no registrado"}</li>
+                            <li><strong>Tratamientos:</strong> ${deportista.tratamientos || "Dato no registrado"}</li>
+                        </ul>`;
+                    break;
+
+                case 'talles':
+                    dataHtml = `
+                        <ul>
+                            <li><strong>Talle de Calzado:</strong> ${deportista.talleCalzado || "Dato no registrado"}</li>
+                            <li><strong>Talle de Camiseta:</strong> ${deportista.talleCamiseta || "Dato no registrado"}</li>
+                            <li><strong>Talle de Pantalón:</strong> ${deportista.tallePantalon || "Dato no registrado"}</li>
+                        </ul>`;
+                    break;
+
+                case 'familiares':
+                    dataHtml = `
+                        <ul>
+                            <li><strong>Nombre del Familiar:</strong> ${deportista.tutorNombre || "Dato no registrado"}</li>
+                            <li><strong>Domicilio del Familiar:</strong> ${deportista.domicilioTutor || "Dato no registrado"}</li>
+                            <li><strong>Localidad del Familiar:</strong> ${deportista.localidadTutor || "Dato no registrado"}</li>
+                            <li><strong>Localidad del Familiar:</strong> ${deportista.localidadTutor || "Dato no registrado"}</li>
+                            <li><strong>Telefono del Familiar:</strong> ${deportista.telefonoTutor || "Dato no registrado"}</li>
+                            <li><strong>Telefono Fijo:</strong> ${deportista.telefonoFijoTutor || "Dato no registrado"}</li>
+                            <li><strong>Facebook del Familiar:</strong> ${deportista.facebookTutor || "Dato no registrado"}</li>
+                            <li><strong>Instagram del Familiar:</strong> ${deportista.instagramTutor || "Dato no registrado"}</li>
+                            <li><strong>Email del responsable:</strong> ${deportista.emailResponsable || "Dato no registrado"}</li>
+                        </ul>`;
+                    break;
+
+                case 'comunicacion':
+                    dataHtml = `
+                        <ul>
+                            <li><strong>Email:</strong> ${deportista.email || "Dato no registrado"}</li>
+                            <li><strong>Teléfono:</strong> ${deportista.telefonoJugador || "Dato no registrado"}</li>
+                            <li><strong>Telefono de emergencia:</strong> ${deportista.telefonoEmergencia || "Dato no registrado"}</li>
+                            <li><strong>Instagram:</strong> ${deportista.instagram || "Dato no registrado"}</li>
+                            <li><strong>Facebook:</strong> ${deportista.facebook || "Dato no registrado"}</li>
+                        </ul>`;
+                    break;
+            }
+
+            // Mostrar los datos correspondientes en otro modal
+            Swal.fire({
+                title: `Datos de ${capitalize(section)}`,
+                html: dataHtml,
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: "#d33",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    verDetalle(deportista)
+                }
+            });
+        }
+
+        function capitalize(text) {
+            return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
+        function getPagosPorDeportista(id){
+            fetch(`/getPagos/${id}`,{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then((response)=>response.json())
+            .then((data)=>{
+                const contenido = `
+                <h2 style="text-align:center; margin-bottom: 20px;">Pagos de la cuota</h2>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 10px; border-bottom: 2px solid #ccc; text-align:left; background-color: #f4f4f4;">N° de Referencia</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ccc; text-align:left; background-color: #f4f4f4;">Fecha de pago</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ccc; text-align:left; background-color: #f4f4f4;">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.data && data.data.length > 0 ? data.data.map((pago) => `
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">${pago.id}</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">${pago.fecha}</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">$${pago.valor}</td>
+                            </tr>
+                            `).join('')
+                                : `
+                            <tr>
+                                <td colspan="3" style="padding: 10px; text-align: center; color: #999;">Sin pagos registrados</td>
+                            </tr>`}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Muestra el modal con SweetAlert
+            Swal.fire({
+                html: contenido,
+                showConfirmButton: false,
+                showCloseButton: true,
+                showCancelButton: false,
+            });
+            })
+        }
     </script>
 </body>
 
 </html>
+
+

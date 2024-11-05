@@ -103,7 +103,7 @@
                                         <% }); %>
                                             <% } else { %>
                                                 <tr>
-                                                    <td colspan="8" style="text-align: center;">No hay socios
+                                                    <td colspan="8" style="text-align: center;">No hay tipos de socios
                                                         registrados</td>
                                                 </tr>
                                                 <% } %>
@@ -135,6 +135,7 @@
                 showConfirmButton: false,
                 showCloseButton: true,
                 showCancelButton: false,
+                allowOutsideClick: false,
             });
 
             document.querySelector(".formTipoSocio").addEventListener("submit", (e) => {
@@ -191,6 +192,7 @@
                 showConfirmButton: false,
                 showCloseButton: true,
                 showCancelButton: false,
+                allowOutsideClick: false,
             });
 
             document.querySelector(".formTipoSocioEditar").addEventListener("submit", (e) => {

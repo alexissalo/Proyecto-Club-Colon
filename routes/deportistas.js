@@ -38,46 +38,96 @@ router.get(
   deportistasController.mostrarCargaDeportista
 );
 
-router.post("/cargarDeportista",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol([
-    "coordinador_futbol",
-    "coordinador_tenis",
-    "coordinador_voley",
-    "coordinador_basquet",
-    "coordinador_patin",
-  ]),
-  authMiddlewares.verificarAccesoDisciplina("disciplina")
-],
-deportistasController.cargarDeportista
-)
+router.post(
+  "/cargarDeportista/:disciplina",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.cargarDeportista
+);
 
-router.delete("/borrarDeportista/:id",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol([
-    "coordinador_futbol",
-    "coordinador_tenis",
-    "coordinador_voley",
-    "coordinador_basquet",
-    "coordinador_patin",
-  ]),
-  authMiddlewares.verificarAccesoDisciplina("disciplina")
-],
-deportistasController.borrarDeportista
-)
+router.delete(
+  "/borrarDeportista/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+    ]),
+  ],
+  deportistasController.borrarDeportista
+);
 
-router.put("/editarDeportista",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol([
-    "coordinador_futbol",
-    "coordinador_tenis",
-    "coordinador_voley",
-    "coordinador_basquet",
-    "coordinador_patin",
-  ]),
-  authMiddlewares.verificarAccesoDisciplina("disciplina")
-],
-deportistasController.editarDeportista
-)
+router.put(
+  "/editarDeportista/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+    ]),
+  ],
+  deportistasController.editarDeportista
+);
+
+router.post(
+  "/crearPagoDeportista",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+    ]),
+  ],
+  deportistasController.crearPago
+);
+
+router.get(
+  "/dashboard/editardeportista/:disciplina/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.mostrarEdicionDeportista
+);
+
+router.get(
+  "/getPagos/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+    ]),
+  ],
+  deportistasController.traerPagosPorDeportista
+);
 
 module.exports = router;

@@ -83,7 +83,7 @@ function buildPDF(balance, title, dataCallback, endCallback) {
   doc.end();
 }
 
-function generarTicketPago(socio, cuota, dataCallback, endCallback) {
+function generarTicketPagoSocial(socio, cuota, idPago, dataCallback, endCallback) {
   const doc = new PDFDocument({
     margins: { top: 50, left: 50, right: 50, bottom: 50 },
     size: 'A4',
@@ -117,17 +117,76 @@ function generarTicketPago(socio, cuota, dataCallback, endCallback) {
   doc.fontSize(14).text(`Domicilio: ${socio.domicilio}`);
   doc.moveDown(2);
 
+
+  let fechaPago = new Date(cuota.fechaPago);
+  fechaPago.setMinutes(fechaPago.getMinutes() + fechaPago.getTimezoneOffset());
+
   // Información de la cuota
   doc.fontSize(16).text('Detalles del Pago:');
-  doc.fontSize(14).text(`Cuota: $${cuota.monto}`);
-  doc.fontSize(14).text(`Fecha de Pago: ${new Date(cuota.fechaPago).toLocaleDateString()}`);
+  doc.fontSize(14).text(`Cuota: $${cuota.valor}`);
+  doc.fontSize(14).text(`Fecha de Pago: ${fechaPago.toLocaleDateString()}`);
   doc.fontSize(14).text(`Método de Pago: ${cuota.metodoPago}`);
-  doc.fontSize(14).text(`Referencia: ${111}`);
+  doc.fontSize(14).text(`N° de Referencia: ${idPago}`);
 
   doc.moveDown(2);
 
   // Total pagado
-  doc.fontSize(18).text(`Total Pagado: $${cuota.monto}`, { align: 'right' });
+  doc.fontSize(18).text(`Total Pagado: $${cuota.valor}`, { align: 'right' });
+
+  // Pie de página con agradecimiento
+  doc.moveDown(3);
+  doc.fontSize(12).text('Gracias por su pago.', { align: 'center' });
+
+  doc.end();
+}
+
+function generarTicketPagoDeportista(deportista, cuota, idPago, dataCallback, endCallback) {
+  const doc = new PDFDocument({
+    margins: { top: 50, left: 50, right: 50, bottom: 50 },
+    size: 'A4',
+  });
+
+  doc.on('data', dataCallback);
+  doc.on('end', endCallback);
+
+  // Cargar y mostrar la imagen en la esquina superior izquierda
+  const logoPath = path.join(__dirname, '../public/img', 'logo_colon_sin_fondo.png');
+  doc.image(logoPath, 50, 50, { width: 100 }); // Ajusta el ancho de la imagen
+
+  doc.moveDown(2);
+
+  // Fecha actual
+  const hoy = new Date();
+  doc.fontSize(12).text(`Fecha: ${hoy.toLocaleDateString()}`, { align: 'right' });
+
+  doc.moveDown(6);
+
+  // Título del ticket
+  doc.fontSize(20).text('Ticket de Pago', { align: 'center' });
+
+  doc.moveDown(2);
+
+  // Información del socio
+  doc.fontSize(16).text(`Deportista: ${deportista.nombre}`);
+  doc.fontSize(14).text(`Fecha de Nacimiento: ${deportista.fechaNacimiento}`);
+  doc.fontSize(14).text(`Domicilio: ${deportista.domicilio}`);
+  doc.moveDown(2);
+
+
+  let fechaPago = new Date(cuota.fechaPago);
+  fechaPago.setMinutes(fechaPago.getMinutes() + fechaPago.getTimezoneOffset());
+
+  // Información de la cuota
+  doc.fontSize(16).text('Detalles del Pago:');
+  doc.fontSize(14).text(`Cuota: $${cuota.valor}`);
+  doc.fontSize(14).text(`Fecha de Pago: ${fechaPago.toLocaleDateString()}`);
+  doc.fontSize(14).text(`Método de Pago: ${cuota.metodoPago}`);
+  doc.fontSize(14).text(`N° de Referencia: ${idPago}`);
+
+  doc.moveDown(2);
+
+  // Total pagado
+  doc.fontSize(18).text(`Total Pagado: $${cuota.valor}`, { align: 'right' });
 
   // Pie de página con agradecimiento
   doc.moveDown(3);
@@ -137,4 +196,4 @@ function generarTicketPago(socio, cuota, dataCallback, endCallback) {
 }
 
 
-module.exports = { buildPDF, generarTicketPago };
+module.exports = { buildPDF, generarTicketPagoSocial, generarTicketPagoDeportista };

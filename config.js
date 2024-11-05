@@ -9,5 +9,7 @@ module.exports = {
     port: process.env.DB_PORT,
     database: process.env.DATABASE,
   },
-  keysecretsession:process.env.KEY_SECRET_SESSION
+  keysecretsession:process.env.KEY_SECRET_SESSION,
+  keyencriptacion:process.env.KEY_ENCRIPTACION,
+  keyiv:process.env.KEY_IV
 };

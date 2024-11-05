@@ -12,7 +12,10 @@
         </li>
         <% if(rolNombre==="admin_general" || rolNombre==="admin_secretaria") { %>
             <li class="sidebar-list-item" onclick="toggleSubMenu()">
-                <a>Socios</a>
+                <a class="menu-link">
+                    Socios
+                    <i id="arrowIcon" class="bi bi-chevron-right"></i>
+                </a>
                 <ul class="sub-menu" id="subMenu">
                     <li class="sub-menu-item">
                         <a href="/dashboard/socios">
@@ -50,8 +53,9 @@
         <% disciplinas.forEach(function(disciplina) { %>
             <% if (rolNombre === `admin_${disciplina.nombre}` || rolNombre === `coordinador_${disciplina.nombre}`) { %>
                 <li class="sidebar-list-item" onclick="toggleSubMenu()">
-                    <a>
+                    <a class="menu-link">
                         <%= disciplina.nombre %>
+                        <i id="arrowIcon" class="bi bi-chevron-right"></i>
                     </a>
                     <ul class="sub-menu" id="subMenu">
                         <% if(rolNombre===`coordinador_${disciplina.nombre}`) { %>

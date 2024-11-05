@@ -101,21 +101,29 @@ body {
     cursor: pointer;
 }
 
-/* Quitar efecto hover cuando el submenú está activo */
 .sidebar-list-item.active {
-    background-color: #000000; /* Mantiene el color de fondo cuando está activo */
+    background-color: #000000; 
 }
 
 .sidebar-list-item.active:hover {
-    background-color: #000000; /* Evita cambiar el color de fondo al hacer hover */
+    background-color: #000000; 
 }
 
-.sidebar-list-item>a {
+.sidebar-list-item > a {
     text-decoration: none;
     color: #ffffff;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 20px;
     text-transform: capitalize;
+}
+
+.sub-menu-item a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    padding: 20px;
 }
 
 .sidebar-responsive {
@@ -133,6 +141,10 @@ body {
     list-style: circle;
     margin-top: 10px;
     padding: 0;
+}
+
+#arrowIcon {
+    margin-left: auto;
 }
 
 .sub-menu-item {
