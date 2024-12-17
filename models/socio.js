@@ -264,6 +264,67 @@ class SocioModel {
       callback(null)
     }
   }
+
+  async getPagosById(id, callback){
+
+    try {
+      let sql=`SELECT id, id_socio, valor, DATE_FORMAT(fecha, '%d-%m-%Y') AS fecha FROM socios_abonos WHERE id_socio= ?`
+
+      const [result]= await pool.query(sql, [id])
+
+      callback(result)
+    } catch (error) {
+      console.log(error);
+      callback(null)
+    }
+  }
+
+  async getTotalPagosById(id,callback){
+    try {
+      let sql=`SELECT COUNT(*) AS total FROM socios_abonos WHERE id_socio = ?`
+
+      const [result]= await pool.query(sql, [id])
+
+      callback(result[0].total)
+    } catch (error) {
+      console.log(error);
+      callback(null)
+    }
+  }
+
+  async getTotalCuotasById(id_socio, callback) {
+    try {
+      // Consulta SQL para contar el total de cuotas pagadas por el socio
+      const sql = `
+        SELECT COUNT(DISTINCT DATE_FORMAT(fecha, '%Y-%m')) AS totalCuotas
+        FROM socios_abonos
+        WHERE id_socio = ?
+      `;
+      
+      // Ejecutar la consulta
+      const [result] = await pool.query(sql, [id_socio]);
+  
+      // Devolver el resultado a través del callback
+      callback(result[0].totalCuotas);
+    } catch (error) {
+      console.error("Error al obtener el total de cuotas:", error);
+      callback(null);
+    }
+  }
+  
+
+  async getSocioById(id,callback){
+    try {
+      let sql= `SELECT * FROM socios WHERE id= ?`
+
+      const [result]=await pool.query(sql, [id])
+
+      callback(result)
+    } catch (error) {
+      console.log(error);
+      callback(null)
+    }
+  }
 }
 
 // Exportamos la clase SocioModel

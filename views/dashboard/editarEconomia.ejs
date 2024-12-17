@@ -27,6 +27,7 @@
             flex-direction: column;
         }
 
+
         input[type="number"],select, input[type="date"] {
             width: 100%;
             padding: 8px;
@@ -95,21 +96,24 @@
                     </div>
                     <div class="card-economia">
                         <form id="form-movimientos">
-                            <h3>Nuevo movimiento</h3>
+                            <h3>Editar movimiento</h3>
                             <label>Monto</label>
-                            <input type="number" name="monto" id="" min="0" required>
+                            <input type="number" name="monto" id="" min="0" required value="<%= movimiento.valor %>">
                             <label>Documentacion respaldatoria</label>
-                            <input type="file" name="documentacion" id="">
+                            <div>
+                                <input type="file" name="documentacion" id="">
+                                <a href=<%= movimiento.documentacion %> target="_blank">Documento Actual</a>
+                            </div>
                             <label>Descripcion</label>
-                            <textarea name="descripcion" id="" required></textarea>
+                            <textarea name="descripcion" id="" required><%= movimiento.descripcion %></textarea>
                             <label>Tipo de movimiento</label>
-                            <select name="" id="tipoMovimiento" required>
+                            <select name="" id="tipoMovimiento" required value="<%= movimiento.es_ingreso %>">
                                 <option value="1">Ingreso</option>
                                 <option value="0">Egreso</option>
                             </select>
                             <label>Fecha</label>
-                            <input type="date" name="fecha" id="fecha">
-                            <button class="boton" type="submit">Añadir movimiento</button>
+                            <input type="date" name="" id="fecha" value="<%= movimiento.fecha %>" required>
+                            <button class="boton" type="submit">Actualizar movimiento</button>
                         </form>
                     </div>
                 </main>
@@ -121,14 +125,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const disciplinaActual = '<%= disciplina %>';
-
-        const fechaActual = new Date();
-        const anio = fechaActual.getFullYear();
-        const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Los meses en JavaScript empiezan desde 0
-        const dia = fechaActual.getDate().toString().padStart(2, '0');
-        const fechaFormateada = `${anio}-${mes}-${dia}`;
-
-        document.querySelector("#form-movimientos #fecha").value=fechaFormateada
+        const movimientoId= "<%= idMovimiento%>"
 
         document.querySelector("#form-movimientos").addEventListener("submit",async (e)=>{
             e.preventDefault()
@@ -143,12 +140,12 @@
             fd.append("monto",inputMonto.value)
             fd.append("documentacion",inputDocumentacion.files[0])
             fd.append("descripcion",inputDescripcion.value)
-            fd.append("disciplina",disciplinaActual)
             fd.append("es_ingreso",tipoMovimiento)
             fd.append("fecha",inputFecha)
 
-            const ajax=await fetch(`/nuevoMovimiento/${disciplinaActual}`,{
-                method:"POST",
+
+            const ajax=await fetch(`/editarMovimiento/${disciplinaActual}/${movimientoId}`,{
+                method:"PUT",
                 body:fd,
             })
 
@@ -157,20 +154,20 @@
             {
                 Swal.fire({
                 icon: 'success',
-                title: 'Movimiento creado',
+                title: 'Movimiento actualizado',
                 text: result.message,
                 showConfirmButton: false,
                 timer: 2000,
                 timerProgressBar: true,
                 didClose: () => {
-                    window.location.reload();
+                    window.location.href=`/dashboard/movimientos/${disciplinaActual}`;
                 }
             });
             }
             else {
                 Swal.fire({
                 icon: 'error',
-                title: 'Error al crear el movimiento',
+                title: 'Error al actualizar el movimiento',
                 text: result.message,
                 showConfirmButton: false,
                 timer: 2000,

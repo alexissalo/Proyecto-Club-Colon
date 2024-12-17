@@ -468,6 +468,12 @@ td .bi-three-dots-vertical:hover {
     cursor: pointer;
 }
 
+.container-tablas-pagos{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
 
 /* ---------- MEDIA QUERIES ---------- */
 
@@ -516,6 +522,10 @@ td .bi-three-dots-vertical:hover {
     .charts {
         grid-template-columns: 1fr;
         margin-top: 30px;
+    }
+
+    .container-tablas-pagos{
+        grid-template-columns: 1fr;
     }
 }
 

@@ -4,6 +4,7 @@ const socioModel = new modelSocio();
 const modelDisciplina = require("../models/disciplina");
 const disciplinaModel = new modelDisciplina();
 const { generarTicketPago } = require("../middlewares/generarPdf");
+const moment=require("moment")
 
 // Creamos la clase SocioController
 class SocioController {
@@ -105,18 +106,24 @@ class SocioController {
       deporte,
       tipodesocio,
       (socioData) => {
-        if (socioData==null) {
-          return res.status(500).json({message:"Error del servidor al crear el socio",ok:false});
+        if (socioData == null) {
+          return res
+            .status(500)
+            .json({
+              message: "Error del servidor al crear el socio",
+              ok: false,
+            });
         }
 
-        res.status(200).json({message:"Socio creado con exito", ok:true})
+        res.status(200).json({ message: "Socio creado con exito", ok: true });
       }
     );
   }
 
   actualizarSocio(req, res) {
     const { id } = req.params;
-    const { nombre, telefono, domicilio, tipodesocio,deporte,email } = req.body;
+    const { nombre, telefono, domicilio, tipodesocio, deporte, email } =
+      req.body;
 
     if (!nombre || !telefono || !domicilio) {
       return res.status(500).json({
@@ -134,12 +141,21 @@ class SocioController {
       tipodesocio,
       deporte,
       (socioData) => {
-        if (socioData==null) {
+        if (socioData == null) {
           return res
             .status(500)
-            .json({message:"Error del servidor al actualizar los datos de los socios", ok:false});
+            .json({
+              message:
+                "Error del servidor al actualizar los datos de los socios",
+              ok: false,
+            });
         }
-        res.status(200).json({message:"Los datos del socio fueron actualizados con exito", ok:true});
+        res
+          .status(200)
+          .json({
+            message: "Los datos del socio fueron actualizados con exito",
+            ok: true,
+          });
       }
     );
   }
@@ -148,16 +164,21 @@ class SocioController {
     const { id } = req.params;
 
     socioModel.deleteSocio(id, (socioData) => {
-      if (socioData==null) {
-        return res.status(500).json({message:"Error del servidor al borrar el socio",ok:false});
+      if (socioData == null) {
+        return res
+          .status(500)
+          .json({
+            message: "Error del servidor al borrar el socio",
+            ok: false,
+          });
       }
 
-      res.status(200).json({message:"Socio borrado con exito",ok:true});
+      res.status(200).json({ message: "Socio borrado con exito", ok: true });
     });
   }
 
-  crearPago(req,res){
-    const {id_socio,valor,fechaPago}=req.body
+  crearPago(req, res) {
+    const { id_socio, valor, fechaPago } = req.body;
 
     if (!id_socio || !valor || !fechaPago) {
       return res.status(500).json({
@@ -166,64 +187,161 @@ class SocioController {
       });
     }
 
-    socioModel.insertPago(id_socio,valor,fechaPago,(socioData)=>{
-      if (socioData==null) {
-        return res.status(500).json({message:"Error del servidor al crear el pago", ok:false})
+    socioModel.insertPago(id_socio, valor, fechaPago, (socioData) => {
+      if (socioData == null) {
+        return res
+          .status(500)
+          .json({ message: "Error del servidor al crear el pago", ok: false });
       }
 
-      res.status(200).json({message:"Pago creado con exito", ok: true, idPago:socioData.insertId})
-    })
-  }
-
-  crearTipoDeSocio(req,res){
-    const {nombre,valordecuota}=req.body;
-
-    if (!nombre || !valordecuota) {
-        return res.status(500).json({
-          message: "Falta completar campos obligatorios",
-          ok: false,
+      res
+        .status(200)
+        .json({
+          message: "Pago creado con exito",
+          ok: true,
+          idPago: socioData.insertId,
         });
-    }
-
-    socioModel.insertTipoDeSocio(nombre,valordecuota,(tiposDeSocioData)=>{
-      if (tiposDeSocioData==null) {
-        return res.status(500).json({message:"Error del servidor al crear el tipo de socio", ok:false})
-      }
-
-      res.status(200).json({message:"Tipo de socio creado con exito",ok:true})
-    })
+    });
   }
 
-  editarTipoDeSocio(req,res){
-    const {id}=req.params;
-    const {nombre,valordecuota}=req.body;
+  mostrarPagosSocio = (req, res) => {
+    const id_socio = req.params.id;
+
+    disciplinaModel.listarDisciplinas((disciplinaData) => {
+      // 1. Obtener información del socio
+      socioModel.getSocioById(id_socio, (socioResult) => {
+        if (socioResult == null)
+          return res.status(500).send("Error en el servidor");
+        if (socioResult.length === 0)
+          return res.status(404).send("Socio no encontrado");
+
+        const socio = socioResult[0];
+        const fechaInscripcion = moment(socio.fechaInscripcion);
+
+        // 2. Obtener pagos realizados por el socio
+        socioModel.getPagosById(id_socio, (pagosResult) => {
+          if (pagosResult == null)
+            return res.status(500).send("Error en el servidor");
+
+          const pagos = pagosResult;
+          const cuotas = [];
+          const cuotasPagadas = pagos.map((pago) =>
+            moment(pago.fecha, "DD-MM-YYYY").format("YYYY-MM")
+          );
+
+          // 3. Calcular cuotas mensuales desde la fecha de inscripción hasta hoy
+          let fechaActual = moment();
+          let fechaIterativa = moment(fechaInscripcion);
+
+          while (
+            fechaIterativa.isBefore(fechaActual, "month") ||
+            fechaIterativa.isSame(fechaActual, "month")
+          ) {
+            const mes = fechaIterativa.format("YYYY-MM");
+            const pagado = cuotasPagadas.includes(mes);
+
+            cuotas.push({
+              mes,
+              estado: pagado ? "Pagado" : "Pendiente",
+            });
+
+            // Avanzar al siguiente mes
+            fechaIterativa.add(1, "month");
+          }
+
+          // Obtenemos el rol del usuario
+        const rolId = req.rolId;
+        const rolNombre = req.rolNombre;
+
+          // 4. Renderizar vista con datos
+          res.render("dashboard/pagosSocios", {
+            disciplinas:disciplinaData,
+            rolId: rolId,
+            rolNombre: rolNombre,
+            socio,
+            pagos,
+            cuotas,
+          });
+        });
+      });
+    });
+  };
+
+  crearTipoDeSocio(req, res) {
+    const { nombre, valordecuota } = req.body;
 
     if (!nombre || !valordecuota) {
       return res.status(500).json({
         message: "Falta completar campos obligatorios",
         ok: false,
       });
-  }
+    }
 
-    socioModel.updateTipoDeSocio(id,nombre,valordecuota,(tiposDeSocioData)=>{
-      if (tiposDeSocioData==null) {
-        return res.status(500).json({message:"Error del servidor al actualizar el tipo de socio", ok:false})
+    socioModel.insertTipoDeSocio(nombre, valordecuota, (tiposDeSocioData) => {
+      if (tiposDeSocioData == null) {
+        return res
+          .status(500)
+          .json({
+            message: "Error del servidor al crear el tipo de socio",
+            ok: false,
+          });
       }
 
-      res.status(200).json({message:"Tipo de socio actualizado con exito",ok:true})
-    })
+      res
+        .status(200)
+        .json({ message: "Tipo de socio creado con exito", ok: true });
+    });
   }
 
-  borrarTipoDeSocio(req,res){
-    const {id}=req.params;
+  editarTipoDeSocio(req, res) {
+    const { id } = req.params;
+    const { nombre, valordecuota } = req.body;
 
-    socioModel.deleteTipoDeSocio(id,(tiposDeSocioData)=>{
-      if (tiposDeSocioData==null) {
-        return res.status(500).json({message:"Error del servidor al borrar el tipo de socio", ok:false})
+    if (!nombre || !valordecuota) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
+
+    socioModel.updateTipoDeSocio(
+      id,
+      nombre,
+      valordecuota,
+      (tiposDeSocioData) => {
+        if (tiposDeSocioData == null) {
+          return res
+            .status(500)
+            .json({
+              message: "Error del servidor al actualizar el tipo de socio",
+              ok: false,
+            });
+        }
+
+        res
+          .status(200)
+          .json({ message: "Tipo de socio actualizado con exito", ok: true });
+      }
+    );
+  }
+
+  borrarTipoDeSocio(req, res) {
+    const { id } = req.params;
+
+    socioModel.deleteTipoDeSocio(id, (tiposDeSocioData) => {
+      if (tiposDeSocioData == null) {
+        return res
+          .status(500)
+          .json({
+            message: "Error del servidor al borrar el tipo de socio",
+            ok: false,
+          });
       }
 
-      res.status(200).json({message:"Tipo de socio borrado con exito",ok:true})
-    })
+      res
+        .status(200)
+        .json({ message: "Tipo de socio borrado con exito", ok: true });
+    });
   }
 }
 

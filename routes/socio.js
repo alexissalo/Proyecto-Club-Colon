@@ -23,6 +23,15 @@ router.get(
 );
 
 router.get(
+  "/dashboard/socios/pagos/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+  ],
+  socioController.mostrarPagosSocio
+);
+
+router.get(
   "/dashboard/tiposdesocios",
   [
     authMiddlewares.verificarSesion,

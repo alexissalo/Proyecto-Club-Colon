@@ -154,7 +154,7 @@
                                             </td>
                                             <td>
                                                 <i class="bi bi-clipboard" title="Ver Pagos"
-                                                    onclick="verDetalle(<%= JSON.stringify(socio) %>)"></i>
+                                                    onclick="window.location.href=`/dashboard/socios/pagos/<%= socio.id%>`"></i>
                                                 <i class="bi bi-cash" title="Pagos"
                                                     onclick="crearPago(<%= JSON.stringify(socio) %>)"></i>
                                                 <i class="bi bi-pencil-fill" title="Editar"

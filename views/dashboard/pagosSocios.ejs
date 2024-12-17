@@ -1,0 +1,109 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        .inicio-graficos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .grafico {
+            background-color: white;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
+    <title>Inicio</title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId,rolNombre:rolNombre, disciplinas:disciplinas }) %>
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>Pagos del Socio: <%= socio.nombre %> (DNI: <%= socio.dni %>)</h2>
+                    </div>
+
+                    <div class="container-tablas-pagos">
+                        <!-- Tabla de pagos realizados -->
+                        <div>
+                            <div class="container-tablas">
+                                <h3>Pagos Realizados</h3>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nro de referencia</th>
+                                            <th>Fecha</th>
+                                            <th>Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (pagos.length> 0) { %>
+                                            <% pagos.forEach(pago=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= pago.id%>
+                                                    </td>
+                                                    <td>
+                                                        <%= pago.fecha %>
+                                                    </td>
+                                                    <td>
+                                                        <%= pago.valor %>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <tr>
+                                                            <td colspan="2">No hay pagos registrados</td>
+                                                        </tr>
+                                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                        <div>
+                            <div class="container-tablas">
+                                <!-- Tabla de cuotas (pagadas y pendientes) -->
+                                <h3>Resumen de Cuotas</h3>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Mes</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% cuotas.forEach(cuota=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= cuota.mes %>
+                                                </td>
+                                                <td style="color: <%= cuota.estado === 'Pagado' ? 'green' : 'red' %>">
+                                                    <%= cuota.estado %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+                <!-- End Main -->
+
+    </div>
+    <script src="/public/js/interacciones.js"></script>
+</body>
+
+</html>
