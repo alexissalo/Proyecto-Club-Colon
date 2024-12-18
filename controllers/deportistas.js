@@ -4,6 +4,7 @@ const disciplinaModel = new modelDisciplina();
 const modelDeportista = require("../models/deportistas");
 const deportistaModel = new modelDeportista();
 const { encrypt, decrypt } = require("../middlewares/encriptacion");
+const moment=require("moment")
 
 // Definimos la clase DeportistasController
 class DeportistasController {
@@ -124,33 +125,31 @@ class DeportistasController {
             .send("Error al obtener los datos de los socios");
         }
 
-        deportistaData = 
-          {
-            ...deportistaData,
-            domicilio: decrypt(deportistaData.domicilio),
-            localidad: decrypt(deportistaData.localidad),
-            escolaridad: decrypt(deportistaData.escolaridad),
-            email: decrypt(deportistaData.email),
-            instagram: decrypt(deportistaData.instagram),
-            facebook: decrypt(deportistaData.facebook),
-            telefonoJugador: decrypt(deportistaData.telefonoJugador),
-            telefonoEmergencia: decrypt(deportistaData.telefonoEmergencia),
-            tutorNombre: decrypt(deportistaData.tutorNombre),
-            domicilioTutor: decrypt(deportistaData.domicilioTutor),
-            localidadTutor:decrypt(deportistaData.localidadTutor),
-            telefonoTutor: decrypt(deportistaData.telefonoJugador),
-            telefonoFijoTutor: decrypt(deportistaData.telefonoFijoTutor),
-            facebookTutor: decrypt(deportistaData.facebookTutor),
-            instagramTutor: decrypt(deportistaData.instagramTutor),
-            emailResponsable: decrypt(deportistaData.emailResponsable),
-            coberturaMedica: decrypt(deportistaData.coberturaMedica),
-            numeroAfiliado: decrypt(deportistaData.numeroAfiliado),
-            lesiones: decrypt(deportistaData.lesiones),
-            alergias: decrypt(deportistaData.alergias),
-            patologias: decrypt(deportistaData.patologias),
-            tratamientos: decrypt(deportistaData.tratamientos),
-          };
-
+        deportistaData = {
+          ...deportistaData,
+          domicilio: decrypt(deportistaData.domicilio),
+          localidad: decrypt(deportistaData.localidad),
+          escolaridad: decrypt(deportistaData.escolaridad),
+          email: decrypt(deportistaData.email),
+          instagram: decrypt(deportistaData.instagram),
+          facebook: decrypt(deportistaData.facebook),
+          telefonoJugador: decrypt(deportistaData.telefonoJugador),
+          telefonoEmergencia: decrypt(deportistaData.telefonoEmergencia),
+          tutorNombre: decrypt(deportistaData.tutorNombre),
+          domicilioTutor: decrypt(deportistaData.domicilioTutor),
+          localidadTutor: decrypt(deportistaData.localidadTutor),
+          telefonoTutor: decrypt(deportistaData.telefonoJugador),
+          telefonoFijoTutor: decrypt(deportistaData.telefonoFijoTutor),
+          facebookTutor: decrypt(deportistaData.facebookTutor),
+          instagramTutor: decrypt(deportistaData.instagramTutor),
+          emailResponsable: decrypt(deportistaData.emailResponsable),
+          coberturaMedica: decrypt(deportistaData.coberturaMedica),
+          numeroAfiliado: decrypt(deportistaData.numeroAfiliado),
+          lesiones: decrypt(deportistaData.lesiones),
+          alergias: decrypt(deportistaData.alergias),
+          patologias: decrypt(deportistaData.patologias),
+          tratamientos: decrypt(deportistaData.tratamientos),
+        };
 
         // Obtenemos el rol ID y nombre del request
         const rolId = req.rolId;
@@ -349,6 +348,151 @@ class DeportistasController {
       });
     });
   }
+
+  mostrarPagosDeportista = (req, res) => {
+    const id_deportista = req.params.id;
+    const { disciplina} = req.params;
+  
+    disciplinaModel.listarDisciplinas((disciplinaData) => {
+      // 1. Obtener información del deportista
+      deportistaModel.getDeportistaById(id_deportista, (deportistaResult) => {
+        if (deportistaResult == null)
+          return res.status(500).send("Error en el servidor");
+        if (deportistaResult.length === 0)
+          return res.status(404).send("Deportista no encontrado");
+  
+        const deportista = deportistaResult;
+  
+        // 2. Obtener pagos realizados por el deportista
+        deportistaModel.getPagosPorDeportista(id_deportista, (pagosResult) => {
+          if (pagosResult == null)
+            return res.status(500).send("Error en el servidor");
+  
+          const pagos = pagosResult;
+  
+          // Determinar la fecha del primer pago o usar la fecha actual si no hay pagos
+          const fechaPrimerPago = pagos.length > 0
+            ? moment(pagos[0].fecha, "DD-MM-YYYY") // Tomar la fecha del primer pago
+            : moment(); // Usar la fecha actual si no hay pagos
+  
+          const cuotas = [];
+          const cuotasPagadas = pagos.map((pago) =>
+            moment(pago.fecha, "DD-MM-YYYY").format("YYYY-MM")
+          );
+  
+          // 3. Calcular cuotas mensuales desde la fecha del primer pago hasta hoy
+          let fechaActual = moment();
+          let fechaIterativa = moment(fechaPrimerPago);
+  
+          while (
+            fechaIterativa.isBefore(fechaActual, "month") ||
+            fechaIterativa.isSame(fechaActual, "month")
+          ) {
+            const mes = fechaIterativa.format("YYYY-MM");
+            const pagado = cuotasPagadas.includes(mes);
+  
+            cuotas.push({
+              mes,
+              estado: pagado ? "Pagado" : "Pendiente",
+            });
+  
+            // Avanzar al siguiente mes
+            fechaIterativa.add(1, "month");
+          }
+  
+          // Obtenemos el rol del usuario
+          const rolId = req.rolId;
+          const rolNombre = req.rolNombre;
+  
+          // 4. Renderizar vista con datos
+          res.render("dashboard/pagosDeportistas", {
+            disciplinas: disciplinaData,
+            disciplina:disciplina,
+            rolId: rolId,
+            rolNombre: rolNombre,
+            deportista,
+            pagos,
+            cuotas,
+          });
+        });
+      });
+    });
+  };
+
+  listarDeudoresMesDeportistas = (req, res) => {
+    const { fecha, disciplina } = req.params; // Mes y año recibido en formato YYYY-MM
+  
+    disciplinaModel.listarDisciplinas((disciplinaData) => {
+      deportistaModel.listarDeportistasParaDeuda(disciplina,(deportistasResult) => {
+        if (deportistasResult == null)
+          return res.status(500).send("Error en el servidor");
+        if (deportistasResult.length === 0)
+          return res.status(404).send("No hay deportistas registrados");
+  
+        // Lista de todos los deportistas
+        const deportistas = deportistasResult.map((deportista) => {
+          return {
+            ...deportista,
+            direccion: deportista.direccion ? decrypt(deportista.direccion) : "",
+            localidad: deportista.localidad ? decrypt(deportista.localidad): "",
+            email: deportista.email ? decrypt(deportista.email): "",
+            telefonoJugador: deportista.telefonoJugador ? decrypt(deportista.telefonoJugador): "",
+            telefonoEmergencia: deportista.telefonoEmergencia ? decrypt(deportista.telefonoEmergencia): "",
+          };
+        });;
+  
+        // Obtener la lista de pagos del mes
+        deportistaModel.getPagosDelMes(fecha, (pagosResult) => {
+          if (pagosResult == null)
+            return res.status(500).send("Error en el servidor");
+  
+          // Obtener IDs de deportistas que ya pagaron este mes
+          const idsPagados = pagosResult.map((pago) => pago.id_deportista);
+  
+          // Filtrar deportistas que no han pagado este mes y cuya fecha del primer pago sea anterior al mes solicitado
+          deportistaModel.getPrimerPagoDeportistas((primerPagoResult) => {
+            if (primerPagoResult == null)
+              return res.status(500).send("Error en el servidor");
+  
+            // Crear un mapa de deportista -> fecha del primer pago
+            const primerPagoMap = primerPagoResult.reduce((map, pago) => {
+              map[pago.id_deportista] = moment(pago.fecha, "YYYY-MM-DD");
+              return map;
+            }, {});
+  
+            // Filtrar deudores
+            const deudores = deportistas.filter((deportista) => {
+              const fechaPrimerPago = primerPagoMap[deportista.id];
+              const mesConsulta = moment(fecha, "YYYY-MM");
+  
+              // Verificar que la fecha del primer pago sea antes o igual al mes consultado
+              return (
+                fechaPrimerPago &&
+                fechaPrimerPago.isSameOrBefore(mesConsulta, "month") &&
+                !idsPagados.includes(deportista.id)
+              );
+            });
+  
+            // Obtenemos el rol del usuario
+            const rolId = req.rolId;
+            const rolNombre = req.rolNombre;
+  
+            // Renderizar la vista de deudores
+            res.render("dashboard/listaDeportistasDeudores", {
+              rolId: rolId,
+              rolNombre: rolNombre,
+              disciplinas: disciplinaData,
+              deudores,
+              fecha,
+              disciplina:disciplina
+            });
+          });
+        });
+      });
+    });
+  };
+  
+  
 }
 
 // Exportamos la clase DeportistasController

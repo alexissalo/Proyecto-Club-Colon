@@ -1,0 +1,127 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        .boton-imprimir {
+            background-color: #2889dd;
+            color: white;
+            font-weight: 500;
+            border: none;
+            margin: 10px 10px 10px 0px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .boton-imprimir:hover {
+            background-color: #2772b3;
+        }
+    </style>
+    <title>Deudores</title>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId,rolNombre:rolNombre, disciplinas:disciplinas }) %>
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>Lista de deudores</h2>
+                    </div>
+
+                    <div class="container-tablas">
+                        <div style="display: flex; justify-content: space-between;">
+                            <h3>Lista de Deportistas Deudores - <%= fecha %>
+                            </h3>
+                            <button class="boton-imprimir" id="boton-imprimir"><i class="bi bi-printer-fill"></i> Imprimir</button>
+                        </div>
+                        </h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Domicilio</th>
+                                    <th>Localidad</th>
+                                    <th>Telefono</th>
+                                    <th>Telefono de emergencia</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (deudores.length>0) { %>
+                                    <% deudores.forEach(deudor=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= deudor.nombre %>
+                                            </td>
+                                            <td>
+                                                <%= deudor.direccion %>
+                                            </td>
+                                            <td>
+                                                <%= deudor.localidad %>
+                                            </td>
+                                            <td>
+                                                <%= deudor.telefono %>
+                                            </td>
+                                            <td>
+                                                <%= deudor.telefonoEmergencia %>
+                                            </td>
+                                            <td>
+                                                <%= deudor.email %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                <% }else{ %>
+                                    <tr>
+                                        <td colspan="8" style="text-align: center;">No se encuentran deudores</td>
+                                    </tr>
+                                    <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+    </div>
+
+    </main>
+    <!-- End Main -->
+
+    </div>
+    <script src="/public/js/interacciones.js"></script>
+    <script>
+        // Serializar la lista de deudores como JSON para su uso en JavaScript
+        const deudoresMes = <%- JSON.stringify(deudores) %>;
+        const disciplinaActual = "<%= disciplina %>";
+      
+        document.getElementById('boton-imprimir').addEventListener('click', async () => {
+          try {
+            const response = await fetch(`/imprimirDeudoresMes/${disciplinaActual}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ fecha: "<%= fecha %>", deudores: deudoresMes }),
+            });
+      
+            if (!response.ok) {
+              alert('Error al generar el PDF');
+              return;
+            }
+      
+            // Crear un blob del PDF y abrirlo en una nueva pestaña
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+          } catch (error) {
+            console.error('Error al generar el PDF:', error);
+            alert('Error inesperado');
+          }
+        });
+      </script>
+</body>
+
+</html>

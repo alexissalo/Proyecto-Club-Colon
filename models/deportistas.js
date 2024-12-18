@@ -68,9 +68,6 @@ class DeportistaModel {
       // Ejecutamos la consulta utilizando el pool de conexiones
       const [result] = await pool.query(sql, params);
 
-      console.log(result);
-      
-
       // Pasamos el resultado a la función callback
       callback(result);
     } catch (error) {
@@ -434,6 +431,64 @@ class DeportistaModel {
       callback(null)
     }
   }
+
+  async listarDeportistasParaDeuda(disciplina,callback) {
+    try {
+      const sql = `
+        SELECT 
+          dp.id AS id,
+          dp.nombre AS nombre,
+          dp.domicilio AS direccion,
+          dp.localidad,
+          cd.email AS email,
+          cd.telefonoJugador AS telefonoJugador,
+          cd.telefonoEmergencia AS telefonoEmergencia,
+          d.nombre AS disciplina
+        FROM datospersonalesdeportista dp
+        LEFT JOIN comunicaciondeportista cd ON dp.id = cd.deportistaId
+        JOIN disciplinas d ON dp.id_disciplina = d.id
+        WHERE d.nombre = ?
+      `;
+      const [result] = await pool.query(sql,[disciplina]);
+      
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+  
+
+  async getPagosDelMes(fecha, callback) {
+    try {
+      const sql = `
+        SELECT id_deportista, valor, DATE_FORMAT(fecha, '%Y-%m') AS mesPago 
+        FROM deportistas_abonos 
+        WHERE DATE_FORMAT(fecha, '%Y-%m') = ?
+      `;
+      const [result] = await pool.query(sql, [fecha]);
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+
+  async getPrimerPagoDeportistas(callback) {
+    try {
+      const sql = `
+        SELECT id_deportista, MIN(fecha) AS fecha
+        FROM deportistas_abonos
+        GROUP BY id_deportista
+      `;
+      const [result] = await pool.query(sql);
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+  
 }
 
 // Exportamos la clase DisciplinaModel

@@ -47,6 +47,21 @@
         .formDeportistaPago button:active {
             background-color: #3e8e41;
         }
+
+        .botonlistadodeudores {
+            background-color: #2889dd;
+            color: white;
+            font-weight: 500;
+            border: none;
+            margin: 10px 10px 10px 0px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .botonlistadodeudores:hover {
+            background-color: #2772b3;
+        }
     </style>
     <title>Deportistas de <%= disciplina %></title>
 </head>
@@ -121,7 +136,7 @@
                                             <td style="text-align: center;">
                                                 <i class="bi bi-eye-fill" title="Ver detalles"
                                                     onclick="verDetalle(<%= JSON.stringify(deportista) %>)"></i>
-                                                <i class="bi bi-clipboard" onclick="getPagosPorDeportista(<%= deportista.id%>)" title="Ver Pagos"></i>
+                                                <i class="bi bi-clipboard" onclick="window.location.href=`/dashboard/deportistas/<%= disciplina %>/pagos/<%= deportista.id %>`" title="Ver Pagos"></i>
                                                 <i class="bi bi-cash" title="Crear pagos"
                                                     onclick="crearPago(<%= JSON.stringify(deportista) %>)">
                                                 </i>
@@ -165,7 +180,9 @@
                                     <i class="bi bi-chevron-right"></i>
                                 </button>
                             </div>
-                        </div>
+                        </div><button onclick="modalListaDeudores()" class="botonlistadodeudores">Listado
+                            de deudores</button>
+
                     </div>
                 </main>
                 <!-- End Main -->
@@ -174,6 +191,7 @@
     <script src="/public/js/interacciones.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const disciplinaActual = "<%= disciplina %>";
 
         function navigatePage(direction) {
             const paginaActual = <%= pagina %>;
@@ -500,6 +518,34 @@
                 showCancelButton: false,
             });
             })
+        }
+
+
+        function modalListaDeudores() {
+
+            Swal.fire({
+            title: 'Seleccionar Mes y Año',
+            html: `
+                <input type="month" id="mesDeuda" class="swal2-input" required>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: "#4CAF50",
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const mes = document.getElementById('mesDeuda').value;
+                if (!mes) {
+                Swal.showValidationMessage('Por favor selecciona un mes');
+                }
+                return mes;
+            }
+            }).then((result) => {
+            if (result.isConfirmed) {
+                const mesSeleccionado = result.value;
+                window.location.href = `/dashboard/deportistas/${disciplinaActual}/pagos/listadeudores/${mesSeleccionado}`;
+            }
+            });
+
         }
     </script>
 </body>

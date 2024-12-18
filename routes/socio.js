@@ -10,7 +10,12 @@ const authMiddlewares = new middlewaresAuth();
 const controllerSocio = require("../controllers/socio");
 const socioController = new controllerSocio();
 
-const { generarTicketPagoSocial, generarTicketPagoDeportista } = require('../middlewares/generarPdf');
+const {
+  generarTicketPagoSocial,
+  generarTicketPagoDeportista,
+  imprimirDeudoresMesDeportistas,
+  imprimirDeudoresMesSocios,
+} = require("../middlewares/generarPdf");
 
 // Ruta para listar socios (requiere sesión y rol "admin_general" o "admin_secretaria")
 router.get(
@@ -32,6 +37,24 @@ router.get(
 );
 
 router.get(
+  "/dashboard/socios/pagos/listadeudores/:fecha",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+  ],
+  socioController.listarDeudoresMes
+);
+
+router.post(
+  "/imprimirDeudoresMes",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+  ],
+  imprimirDeudoresMesSocios
+);
+
+router.get(
   "/dashboard/tiposdesocios",
   [
     authMiddlewares.verificarSesion,
@@ -40,70 +63,95 @@ router.get(
   socioController.listarTiposDeSocios
 );
 
-router.post("/crearSocio",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_secretaria","admin_general"])
-],
-socioController.crearSocio
-)
-
+router.post(
+  "/crearSocio",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_secretaria", "admin_general"]),
+  ],
+  socioController.crearSocio
+);
 
 //Ruta para actualizar informacion del socio(requiere sesion y rol "admin_secretaria")
-router.put("/actualizarSocio/:id",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_secretaria","admin_general"])
-],
-socioController.actualizarSocio
-)
+router.put(
+  "/actualizarSocio/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_secretaria", "admin_general"]),
+  ],
+  socioController.actualizarSocio
+);
 
 //Ruta para borrar el socio(requiere sesion y rol "admin_secretaria")
-router.delete("/borrarSocio/:id",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_secretaria", "admin_general"])
-],
-socioController.borrarSocio
-)
+router.delete(
+  "/borrarSocio/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_secretaria", "admin_general"]),
+  ],
+  socioController.borrarSocio
+);
 
-router.post("/crearPago",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_secretaria", "admin_general"])
-],
-socioController.crearPago
-)
+router.post(
+  "/crearPago",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_secretaria", "admin_general"]),
+  ],
+  socioController.crearPago
+);
 
-router.post("/crearTipoSocio",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_general"])
-],
-socioController.crearTipoDeSocio
-)
+router.post(
+  "/crearTipoSocio",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general"]),
+  ],
+  socioController.crearTipoDeSocio
+);
 
-router.put("/editarTipoSocio/:id",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_general"])
-],
-socioController.editarTipoDeSocio
-)
+router.put(
+  "/editarTipoSocio/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general"]),
+  ],
+  socioController.editarTipoDeSocio
+);
 
-router.delete("/borrarTipoSocio/:id",[
-  authMiddlewares.verificarSesion,
-  authMiddlewares.verificarRol(["admin_general"])
-],
-socioController.borrarTipoDeSocio
-)
+router.delete(
+  "/borrarTipoSocio/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general"]),
+  ],
+  socioController.borrarTipoDeSocio
+);
 
-router.post('/descargarTicket/:id', (req, res) => {
-  const {socio,infoPago, idPago}=req.body;
+router.post("/descargarTicket/:id", (req, res) => {
+  const { socio, infoPago, idPago } = req.body;
 
   // Generar el ticket de pago
-  generarTicketPagoSocial(socio, infoPago, idPago, (chunk) => res.write(chunk), () => res.end());
+  generarTicketPagoSocial(
+    socio,
+    infoPago,
+    idPago,
+    (chunk) => res.write(chunk),
+    () => res.end()
+  );
 });
 
-router.post('/descargarTicketDeportista/:id', (req, res) => {
-  const {deportista,infoPago, idPago}=req.body;
+router.post("/descargarTicketDeportista/:id", (req, res) => {
+  const { deportista, infoPago, idPago } = req.body;
 
   // Generar el ticket de pago
-  generarTicketPagoDeportista(deportista, infoPago, idPago, (chunk) => res.write(chunk), () => res.end());
+  generarTicketPagoDeportista(
+    deportista,
+    infoPago,
+    idPago,
+    (chunk) => res.write(chunk),
+    () => res.end()
+  );
 });
 
 // Exportamos el router

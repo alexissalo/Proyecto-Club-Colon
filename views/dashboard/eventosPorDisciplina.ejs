@@ -148,9 +148,10 @@
                             <input type="date" id="end" value=${info.dateStr} name="end">
 
                             <label for="description">Descripción:</label>
-                            <textarea id="description" name="description"></textarea>
+                            <textarea id="description" name="description" required></textarea>
 
                             <button>Guardar Evento</button>
+                            <div class="error-message"></div>
                         </form>
                     `,
                     showCloseButton: true,
@@ -197,7 +198,8 @@
                                 Swal.fire({
                                     title: "Borrado!",
                                     text: "Tu evento ha sido borrado.",
-                                    icon: "success"
+                                    icon: "success",
+                                    confirmButtonColor: "#4CAF50",
                                 }).then((response) => {
                                     if (result.isConfirmed) {
                                         window.location.reload()
@@ -219,6 +221,7 @@
                 const fechaInicio = document.getElementById("start").value;
                 const fechaFin = document.getElementById("end").value;
                 const descripcion = document.getElementById("description").value;
+                const errorMessage= document.querySelector(".error-message")
 
                 let eventEnd = fechaFin;
 
@@ -244,11 +247,21 @@
                     },
                     body: JSON.stringify(eventData)
                 })
+                    .then((res)=>res.json())
                     .then((response) => {
                         if (response.ok) {
-                            window.location.reload();
+                            Swal.fire({
+                                title: "Evento creado!",
+                                text: response.message,
+                                icon: "success",
+                                confirmButtonColor: "#4CAF50",
+                            }).then((response) => {
+                                if (response.isConfirmed) {
+                                    window.location.reload()
+                                }
+                            })
                         } else {
-                            console.error('Response error:', response.status, response.statusText);
+                            errorMessage.textContent=response.message
                         }
                     })
                     .catch(error => console.error('Error:', error));

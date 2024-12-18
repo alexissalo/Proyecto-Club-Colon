@@ -6,6 +6,10 @@ const authMiddlewares = new middlewaresAuth();
 const controllerDeportista = require("../controllers/deportistas");
 const deportistasController = new controllerDeportista();
 
+const {
+  imprimirDeudoresMesDeportistas,
+} = require("../middlewares/generarPdf");
+
 router.get(
   "/dashboard/deportistas/:disciplina",
   [
@@ -16,6 +20,11 @@ router.get(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
     authMiddlewares.verificarAccesoDisciplina("disciplina"),
   ],
@@ -32,10 +41,78 @@ router.get(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
     authMiddlewares.verificarAccesoDisciplina("disciplina"),
   ],
   deportistasController.mostrarCargaDeportista
+);
+
+router.get(
+  "/dashboard/deportistas/:disciplina/pagos/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.mostrarPagosDeportista
+);
+
+router.get(
+  "/dashboard/deportistas/:disciplina/pagos/listadeudores/:fecha",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.listarDeudoresMesDeportistas
+);
+
+router.post(
+  "/imprimirDeudoresMes/:disciplina",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  imprimirDeudoresMesDeportistas
 );
 
 router.post(
@@ -48,6 +125,11 @@ router.post(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
     authMiddlewares.verificarAccesoDisciplina("disciplina"),
   ],
@@ -64,6 +146,11 @@ router.delete(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
   ],
   deportistasController.borrarDeportista
@@ -79,6 +166,11 @@ router.put(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
   ],
   deportistasController.editarDeportista
@@ -94,6 +186,11 @@ router.post(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
   ],
   deportistasController.crearPago
@@ -109,6 +206,11 @@ router.get(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
     authMiddlewares.verificarAccesoDisciplina("disciplina"),
   ],
@@ -125,6 +227,11 @@ router.get(
       "coordinador_voley",
       "coordinador_basquet",
       "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
     ]),
   ],
   deportistasController.traerPagosPorDeportista

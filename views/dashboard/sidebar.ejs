@@ -58,12 +58,12 @@
                         <i id="arrowIcon" class="bi bi-chevron-right"></i>
                     </a>
                     <ul class="sub-menu" id="subMenu">
-                        <% if(rolNombre===`coordinador_${disciplina.nombre}`) { %>
+                        <% if(rolNombre===`coordinador_${disciplina.nombre}` || rolNombre===`admin_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
                                 <a href="/dashboard/deportistas/<%= disciplina.nombre %>">Lista de Deportistas</a>
                             </li>
                         <% } %>
-                        <% if(rolNombre===`coordinador_${disciplina.nombre}`) { %>
+                        <% if(rolNombre===`coordinador_${disciplina.nombre}` || rolNombre===`admin_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
                                 <a href="/dashboard/cargardeportista/<%= disciplina.nombre %>">Cargar deportista</a>
                             </li>

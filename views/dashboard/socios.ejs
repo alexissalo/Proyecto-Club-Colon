@@ -76,6 +76,21 @@
         .formSocioPago button:active {
             background-color: #3e8e41;
         }
+
+        .botonlistadodeudores {
+            background-color: #2889dd;
+            color: white;
+            font-weight: 500;
+            border: none;
+            margin: 10px 10px 10px 0px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .botonlistadodeudores:hover {
+            background-color: #2772b3;
+        }
     </style>
 </head>
 
@@ -197,6 +212,8 @@
                                 </button>
                             </div>
                         </div>
+                        <button onclick="modalListaDeudores()" class="botonlistadodeudores">Listado
+                            de deudores</button>
                     </div>
                 </main>
                 <!-- End Main -->
@@ -243,7 +260,7 @@
                                     <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">$${pago.valor}</td>
                                 </tr>
                                 `).join('')
-                                : `
+                    : `
                                 <tr>
                                     <td colspan="2" style="padding: 10px; text-align: center; color: #999;">Sin pagos registrados</td>
                                 </tr>`}
@@ -601,6 +618,34 @@
                 .catch((error) => {
                     console.error('Error descargando el ticket:', error);
                 });
+        }
+
+
+        function modalListaDeudores() {
+
+            Swal.fire({
+            title: 'Seleccionar Mes y Año',
+            html: `
+                <input type="month" id="mesDeuda" class="swal2-input" required>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: "#4CAF50",
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const mes = document.getElementById('mesDeuda').value;
+                if (!mes) {
+                Swal.showValidationMessage('Por favor selecciona un mes');
+                }
+                return mes;
+            }
+            }).then((result) => {
+            if (result.isConfirmed) {
+                const mesSeleccionado = result.value;
+                window.location.href = `/dashboard/socios/pagos/listadeudores/${mesSeleccionado}`;
+            }
+        });
+
         }
 
 

@@ -325,6 +325,32 @@ class SocioModel {
       callback(null)
     }
   }
+
+  async listarSociosParaDeuda(callback) {
+    try {
+      const sql = `SELECT * FROM socios`;
+      const [result] = await pool.query(sql);
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+
+  async getPagosDelMes(mesActual, callback) {
+    try {
+      const sql = `
+        SELECT id_socio 
+        FROM socios_abonos 
+        WHERE DATE_FORMAT(fecha, '%Y-%m') = ?`;
+      const [result] = await pool.query(sql, [mesActual]);
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+  
 }
 
 // Exportamos la clase SocioModel
