@@ -87,7 +87,13 @@ class EventoController {
       fechaInicio,
       fechaFin,
       (eventoData) => {
-        res.json(eventoData);
+        if (eventoData==null) {
+          return res.status(500).json({message:"Error del servidor al crear el evento",ok:false});
+        }
+        res.status(200).json({
+          message:"Evento creado con exito",
+          ok:true
+        });
       }
     );
   }
@@ -109,7 +115,13 @@ class EventoController {
       fechaFin,
       disciplina,
       (eventoData) => {
-        res.json(eventoData);
+        if (eventoData==null) {
+          return res.status(500).json({message:"Error del servidor al crear el evento",ok:false});
+        }
+        res.status(200).json({
+          message:"Evento creado con exito",
+          ok:true
+        });
       }
     );
 

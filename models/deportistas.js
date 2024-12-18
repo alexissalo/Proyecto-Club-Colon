@@ -22,7 +22,7 @@ class DeportistaModel {
                dp.escolaridad, dp.gradoEscolar, dp.posicionJuego, dp.categoria, dp.altura, dp.peso,
                td.talleCalzado, td.talleCamiseta, td.tallePantalon,
                cm.email, cm.instagram, cm.facebook, cm.telefonoJugador, cm.telefonoEmergencia,
-               df.tutorNombre, df.domicilio AS domicilioTutor, df.telefono AS telefonoTutor, df.telefonoFijo AS telefonoFijoTutor,
+               df.nombre, df.domicilio AS domicilioTutor, df.telefono AS telefonoTutor, df.telefonoFijo AS telefonoFijoTutor,
                df.facebookTutor, df.instagramTutor, df.emailResponsable,
                dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado,
                dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
@@ -47,7 +47,7 @@ class DeportistaModel {
                  dp.escolaridad, dp.gradoEscolar, dp.posicionJuego, dp.categoria, dp.altura, dp.peso,
                  td.talleCalzado, td.talleCamiseta, td.tallePantalon,
                  cm.email, cm.instagram, cm.facebook, cm.telefonoJugador, cm.telefonoEmergencia,
-                 df.tutorNombre, df.domicilio, df.telefono, df.telefonoFijo,
+                 df.nombre, df.domicilio, df.telefono, df.telefonoFijo,
                  df.facebookTutor, df.instagramTutor, df.emailResponsable,
                  dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado, dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
                  d.nombre
@@ -231,7 +231,7 @@ class DeportistaModel {
 
       // Insertar datos familiares del deportista
       sql =
-        "INSERT INTO datosFamiliaresDeportista (deportistaId, tutorNombre, domicilio, localidad, telefono, telefonoFijo, facebookTutor, instagramTutor, emailResponsable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO datosFamiliaresDeportista (deportistaId, nombre, domicilio, localidad, telefono, telefonoFijo, facebookTutor, instagramTutor, emailResponsable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
       await pool.query(sql, [
         idDeportista,
         datos.tutorNombre,
@@ -326,7 +326,7 @@ class DeportistaModel {
       // Actualizar datos familiares del deportista
       sql = `
         UPDATE datosFamiliaresDeportista 
-        SET tutorNombre = ?, domicilio = ?, localidad = ?, telefono = ?, telefonoFijo = ?, 
+        SET nombre = ?, domicilio = ?, localidad = ?, telefono = ?, telefonoFijo = ?, 
             facebookTutor = ?, instagramTutor = ?, emailResponsable = ? 
         WHERE deportistaId = ?
       `;
@@ -389,7 +389,7 @@ class DeportistaModel {
           td.talleCalzado, td.talleCamiseta, td.tallePantalon,
           cd.email, cd.instagram, cd.facebook, cd.telefonoJugador, cd.telefonoEmergencia,
           dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado, dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
-          df.tutorNombre, df.domicilio AS domicilioTutor, df.localidad AS localidadTutor, df.telefono AS telefonoTutor, 
+          df.nombre, df.domicilio AS domicilioTutor, df.localidad AS localidadTutor, df.telefono AS telefonoTutor, 
           df.telefonoFijo AS telefonoFijoTutor, df.facebookTutor, df.instagramTutor, df.emailResponsable
         FROM datosPersonalesDeportista dpd
         JOIN disciplinas d ON dpd.id_disciplina = d.id

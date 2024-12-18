@@ -242,7 +242,6 @@ class MovimientoModel {
         totalEgresos,
       };
 
-      console.log(response);
 
       return response;
     } catch (error) {
@@ -296,8 +295,6 @@ class MovimientoModel {
         totalEgresos,
       };
 
-      console.log(response);
-
       return response;
     } catch (error) {
       console.error(error);
@@ -350,8 +347,6 @@ class MovimientoModel {
         totalIngresos,
         totalEgresos,
       };
-
-      console.log(response);
 
       return response;
     } catch (error) {
@@ -407,7 +402,6 @@ class MovimientoModel {
         totalEgresos,
       };
 
-      console.log(response);
 
       return response;
     } catch (error) {

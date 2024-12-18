@@ -241,7 +241,7 @@ function imprimirDeudoresMesSocios(req, res) {
 
     // Variables de la tabla
     const tableTop = 100;
-    const columnWidths = [80, 80, 80, 80, 80, 80]; // Anchos de columnas
+    const columnWidths = [100, 100, 100, 100, 100]; // Anchos de columnas
     const rowHeight = 40; // Altura de cada fila
     const startX = 50;
     let currentY = tableTop;
