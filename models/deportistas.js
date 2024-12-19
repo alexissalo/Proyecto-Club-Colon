@@ -22,7 +22,7 @@ class DeportistaModel {
                dp.escolaridad, dp.gradoEscolar, dp.posicionJuego, dp.categoria, dp.altura, dp.peso,
                td.talleCalzado, td.talleCamiseta, td.tallePantalon,
                cm.email, cm.instagram, cm.facebook, cm.telefonoJugador, cm.telefonoEmergencia,
-               df.nombre, df.domicilio AS domicilioTutor, df.telefono AS telefonoTutor, df.telefonoFijo AS telefonoFijoTutor,
+               df.nombre AS tutorNombre, df.domicilio AS domicilioTutor, df.telefono AS telefonoTutor, df.telefonoFijo AS telefonoFijoTutor,
                df.facebookTutor, df.instagramTutor, df.emailResponsable,
                dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado,
                dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
@@ -389,7 +389,7 @@ class DeportistaModel {
           td.talleCalzado, td.talleCamiseta, td.tallePantalon,
           cd.email, cd.instagram, cd.facebook, cd.telefonoJugador, cd.telefonoEmergencia,
           dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado, dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
-          df.nombre, df.domicilio AS domicilioTutor, df.localidad AS localidadTutor, df.telefono AS telefonoTutor, 
+          df.nombre AS nombreTutor, df.domicilio AS domicilioTutor, df.localidad AS localidadTutor, df.telefono AS telefonoTutor, 
           df.telefonoFijo AS telefonoFijoTutor, df.facebookTutor, df.instagramTutor, df.emailResponsable
         FROM datosPersonalesDeportista dpd
         JOIN disciplinas d ON dpd.id_disciplina = d.id
@@ -444,8 +444,8 @@ class DeportistaModel {
           cd.telefonoJugador AS telefonoJugador,
           cd.telefonoEmergencia AS telefonoEmergencia,
           d.nombre AS disciplina
-        FROM datospersonalesdeportista dp
-        LEFT JOIN comunicaciondeportista cd ON dp.id = cd.deportistaId
+        FROM datosPersonalesDeportista dp
+        LEFT JOIN comunicacionDeportista cd ON dp.id = cd.deportistaId
         JOIN disciplinas d ON dp.id_disciplina = d.id
         WHERE d.nombre = ?
       `;

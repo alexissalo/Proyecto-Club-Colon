@@ -27,7 +27,7 @@ class EconomiaModel {
         es_ingreso,
         id_disciplina,
         id_responsable,
-        fecha
+        fecha,
       ]);
 
       callback(result);
@@ -37,42 +37,57 @@ class EconomiaModel {
     }
   }
 
-  async updateMovimiento(id, valor, descripcion, fecha, tipo_movimiento,documentacion, callback){
+  async updateMovimiento(
+    id,
+    valor,
+    descripcion,
+    fecha,
+    tipo_movimiento,
+    documentacion,
+    callback
+  ) {
     try {
-      let sql= `UPDATE disciplinas_abonos SET valor= ?, descripcion=?, fecha= ?, es_ingreso=?, documentacion= ? WHERE id= ?`
+      let sql = `UPDATE disciplinas_abonos SET valor= ?, descripcion=?, fecha= ?, es_ingreso=?, documentacion= ? WHERE id= ?`;
 
-      const [result]= await pool.query(sql, [valor, descripcion, fecha, tipo_movimiento,documentacion, id])
+      const [result] = await pool.query(sql, [
+        valor,
+        descripcion,
+        fecha,
+        tipo_movimiento,
+        documentacion,
+        id,
+      ]);
 
-      callback(result)
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
-  async getMovimientoById(id, callback){
+  async getMovimientoById(id, callback) {
     try {
-      let sql=`SELECT * FROM disciplinas_abonos WHERE id= ?`
+      let sql = `SELECT id, valor, DATE_FORMAT(fecha, "%Y-%m-%d") AS fecha, es_ingreso, descripcion, id_responsable, documentacion FROM disciplinas_abonos WHERE id= ?`;
 
-      const [result]=await pool.query(sql, [id])
+      const [result] = await pool.query(sql, [id]);
 
-      callback(result[0])
+      callback(result[0]);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
-  async deleteMovimiento(id, callback){
+  async deleteMovimiento(id, callback) {
     try {
-      let sql=`DELETE FROM disciplinas_abonos WHERE id= ?`
+      let sql = `DELETE FROM disciplinas_abonos WHERE id= ?`;
 
-      const [result]= await pool.query(sql, [id])
+      const [result] = await pool.query(sql, [id]);
 
-      callback(result)
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 }

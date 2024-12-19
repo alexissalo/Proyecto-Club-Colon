@@ -212,13 +212,22 @@
                                 </button>
                             </div>
                         </div>
-                        <button onclick="modalListaDeudores()" class="botonlistadodeudores">Listado
-                            de deudores</button>
+                        <div class="dropdown">
+                            <button class="botonlistadodeudores" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              Acciones
+                            </button>
+                            <ul class="dropdown-menu">
+                              <li onclick="modalListaDeudores()">Listado de deudores</li>
+                              <li id="downloadExcel"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar a Excel</li>
+                              <li id="downloadPdf"><i class="bi bi-filetype-pdf"></i> Exportar a PDF</li>
+                            </ul>
+                        </div>
                     </div>
                 </main>
                 <!-- End Main -->
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="/public/js/interacciones.js"></script>
     <script>
 
@@ -648,7 +657,57 @@
 
         }
 
+        document.getElementById('downloadExcel').addEventListener('click', () => {
+        // Hacer una solicitud para obtener el archivo Excel
+        fetch('/descargarExcelSocios', {
+            method: 'GET',
+        })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al descargar el archivo.');
+            }
+            return response.blob(); // Convertir la respuesta a Blob
+            })
+            .then(blob => {
+            // Crear una URL para el archivo descargado
+            const url = window.URL.createObjectURL(blob);
 
+            // Crear un elemento <a> para descargar el archivo
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'socios.xlsx'; // Nombre del archivo descargado
+            document.body.appendChild(a);
+            a.click(); // Simular un clic para iniciar la descarga
+            document.body.removeChild(a); // Eliminar el elemento después de usarlo
+            })
+            .catch(error => {
+            console.error('Error al descargar el archivo:', error);
+            });
+        })
+
+        document.getElementById('downloadPdf').addEventListener('click', async () => {
+          try {
+            const response = await fetch('/listarPdfSocios', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+      
+            if (!response.ok) {
+              alert('Error al generar el PDF');
+              return;
+            }
+      
+            // Crear un blob del PDF y abrirlo en una nueva pestaña
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+          } catch (error) {
+            console.error('Error al generar el PDF:', error);
+            alert('Error inesperado');
+          }
+        });
     </script>
 </body>
 

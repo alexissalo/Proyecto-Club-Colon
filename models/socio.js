@@ -350,6 +350,35 @@ class SocioModel {
       callback(null);
     }
   }
+
+  async listarSociosParaExcel(){
+    try {
+      let sql=`SELECT 
+          s.id,
+          s.nombre, 
+          s.dni, 
+          DATE_FORMAT(s.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento,
+          s.telefono, 
+          s.domicilio,
+          s.email, 
+          DATE_FORMAT(s.fechaInscripcion, '%d-%m-%Y') AS fechaInscripcion,
+          d.nombre AS deporte,
+          ts.nombre AS tipodesocio
+        FROM 
+          socios s
+        LEFT JOIN 
+          disciplinas d ON s.id_disciplina = d.id
+        LEFT JOIN 
+          tiposdesocios ts ON s.id_tipo_socio = ts.id`
+      
+      const [result]=await pool.query(sql,[])
+
+      return result
+    } catch (error) {
+      console.log(error);
+      throw error
+    }
+  }
   
 }
 

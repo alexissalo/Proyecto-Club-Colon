@@ -1,5 +1,7 @@
 const PDFDocument = require("pdfkit-table");
 const path = require("path");
+const modelSocio= require("../models/socio")
+const socioModel= new modelSocio()
 
 function buildPDF(balance, title, dataCallback, endCallback) {
   const doc = new PDFDocument({
@@ -220,7 +222,6 @@ function generarTicketPagoDeportista(
 function imprimirDeudoresMesSocios(req, res) {
   const { deudores, fecha } = req.body;
 
-
   try {
     res.setHeader(
       "Content-Disposition",
@@ -236,7 +237,7 @@ function imprimirDeudoresMesSocios(req, res) {
     doc.pipe(res);
     doc.fontSize(12).text(`Fecha: ${fecha}`, { align: 'right' });
     doc.moveDown();
-    doc.fontSize(16).text('Listado de Deudores del Mes', { align: 'center' });
+    doc.fontSize(16).text('Listado de Socios Deudores del Mes', { align: 'center' });
     doc.moveDown();
 
     // Variables de la tabla
@@ -344,7 +345,7 @@ function imprimirDeudoresMesDeportistas(req, res) {
     doc.pipe(res);
     doc.fontSize(12).text(`Fecha: ${fecha}`, { align: 'right' });
     doc.moveDown();
-    doc.fontSize(16).text('Listado de Deudores del Mes', { align: 'center' });
+    doc.fontSize(16).text('Listado de Deportistas Deudores del Mes', { align: 'center' });
     doc.moveDown();
 
     // Variables de la tabla
@@ -434,11 +435,126 @@ function imprimirDeudoresMesDeportistas(req, res) {
   }
 }
 
+async function listarSociosenPdf(req,res){
+  try {
+
+    const socios=await socioModel.listarSociosParaExcel() 
+
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="listado_deudores.pdf"'
+    );
+    res.setHeader("Content-Type", "application/pdf");
+
+    // Crea un documento PDF
+    const doc = new PDFDocument({ size: "A3", margin: 10 });
+    const pageHeight = doc.page.height;
+
+    const hoy = new Date();
+
+    // Título del documento
+    doc.pipe(res);
+    doc.fontSize(12).text(`Fecha: ${hoy.toLocaleDateString()}`, { align: 'right' });
+    doc.moveDown();
+    doc.fontSize(16).text('Listado de Socios', { align: 'center' });
+    doc.moveDown();
+
+    // Variables de la tabla
+    const tableTop = 100;
+    const columnWidths = [100, 70, 70, 100, 100, 70, 100, 70, 70]; // Anchos de columnas
+    const rowHeight = 40; // Altura de cada fila
+    const startX = 50;
+    let currentY = tableTop;
+
+    // Función para dibujar encabezados de tabla
+    const drawTableHeaders = () => {
+      const headers = ["Nombre", "DNI", "Fec.Nacimiento", "Telefono","Domicilio","Fec.inscripcion", "Email","Tipo de socio", "Deporte" ];
+      headers.forEach((header, i) => {
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(11)
+          .text(
+            header,
+            startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0),
+            currentY,
+            { width: columnWidths[i], align: "center" }
+          );
+      });
+
+      // Línea debajo de los encabezados
+      doc
+        .moveTo(startX, currentY + rowHeight - 10)
+        .lineTo(
+          startX + columnWidths.reduce((a, b) => a + b, 0),
+          currentY + rowHeight - 10
+        )
+        .stroke();
+
+      currentY += rowHeight; // Incrementar la posición Y
+    };
+
+    // Dibujar encabezados de la tabla
+    drawTableHeaders();
+
+    // Dibujar filas de la tabla
+    socios.forEach((socio, rowIndex) => {
+      if (currentY + rowHeight > pageHeight - 50) {
+        // Nueva página si no hay espacio suficiente
+        doc.addPage();
+        currentY = tableTop;
+        drawTableHeaders(); // Dibujar encabezados en la nueva página
+      }
+
+      const columns = [
+        socio.nombre,
+        socio.dni,
+        socio.fechaNacimiento,
+        socio.telefono,
+        socio.domicilio,
+        socio.fechaInscripcion,
+        socio.email,
+        socio.tipodesocio,
+        socio.deporte
+      ];
+
+      columns.forEach((text, colIndex) => {
+        doc
+          .font("Helvetica")
+          .fontSize(9)
+          .text(
+            text,
+            startX + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0),
+            currentY,
+            { width: columnWidths[colIndex], align: "center" }
+          );
+      });
+
+      // Línea debajo de la fila
+      doc
+        .moveTo(startX, currentY + rowHeight - 10)
+        .lineTo(
+          startX + columnWidths.reduce((a, b) => a + b, 0),
+          currentY + rowHeight - 10
+        )
+        .stroke();
+
+      currentY += rowHeight; // Incrementar la posición Y
+    });
+
+    // Finalizar y cerrar el PDF
+    doc.end();
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
+    res.status(500).send("Error al generar el PDF");
+  }
+}
+
 
 module.exports = {
   buildPDF,
   generarTicketPagoSocial,
   generarTicketPagoDeportista,
   imprimirDeudoresMesSocios,
-  imprimirDeudoresMesDeportistas
+  imprimirDeudoresMesDeportistas,
+  listarSociosenPdf
 };

@@ -15,7 +15,10 @@ const {
   generarTicketPagoDeportista,
   imprimirDeudoresMesDeportistas,
   imprimirDeudoresMesSocios,
+  listarSociosenPdf
 } = require("../middlewares/generarPdf");
+
+const {exportarSociosExcel}=require("../libs/excelGenerate")
 
 // Ruta para listar socios (requiere sesión y rol "admin_general" o "admin_secretaria")
 router.get(
@@ -153,6 +156,18 @@ router.post("/descargarTicketDeportista/:id", (req, res) => {
     () => res.end()
   );
 });
+
+router.get("/descargarExcelSocios",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+],
+exportarSociosExcel)
+
+router.get("/listarPdfSocios",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+],
+listarSociosenPdf)
 
 // Exportamos el router
 module.exports = router;
