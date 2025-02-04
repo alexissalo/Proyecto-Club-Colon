@@ -5,7 +5,7 @@ const conexion = mysql.createPool({
     host: db.host,
     port: db.port,
     user: db.user,
-    password: "colonapp24",
+    password: db.password,
     database: db.database,
   });
 
