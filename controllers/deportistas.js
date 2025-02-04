@@ -3,7 +3,6 @@ const modelDisciplina = require("../models/disciplina");
 const disciplinaModel = new modelDisciplina();
 const modelDeportista = require("../models/deportistas");
 const deportistaModel = new modelDeportista();
-const { encrypt, decrypt } = require("../middlewares/encriptacion");
 const moment = require("moment");
 
 // Definimos la clase DeportistasController
@@ -33,72 +32,6 @@ class DeportistasController {
                 .send("Error al obtener los datos de los deportistas");
             }
 
-            deportistaData = deportistaData.map((deportista) => {
-              return {
-                ...deportista,
-                domicilio: deportista.domicilio
-                  ? decrypt(deportista.domicilio)
-                  : null,
-                localidad: deportista.localidad
-                  ? decrypt(deportista.localidad)
-                  : null,
-                escolaridad: deportista.escolaridad
-                  ? decrypt(deportista.escolaridad)
-                  : null,
-                email: deportista.email ? decrypt(deportista.email) : null,
-                instagram: deportista.instagram
-                  ? decrypt(deportista.instagram)
-                  : null,
-                facebook: deportista.facebook
-                  ? decrypt(deportista.facebook)
-                  : null,
-                telefonoJugador: deportista.telefonoJugador
-                  ? decrypt(deportista.telefonoJugador)
-                  : null,
-                telefonoEmergencia: deportista.telefonoEmergencia
-                  ? decrypt(deportista.telefonoEmergencia)
-                  : null,
-                tutorNombre: deportista.tutorNombre
-                  ? decrypt(deportista.tutorNombre)
-                  : null,
-                domicilioTutor: deportista.domicilioTutor
-                  ? decrypt(deportista.domicilioTutor)
-                  : null,
-                telefonoTutor: deportista.telefonoTutor
-                  ? decrypt(deportista.telefonoTutor)
-                  : null,
-                telefonoFijoTutor: deportista.telefonoFijoTutor
-                  ? decrypt(deportista.telefonoFijoTutor)
-                  : null,
-                facebookTutor: deportista.facebookTutor
-                  ? decrypt(deportista.facebookTutor)
-                  : null,
-                instagramTutor: deportista.instagramTutor
-                  ? decrypt(deportista.instagramTutor)
-                  : null,
-                emailResponsable: deportista.emailResponsable
-                  ? decrypt(deportista.emailResponsable)
-                  : null,
-                coberturaMedica: deportista.coberturaMedica
-                  ? decrypt(deportista.coberturaMedica)
-                  : null,
-                numeroAfiliado: deportista.numeroAfiliado
-                  ? decrypt(deportista.numeroAfiliado)
-                  : null,
-                lesiones: deportista.lesiones
-                  ? decrypt(deportista.lesiones)
-                  : null,
-                alergias: deportista.alergias
-                  ? decrypt(deportista.alergias)
-                  : null,
-                patologias: deportista.patologias
-                  ? decrypt(deportista.patologias)
-                  : null,
-                tratamientos: deportista.tratamientos
-                  ? decrypt(deportista.tratamientos)
-                  : null,
-              };
-            });
             disciplinaModel.listarDisciplinas((disciplinaData) => {
               // Verificamos si hubo un error al obtener los datos
               if (disciplinaData === null) {
@@ -173,74 +106,6 @@ class DeportistasController {
               .send("Error al obtener los datos de los socios");
           }
 
-          deportistaData = {
-            ...deportistaData,
-            domicilio: deportistaData.domicilio
-              ? decrypt(deportistaData.domicilio)
-              : null,
-            localidad: deportistaData.localidad
-              ? decrypt(deportistaData.localidad)
-              : null,
-            escolaridad: deportistaData.escolaridad
-              ? decrypt(deportistaData.escolaridad)
-              : null,
-            email: deportistaData.email ? decrypt(deportistaData.email) : null,
-            instagram: deportistaData.instagram
-              ? decrypt(deportistaData.instagram)
-              : null,
-            facebook: deportistaData.facebook
-              ? decrypt(deportistaData.facebook)
-              : null,
-            telefonoJugador: deportistaData.telefonoJugador
-              ? decrypt(deportistaData.telefonoJugador)
-              : null,
-            telefonoEmergencia: deportistaData.telefonoEmergencia
-              ? decrypt(deportistaData.telefonoEmergencia)
-              : null,
-            tutorNombre: deportistaData.tutorNombre
-              ? decrypt(deportistaData.tutorNombre)
-              : null,
-            domicilioTutor: deportistaData.domicilioTutor
-              ? decrypt(deportistaData.domicilioTutor)
-              : null,
-            localidadTutor: deportistaData.localidadTutor
-              ? decrypt(deportistaData.localidadTutor)
-              : null,
-            telefonoTutor: deportistaData.telefonoJugador
-              ? decrypt(deportistaData.telefonoJugador)
-              : null,
-            telefonoFijoTutor: deportistaData.telefonoFijoTutor
-              ? decrypt(deportistaData.telefonoFijoTutor)
-              : null,
-            facebookTutor: deportistaData.facebookTutor
-              ? decrypt(deportistaData.facebookTutor)
-              : null,
-            instagramTutor: deportistaData.instagramTutor
-              ? decrypt(deportistaData.instagramTutor)
-              : null,
-            emailResponsable: deportistaData.emailResponsable
-              ? decrypt(deportistaData.emailResponsable)
-              : null,
-            coberturaMedica: deportistaData.coberturaMedica
-              ? decrypt(deportistaData.coberturaMedica)
-              : null,
-            numeroAfiliado: deportistaData.numeroAfiliado
-              ? decrypt(deportistaData.numeroAfiliado)
-              : null,
-            lesiones: deportistaData.lesiones
-              ? decrypt(deportistaData.lesiones)
-              : null,
-            alergias: deportistaData.alergias
-              ? decrypt(deportistaData.alergias)
-              : null,
-            patologias: deportistaData.patologias
-              ? decrypt(deportistaData.patologias)
-              : null,
-            tratamientos: deportistaData.tratamientos
-              ? decrypt(deportistaData.tratamientos)
-              : null,
-          };
-
           // Obtenemos el rol ID y nombre del request
           const rolId = req.rolId;
           const rolNombre = req.rolNombre;
@@ -264,47 +129,8 @@ class DeportistasController {
     let datos = req.body;
     const { disciplina } = req.params;
 
-    const datosCifrados = {
-      nombre: datos.nombre,
-      dni: datos.dni,
-      fechaNacimiento: datos.fechaNacimiento,
-      domicilio: encrypt(datos.domicilio),
-      localidad: encrypt(datos.localidad),
-      escolaridad: encrypt(datos.escolaridad),
-      gradoEscolar: datos.gradoEscolar,
-      categoria: datos.categoria,
-      posicionJuego: datos.posicionJuego,
-      altura: datos.altura,
-      peso: datos.peso,
-      talleCalzado: datos.talleCalzado,
-      talleCamiseta: datos.talleCamiseta,
-      tallePantalon: datos.tallePantalon,
-      email: encrypt(datos.email),
-      instagram: encrypt(datos.instagram),
-      facebook: encrypt(datos.facebook),
-      telefonoJugador: encrypt(datos.telefonoJugador),
-      telefonoEmergencia: encrypt(datos.telefonoEmergencia),
-      tutorNombre: encrypt(datos.tutorNombre),
-      domicilioTutor: encrypt(datos.domicilioTutor),
-      localidadTutor: encrypt(datos.localidadTutor),
-      telefonoTutor: encrypt(datos.telefonoJugador),
-      telefonoFijoTutor: encrypt(datos.telefonoFijoTutor),
-      facebookTutor: encrypt(datos.facebookTutor),
-      instagramTutor: encrypt(datos.instagramTutor),
-      emailResponsable: encrypt(datos.emailResponsable),
-      grupoSanguineo: datos.grupoSanguineo,
-      factor: datos.factor,
-      coberturaMedica: encrypt(datos.coberturaMedica),
-      numeroAfiliado: encrypt(datos.numeroAfiliado),
-      lesiones: encrypt(datos.lesiones),
-      alergias: encrypt(datos.alergias),
-      patologias: encrypt(datos.patologias),
-      tratamientos: encrypt(datos.tratamientos),
-      tipodecuota: datos.tipodecuota,
-    };
-
     deportistaModel.insertDeportista(
-      datosCifrados,
+      datos,
       disciplina,
       (deportistaData) => {
         if (deportistaData == null) {
@@ -342,46 +168,7 @@ class DeportistasController {
     const { id } = req.params;
     let datos = req.body;
 
-    const datosCifrados = {
-      nombre: datos.nombre,
-      dni: datos.dni,
-      fechaNacimiento: datos.fechaNacimiento,
-      domicilio: encrypt(datos.domicilio),
-      localidad: encrypt(datos.localidad),
-      escolaridad: encrypt(datos.escolaridad),
-      gradoEscolar: datos.gradoEscolar,
-      categoria: datos.categoria,
-      posicionJuego: datos.posicionJuego,
-      altura: datos.altura,
-      peso: datos.peso,
-      talleCalzado: datos.talleCalzado,
-      talleCamiseta: datos.talleCamiseta,
-      tallePantalon: datos.tallePantalon,
-      email: encrypt(datos.email),
-      instagram: encrypt(datos.instagram),
-      facebook: encrypt(datos.facebook),
-      telefonoJugador: encrypt(datos.telefonoJugador),
-      telefonoEmergencia: encrypt(datos.telefonoEmergencia),
-      tutorNombre: encrypt(datos.tutorNombre),
-      domicilioTutor: encrypt(datos.domicilioTutor),
-      localidadTutor: encrypt(datos.localidadTutor),
-      telefonoTutor: encrypt(datos.telefonoJugador),
-      telefonoFijoTutor: encrypt(datos.telefonoFijoTutor),
-      facebookTutor: encrypt(datos.facebookTutor),
-      instagramTutor: encrypt(datos.instagramTutor),
-      emailResponsable: encrypt(datos.emailResponsable),
-      grupoSanguineo: datos.grupoSanguineo,
-      factor: datos.factor,
-      coberturaMedica: encrypt(datos.coberturaMedica),
-      numeroAfiliado: encrypt(datos.numeroAfiliado),
-      lesiones: encrypt(datos.lesiones),
-      alergias: encrypt(datos.alergias),
-      patologias: encrypt(datos.patologias),
-      tratamientos: encrypt(datos.tratamientos),
-      tipodecuota: datos.tipodecuota,
-    };
-
-    deportistaModel.updateDeportista(id, datosCifrados, (deportistaData) => {
+    deportistaModel.updateDeportista(id, datos, (deportistaData) => {
       if (deportistaData == null) {
         return res.status(500).json({
           message: "Error del servidor al actualizar el deportista",
@@ -519,24 +306,7 @@ class DeportistasController {
             return res.status(404).send("No hay deportistas registrados");
 
           // Lista de todos los deportistas
-          const deportistas = deportistasResult.map((deportista) => {
-            return {
-              ...deportista,
-              direccion: deportista.direccion
-                ? decrypt(deportista.direccion)
-                : "",
-              localidad: deportista.localidad
-                ? decrypt(deportista.localidad)
-                : "",
-              email: deportista.email ? decrypt(deportista.email) : "",
-              telefonoJugador: deportista.telefonoJugador
-                ? decrypt(deportista.telefonoJugador)
-                : "",
-              telefonoEmergencia: deportista.telefonoEmergencia
-                ? decrypt(deportista.telefonoEmergencia)
-                : "",
-            };
-          });
+          const deportistas = deportistasResult;
 
           // Obtener la lista de pagos del mes
           deportistaModel.getFacturasPendientesDelMes(fecha, (facturasResult) => {
