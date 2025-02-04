@@ -1,7 +1,7 @@
 const PDFDocument = require("pdfkit-table");
 const path = require("path");
-const modelSocio= require("../models/socio")
-const socioModel= new modelSocio()
+const modelSocio = require("../models/socio");
+const socioModel = new modelSocio();
 
 function buildPDF(balance, title, dataCallback, endCallback) {
   const doc = new PDFDocument({
@@ -85,23 +85,14 @@ function buildPDF(balance, title, dataCallback, endCallback) {
   doc.end();
 }
 
-function generarTicketPagoSocial(
-  socio,
-  cuota,
-  idPago,
-  dataCallback,
-  endCallback
-) {
+function generarTicketPagoSocial(socio, cuota, idPago, res) {
   const doc = new PDFDocument({
     margins: { top: 50, left: 50, right: 50, bottom: 50 },
     size: "A4",
   });
 
-  doc.on("data", dataCallback);
-  doc.on("end", endCallback);
-
-  // Cargar y mostrar la imagen en la esquina superior izquierda
-  const logoPath = path.join(
+   // Cargar y mostrar la imagen en la esquina superior izquierda
+   const logoPath = path.join(
     __dirname,
     "../public/img",
     "logo_colon_sin_fondo.png"
@@ -126,9 +117,6 @@ function generarTicketPagoSocial(
   // Información del socio
   doc.fontSize(16).text(`Socio: ${socio.nombre}`);
   doc.fontSize(14).text(`DNI: ${socio.dni}`);
-  doc.fontSize(14).text(`Fecha de Nacimiento: ${socio.fechaNacimiento}`);
-  doc.fontSize(14).text(`Teléfono: ${socio.telefono}`);
-  doc.fontSize(14).text(`Domicilio: ${socio.domicilio}`);
   doc.moveDown(2);
 
   let fechaPago = new Date(cuota.fechaPago);
@@ -149,8 +137,15 @@ function generarTicketPagoSocial(
   // Pie de página con agradecimiento
   doc.moveDown(3);
   doc.fontSize(12).text("Gracias por su pago.", { align: "center" });
-
   doc.end();
+
+   // Generar un nombre personalizado para el archivo
+  const fileName = `ticket_pago_${socio.nombre.replace(/\s+/g, '_').toLowerCase()}_${idPago}.pdf`;
+
+  // Retornar el PDF como flujo de datos
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename=${fileName}`);
+  doc.pipe(res);
 }
 
 function generarTicketPagoDeportista(
@@ -235,9 +230,11 @@ function imprimirDeudoresMesSocios(req, res) {
 
     // Título del documento
     doc.pipe(res);
-    doc.fontSize(12).text(`Fecha: ${fecha}`, { align: 'right' });
+    doc.fontSize(12).text(`Fecha: ${fecha}`, { align: "right" });
     doc.moveDown();
-    doc.fontSize(16).text('Listado de Socios Deudores del Mes', { align: 'center' });
+    doc
+      .fontSize(16)
+      .text("Listado de Socios Deudores del Mes", { align: "center" });
     doc.moveDown();
 
     // Variables de la tabla
@@ -326,7 +323,6 @@ function imprimirDeudoresMesSocios(req, res) {
   }
 }
 
-
 function imprimirDeudoresMesDeportistas(req, res) {
   const { deudores, fecha } = req.body;
 
@@ -343,9 +339,11 @@ function imprimirDeudoresMesDeportistas(req, res) {
 
     // Título del documento
     doc.pipe(res);
-    doc.fontSize(12).text(`Fecha: ${fecha}`, { align: 'right' });
+    doc.fontSize(12).text(`Fecha: ${fecha}`, { align: "right" });
     doc.moveDown();
-    doc.fontSize(16).text('Listado de Deportistas Deudores del Mes', { align: 'center' });
+    doc
+      .fontSize(16)
+      .text("Listado de Deportistas Deudores del Mes", { align: "center" });
     doc.moveDown();
 
     // Variables de la tabla
@@ -357,7 +355,14 @@ function imprimirDeudoresMesDeportistas(req, res) {
 
     // Función para dibujar encabezados de tabla
     const drawTableHeaders = () => {
-      const headers = ["Nombre", "Domicilio", "Localidad", "Teléfono", "Teléfono Emergencia", "Email"];
+      const headers = [
+        "Nombre",
+        "Domicilio",
+        "Localidad",
+        "Teléfono",
+        "Teléfono Emergencia",
+        "Email",
+      ];
       headers.forEach((header, i) => {
         doc
           .font("Helvetica-Bold")
@@ -400,7 +405,7 @@ function imprimirDeudoresMesDeportistas(req, res) {
         deudor.localidad,
         deudor.telefono,
         deudor.telefonoEmergencia,
-        deudor.email
+        deudor.email,
       ];
 
       columns.forEach((text, colIndex) => {
@@ -435,10 +440,9 @@ function imprimirDeudoresMesDeportistas(req, res) {
   }
 }
 
-async function listarSociosenPdf(req,res){
+async function listarSociosenPdf(req, res) {
   try {
-
-    const socios=await socioModel.listarSociosParaExcel() 
+    const socios = await socioModel.listarSociosParaExcel();
 
     res.setHeader(
       "Content-Disposition",
@@ -454,9 +458,11 @@ async function listarSociosenPdf(req,res){
 
     // Título del documento
     doc.pipe(res);
-    doc.fontSize(12).text(`Fecha: ${hoy.toLocaleDateString()}`, { align: 'right' });
+    doc
+      .fontSize(12)
+      .text(`Fecha: ${hoy.toLocaleDateString()}`, { align: "right" });
     doc.moveDown();
-    doc.fontSize(16).text('Listado de Socios', { align: 'center' });
+    doc.fontSize(16).text("Listado de Socios", { align: "center" });
     doc.moveDown();
 
     // Variables de la tabla
@@ -468,7 +474,17 @@ async function listarSociosenPdf(req,res){
 
     // Función para dibujar encabezados de tabla
     const drawTableHeaders = () => {
-      const headers = ["Nombre", "DNI", "Fec.Nacimiento", "Telefono","Domicilio","Fec.inscripcion", "Email","Tipo de socio", "Deporte" ];
+      const headers = [
+        "Nombre",
+        "DNI",
+        "Fec.Nacimiento",
+        "Telefono",
+        "Domicilio",
+        "Fec.inscripcion",
+        "Email",
+        "Tipo de socio",
+        "Deporte",
+      ];
       headers.forEach((header, i) => {
         doc
           .font("Helvetica-Bold")
@@ -514,7 +530,7 @@ async function listarSociosenPdf(req,res){
         socio.fechaInscripcion,
         socio.email,
         socio.tipodesocio,
-        socio.deporte
+        socio.deporte,
       ];
 
       columns.forEach((text, colIndex) => {
@@ -549,12 +565,11 @@ async function listarSociosenPdf(req,res){
   }
 }
 
-
 module.exports = {
   buildPDF,
   generarTicketPagoSocial,
   generarTicketPagoDeportista,
   imprimirDeudoresMesSocios,
   imprimirDeudoresMesDeportistas,
-  listarSociosenPdf
+  listarSociosenPdf,
 };

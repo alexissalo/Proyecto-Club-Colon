@@ -15,10 +15,10 @@ class DeportistaModel {
     try {
       // Calculamos el offset para la paginación
       const offset = (pagina - 1) * filasPorPagina;
-
-      // Creamos la consulta SQL para seleccionar todos los deportistas de la disciplina especificada por nombre
+  
+      // Creamos la consulta SQL
       let sql = `
-        SELECT dp.id, dp.nombre, DATE_FORMAT(dp.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento, dp.domicilio, dp.localidad, 
+        SELECT dp.id, dp.nombre, dp.id_tipo_cuota, dp.dni, DATE_FORMAT(dp.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento, dp.domicilio, dp.localidad, 
                dp.escolaridad, dp.gradoEscolar, dp.posicionJuego, dp.categoria, dp.altura, dp.peso,
                td.talleCalzado, td.talleCamiseta, td.tallePantalon,
                cm.email, cm.instagram, cm.facebook, cm.telefonoJugador, cm.telefonoEmergencia,
@@ -26,56 +26,67 @@ class DeportistaModel {
                df.facebookTutor, df.instagramTutor, df.emailResponsable,
                dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado,
                dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
-               d.nombre AS disciplina
+               cd.nombre AS tipodecuotanombre,
+               d.nombre AS disciplina,
+               -- Verificamos si el deportista es socio
+               CASE 
+                 WHEN s.dni IS NOT NULL THEN true
+                 ELSE false
+               END AS esSocio
         FROM datosPersonalesDeportista dp
         LEFT JOIN tallesDeportista td ON dp.id = td.deportistaId
         LEFT JOIN comunicacionDeportista cm ON dp.id = cm.deportistaId
-        LEFT JOIN datosFamiliaresDeportista df ON dp.id= df.deportistaId
+        LEFT JOIN datosFamiliaresDeportista df ON dp.id = df.deportistaId
         LEFT JOIN datosMedicosDeportista dm ON dp.id = dm.deportistaId
+        LEFT JOIN cuotas_deportistas cd ON dp.id_tipo_cuota = cd.id
         JOIN disciplinas d ON dp.id_disciplina = d.id
+        -- Relación con la tabla socios para verificar el DNI
+        LEFT JOIN socios s ON dp.dni = s.dni
         WHERE d.nombre = ?
-        `;
-
+      `;
+  
       // Agregamos la cláusula WHERE adicional si existe una búsqueda
       if (buscar) {
-        sql += ` AND dp.nombre LIKE ?`;
+        sql += ` AND (dp.nombre LIKE ? OR dp.dni LIKE ?)`;
       }
-
+  
       // Luego agrupamos
       sql += `
-        GROUP BY dp.id, dp.nombre, dp.fechaNacimiento, dp.domicilio, dp.localidad, 
+        GROUP BY dp.id, dp.nombre, dp.id_tipo_cuota, dp.dni, dp.fechaNacimiento, dp.domicilio, dp.localidad, 
                  dp.escolaridad, dp.gradoEscolar, dp.posicionJuego, dp.categoria, dp.altura, dp.peso,
                  td.talleCalzado, td.talleCamiseta, td.tallePantalon,
                  cm.email, cm.instagram, cm.facebook, cm.telefonoJugador, cm.telefonoEmergencia,
                  df.nombre, df.domicilio, df.telefono, df.telefonoFijo,
                  df.facebookTutor, df.instagramTutor, df.emailResponsable,
                  dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado, dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
-                 d.nombre
-        `;
-
+                 d.nombre, cd.nombre, s.dni
+      `;
+  
       // Agregamos la cláusula LIMIT y OFFSET para la paginación
       sql += ` LIMIT ? OFFSET ?`;
-
+  
       // Preparamos los parámetros para la consulta
       let params = [disciplina];
-
+  
       if (buscar) {
-        params.push(`%${buscar}%`, filasPorPagina, offset);
+        params.push(`%${buscar}%`, `%${buscar}%`, filasPorPagina, offset);
       } else {
         params.push(filasPorPagina, offset);
       }
-
+  
       // Ejecutamos la consulta utilizando el pool de conexiones
       const [result] = await pool.query(sql, params);
-
+  
       // Pasamos el resultado a la función callback
       callback(result);
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
-      callback(null)
+      callback(null);
     }
   }
+  
+  
 
   async getTotalDeportistasPorDisciplina(buscar, disciplina, callback) {
     try {
@@ -175,9 +186,10 @@ class DeportistaModel {
 
       // Insertar datos personales del deportista
       sql =
-        "INSERT INTO datosPersonalesDeportista (nombre, fechaNacimiento, domicilio, localidad, escolaridad, gradoEscolar, posicionJuego, altura, peso, id_disciplina, categoria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO datosPersonalesDeportista (nombre, dni, fechaNacimiento, domicilio, localidad, escolaridad, gradoEscolar, posicionJuego, altura, peso, id_disciplina, categoria, id_tipo_cuota) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       const [resultado] = await pool.query(sql, [
         datos.nombre,
+        datos.dni,
         datos.fechaNacimiento,
         datos.domicilio,
         datos.localidad,
@@ -188,6 +200,7 @@ class DeportistaModel {
         datos.peso || null,
         id_disciplina,
         datos.categoria,
+        datos.tipodecuota
       ]);
 
       const idDeportista = resultado.insertId;
@@ -244,10 +257,41 @@ class DeportistaModel {
         datos.emailResponsable,
       ]);
 
+      await this.generarFactura(idDeportista, datos.tipodecuota, callback);
+
       callback(`Deportista creado correctamente con ID ${idDeportista}`);
     } catch (error) {
       console.log(error);
       callback(null);
+    }
+  }
+
+  async generarFactura(deportistaId, tipoCuotaId, callback) {
+    try {
+      // Obtener el valor de la cuota del tipo de socio
+      const [result] = await pool.query(
+        `SELECT valorDeCuota FROM cuotas_deportistas WHERE id = ?`,
+        [tipoCuotaId]
+      );
+
+      const valorDeCuota = result[0].valorDeCuota;
+
+      if (valorDeCuota > 0) {
+        await pool.query(
+          `
+          INSERT INTO facturas_deportistas (id_deportista, fecha_emision, monto, estado) 
+          VALUES (?, now(), ?, 'pendiente')
+      `,
+          [deportistaId, valorDeCuota]
+        );
+  
+        console.log("Factura generada para el socio:", deportistaId);
+      }else{
+        console.log(`Factura no generada para el socio con ID ${deportistaId}: valor de cuota no válido (${valorDeCuota}).`)
+      }
+    } catch (error) {
+      console.log("Error al generar factura:", error);
+      callback(null, error);
     }
   }
 
@@ -258,12 +302,13 @@ class DeportistaModel {
       // Actualizar datos personales del deportista
       sql = `
         UPDATE datosPersonalesDeportista 
-        SET nombre = ?, fechaNacimiento = ?, domicilio = ?, localidad = ?, escolaridad = ?, 
-            gradoEscolar = ?, posicionJuego = ?, altura = ?, peso = ?, categoria = ?
+        SET nombre = ?, dni= ?, fechaNacimiento = ?, domicilio = ?, localidad = ?, escolaridad = ?, 
+            gradoEscolar = ?, posicionJuego = ?, altura = ?, peso = ?, categoria = ?, id_tipo_cuota= ?
         WHERE id = ?
       `;
       await pool.query(sql, [
         datos.nombre,
+        datos.dni,
         datos.fechaNacimiento,
         datos.domicilio,
         datos.localidad,
@@ -273,6 +318,7 @@ class DeportistaModel {
         datos.altura || null,
         datos.peso || null,
         datos.categoria,
+        datos.tipodecuota,
         idDeportista,
       ]);
   
@@ -367,11 +413,48 @@ class DeportistaModel {
     }
   }
 
-  async insertPago(id_deportista, monto, fechaPago, callback) {
+  async insertPago(
+    id_deportista,
+    monto,
+    metodoPago,
+    facturasSeleccionadas,
+    callback
+  ) {
     try {
-      let sql = `INSERT INTO deportistas_abonos(id_deportista,valor,fecha) VALUES(?,?,?)`;
+      // Insertar el pago
+      const sqlPago = `
+        INSERT INTO deportistas_abonos (fecha_pago, monto_pagado, metodo_pago, id_facturas)
+        VALUES (now(), ?, ?, ?)
+      `;
+      const [pagoResult] = await pool.query(sqlPago, [
+        monto,
+        metodoPago,
+        JSON.stringify(facturasSeleccionadas),
+      ]);
 
-      const [result] = await pool.query(sql, [id_deportista, monto, fechaPago]);
+      // Actualizar las facturas como pagadas
+      const sqlFacturas = `
+        UPDATE facturas_deportistas 
+        SET estado = "pagado" 
+        WHERE id IN (?);
+    `;
+
+      await pool.query(sqlFacturas, [facturasSeleccionadas]);
+
+      callback(pagoResult);
+    } catch (error) {
+      console.error(error);
+      callback(null);
+    }
+  }
+
+  async getFacturasById(id_deportista, callback) {
+    try {
+      let query = `
+      SELECT f.id, DATE_FORMAT(f.fecha_emision, '%d-%m-%Y') AS fecha_emision, f.monto, f.estado 
+      FROM facturas_deportistas AS f 
+      WHERE f.id_deportista = ?`;
+      const [result] = await pool.query(query, [id_deportista]);
 
       callback(result);
     } catch (error) {
@@ -384,7 +467,7 @@ class DeportistaModel {
     try {
       const sql = `
         SELECT 
-          dpd.id, dpd.nombre,DATE_FORMAT(dpd.fechaNacimiento, '%Y-%m-%d') AS fechaNacimiento, dpd.domicilio, dpd.localidad, dpd.escolaridad, dpd.gradoEscolar, 
+          dpd.id, dpd.nombre, dpd.dni ,DATE_FORMAT(dpd.fechaNacimiento, '%Y-%m-%d') AS fechaNacimiento, dpd.domicilio, dpd.localidad, dpd.escolaridad, dpd.gradoEscolar, 
           dpd.posicionJuego, dpd.altura, dpd.peso, d.nombre AS disciplina,
           td.talleCalzado, td.talleCamiseta, td.tallePantalon,
           cd.email, cd.instagram, cd.facebook, cd.telefonoJugador, cd.telefonoEmergencia,
@@ -459,17 +542,25 @@ class DeportistaModel {
   }
   
 
-  async getPagosDelMes(fecha, callback) {
+  async getFacturasPendientesDelMes(mesActual, callback) {
     try {
       const sql = `
-        SELECT id_deportista, valor, DATE_FORMAT(fecha, '%Y-%m') AS mesPago 
-        FROM deportistas_abonos 
-        WHERE DATE_FORMAT(fecha, '%Y-%m') = ?
+        SELECT 
+          fd.id, 
+          fd.id_deportista, 
+          fd.fecha_emision, 
+          fd.monto, 
+          fd.estado 
+        FROM 
+          facturas_deportistas fd
+        WHERE 
+          DATE_FORMAT(fd.fecha_emision, '%Y-%m') = ?
+          AND fd.estado = 'pendiente'
       `;
-      const [result] = await pool.query(sql, [fecha]);
+      const [result] = await pool.query(sql, [mesActual]);
       callback(result);
     } catch (error) {
-      console.log(error);
+      console.error('Error al obtener las facturas pendientes del mes:', error);
       callback(null);
     }
   }
@@ -486,6 +577,68 @@ class DeportistaModel {
     } catch (error) {
       console.log(error);
       callback(null);
+    }
+  }
+
+  async insertCuotaDeportista(nombre, valorDeCuota, disciplina, callback){
+    try {
+      let sqlGetDisciplina = `SELECT id FROM disciplinas WHERE nombre = ?`;
+      const [rows] = await pool.query(sqlGetDisciplina, [disciplina]);
+
+      const id_disciplina = rows[0].id;
+
+      let sql= `INSERT INTO cuotas_deportistas(nombre, valorDeCuota, id_disciplina) VALUES (?, ?, ?)`
+
+      const [result]= await pool.query(sql,[nombre, valorDeCuota, id_disciplina])
+
+      callback(result)
+    } catch (error) {
+      console.log(error);
+      callback(null)
+    }
+  }
+
+  async updateCuotaDeportista(id, nombre, valorDeCuota, callback){
+    try {
+      let sql=`UPDATE cuotas_deportistas SET nombre = ?, valorDeCuota= ? WHERE id= ?`
+
+      const [result]= await pool.query(sql, [nombre, valorDeCuota, id])
+
+      callback(result)
+    } catch (error) {
+      console.log(error);
+      callback(null)
+    }
+  }
+
+  async deleteCuotaDeportista(id, callback){
+    try {
+      let sql= `DELETE FROM cuotas_deportistas WHERE id= ?`
+
+      const [result]= await pool.query(sql, id)
+
+      callback(result)
+    } catch (error) {
+      console.log(error);
+      callback(null)
+    }
+  }
+
+  async selectCuotasDeportista(disciplina, callback){
+    try {
+      let sqlGetDisciplina = `SELECT id FROM disciplinas WHERE nombre = ?`;
+      const [rows] = await pool.query(sqlGetDisciplina, [disciplina]);
+
+      const id_disciplina = rows[0].id;
+
+      let sql= `SELECT * FROM cuotas_deportistas WHERE id_disciplina= ?`
+
+      const [result]= await pool.query(sql, [id_disciplina])
+    
+      callback(result)
+    } catch (error) {
+      console.log(error);
+      callback(null)
     }
   }
   

@@ -71,7 +71,8 @@
         input[type="date"],
         input[type="number"],
         input[type="email"],
-        textarea {
+        textarea,
+        select {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
@@ -275,6 +276,9 @@
                             <legend>Datos Personales</legend>
                             <label for="nombre">Nombre Completo:</label>
                             <input type="text" id="nombre" name="nombre" required>
+
+                            <label for="dni">DNI:</label>
+                            <input type="number" id="dni" name="dni" required>
                     
                             <label for="fechaNacimiento">Fecha de Nacimiento:</label>
                             <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
@@ -284,6 +288,14 @@
                     
                             <label for="localidad">Localidad:</label>
                             <input type="text" id="localidad" name="localidad" required>
+
+                            <label for="tipodecuota">Tipo de Cuota:</label>
+                            <select name="tipodecuota" id="tipodecuota">
+                                <% tiposdecuotas.forEach(function(tipocuota) { %>
+                                    <option value="<%= tipocuota.id %>"><%= tipocuota.nombre %></option>
+                                <% }) %>
+                            </select>
+
                     
                             <label for="escolaridad">Escolaridad (Opcional):</label>
                             <input type="text" id="escolaridad" name="escolaridad">

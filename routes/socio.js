@@ -66,6 +66,15 @@ router.get(
   socioController.listarTiposDeSocios
 );
 
+// router.get(
+//   "/dashboard/escaner",
+//   [
+//     authMiddlewares.verificarSesion,
+//     authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+//   ],
+//   socioController.mostrarEscanerSocios
+// );
+
 router.post(
   "/crearSocio",
   [
@@ -131,32 +140,6 @@ router.delete(
   socioController.borrarTipoDeSocio
 );
 
-router.post("/descargarTicket/:id", (req, res) => {
-  const { socio, infoPago, idPago } = req.body;
-
-  // Generar el ticket de pago
-  generarTicketPagoSocial(
-    socio,
-    infoPago,
-    idPago,
-    (chunk) => res.write(chunk),
-    () => res.end()
-  );
-});
-
-router.post("/descargarTicketDeportista/:id", (req, res) => {
-  const { deportista, infoPago, idPago } = req.body;
-
-  // Generar el ticket de pago
-  generarTicketPagoDeportista(
-    deportista,
-    infoPago,
-    idPago,
-    (chunk) => res.write(chunk),
-    () => res.end()
-  );
-});
-
 router.get("/descargarExcelSocios",[
   authMiddlewares.verificarSesion,
   authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
@@ -168,6 +151,34 @@ router.get("/listarPdfSocios",[
   authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
 ],
 listarSociosenPdf)
+
+router.get("/getsocio/:id",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+], socioController.getSocioById)
+
+router.get("/listarFacturasImpagas/:id",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+],
+socioController.listarFacturasImpagas)
+
+router.post('/generarTicketCuotaSocial', (req, res) => {
+  const { socio, cuota, idPago } = req.body;
+  generarTicketPagoSocial(socio, cuota, idPago, res);
+});
+
+router.put("/darDeBajaSocio/:id",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+],
+socioController.darDeBajaSocio)
+
+router.put("/darDeAltaSocio/:id",[
+  authMiddlewares.verificarSesion,
+  authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+],
+socioController.darDeAltaSocio)
 
 // Exportamos el router
 module.exports = router;

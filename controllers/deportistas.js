@@ -132,32 +132,10 @@ class DeportistasController {
 
   mostrarCargaDeportista(req, res) {
     const { disciplina } = req.params;
-    // Llamamos al método listarDisciplinas del modelo de disciplina
-    disciplinaModel.listarDisciplinas((disciplinaData) => {
-      // Verificamos si hubo un error al obtener los datos
-      if (disciplinaData === null) {
-        return res.status(500).send("Error al obtener los datos de los socios");
-      }
 
-      // Obtenemos el rol ID y nombre del request
-      const rolId = req.rolId;
-      const rolNombre = req.rolNombre;
-
-      // Renderizamos la vista "dashboard/deportistas" con los datos obtenidos
-      res.render("dashboard/cargarDeportista", {
-        rolId: rolId,
-        rolNombre: rolNombre,
-        disciplinas: disciplinaData,
-        disciplina: disciplina,
-      });
-    });
-  }
-
-  mostrarEdicionDeportista(req, res) {
-    const { disciplina, id } = req.params;
-    // Llamamos al método listarDisciplinas del modelo de disciplina
-    disciplinaModel.listarDisciplinas((disciplinaData) => {
-      deportistaModel.getDeportistaById(id, (deportistaData) => {
+    deportistaModel.selectCuotasDeportista(disciplina, (cuotasDeportistas) => {
+      // Llamamos al método listarDisciplinas del modelo de disciplina
+      disciplinaModel.listarDisciplinas((disciplinaData) => {
         // Verificamos si hubo un error al obtener los datos
         if (disciplinaData === null) {
           return res
@@ -165,44 +143,118 @@ class DeportistasController {
             .send("Error al obtener los datos de los socios");
         }
 
-        deportistaData = {
-          ...deportistaData,
-          domicilio: decrypt(deportistaData.domicilio),
-          localidad: decrypt(deportistaData.localidad),
-          escolaridad: decrypt(deportistaData.escolaridad),
-          email: decrypt(deportistaData.email),
-          instagram: decrypt(deportistaData.instagram),
-          facebook: decrypt(deportistaData.facebook),
-          telefonoJugador: decrypt(deportistaData.telefonoJugador),
-          telefonoEmergencia: decrypt(deportistaData.telefonoEmergencia),
-          tutorNombre: decrypt(deportistaData.tutorNombre),
-          domicilioTutor: decrypt(deportistaData.domicilioTutor),
-          localidadTutor: decrypt(deportistaData.localidadTutor),
-          telefonoTutor: decrypt(deportistaData.telefonoJugador),
-          telefonoFijoTutor: decrypt(deportistaData.telefonoFijoTutor),
-          facebookTutor: decrypt(deportistaData.facebookTutor),
-          instagramTutor: decrypt(deportistaData.instagramTutor),
-          emailResponsable: decrypt(deportistaData.emailResponsable),
-          coberturaMedica: decrypt(deportistaData.coberturaMedica),
-          numeroAfiliado: decrypt(deportistaData.numeroAfiliado),
-          lesiones: decrypt(deportistaData.lesiones),
-          alergias: decrypt(deportistaData.alergias),
-          patologias: decrypt(deportistaData.patologias),
-          tratamientos: decrypt(deportistaData.tratamientos),
-        };
-
         // Obtenemos el rol ID y nombre del request
         const rolId = req.rolId;
         const rolNombre = req.rolNombre;
 
         // Renderizamos la vista "dashboard/deportistas" con los datos obtenidos
-        res.render("dashboard/editarDeportista", {
+        res.render("dashboard/cargarDeportista", {
           rolId: rolId,
           rolNombre: rolNombre,
           disciplinas: disciplinaData,
           disciplina: disciplina,
-          deportista: deportistaData,
-          idDeportista: deportistaData.id,
+          tiposdecuotas: cuotasDeportistas,
+        });
+      });
+    });
+  }
+
+  mostrarEdicionDeportista(req, res) {
+    const { disciplina, id } = req.params;
+
+    deportistaModel.selectCuotasDeportista(disciplina, (cuotasDeportista) => {
+      // Llamamos al método listarDisciplinas del modelo de disciplina
+      disciplinaModel.listarDisciplinas((disciplinaData) => {
+        deportistaModel.getDeportistaById(id, (deportistaData) => {
+          // Verificamos si hubo un error al obtener los datos
+          if (disciplinaData === null) {
+            return res
+              .status(500)
+              .send("Error al obtener los datos de los socios");
+          }
+
+          deportistaData = {
+            ...deportistaData,
+            domicilio: deportistaData.domicilio
+              ? decrypt(deportistaData.domicilio)
+              : null,
+            localidad: deportistaData.localidad
+              ? decrypt(deportistaData.localidad)
+              : null,
+            escolaridad: deportistaData.escolaridad
+              ? decrypt(deportistaData.escolaridad)
+              : null,
+            email: deportistaData.email ? decrypt(deportistaData.email) : null,
+            instagram: deportistaData.instagram
+              ? decrypt(deportistaData.instagram)
+              : null,
+            facebook: deportistaData.facebook
+              ? decrypt(deportistaData.facebook)
+              : null,
+            telefonoJugador: deportistaData.telefonoJugador
+              ? decrypt(deportistaData.telefonoJugador)
+              : null,
+            telefonoEmergencia: deportistaData.telefonoEmergencia
+              ? decrypt(deportistaData.telefonoEmergencia)
+              : null,
+            tutorNombre: deportistaData.tutorNombre
+              ? decrypt(deportistaData.tutorNombre)
+              : null,
+            domicilioTutor: deportistaData.domicilioTutor
+              ? decrypt(deportistaData.domicilioTutor)
+              : null,
+            localidadTutor: deportistaData.localidadTutor
+              ? decrypt(deportistaData.localidadTutor)
+              : null,
+            telefonoTutor: deportistaData.telefonoJugador
+              ? decrypt(deportistaData.telefonoJugador)
+              : null,
+            telefonoFijoTutor: deportistaData.telefonoFijoTutor
+              ? decrypt(deportistaData.telefonoFijoTutor)
+              : null,
+            facebookTutor: deportistaData.facebookTutor
+              ? decrypt(deportistaData.facebookTutor)
+              : null,
+            instagramTutor: deportistaData.instagramTutor
+              ? decrypt(deportistaData.instagramTutor)
+              : null,
+            emailResponsable: deportistaData.emailResponsable
+              ? decrypt(deportistaData.emailResponsable)
+              : null,
+            coberturaMedica: deportistaData.coberturaMedica
+              ? decrypt(deportistaData.coberturaMedica)
+              : null,
+            numeroAfiliado: deportistaData.numeroAfiliado
+              ? decrypt(deportistaData.numeroAfiliado)
+              : null,
+            lesiones: deportistaData.lesiones
+              ? decrypt(deportistaData.lesiones)
+              : null,
+            alergias: deportistaData.alergias
+              ? decrypt(deportistaData.alergias)
+              : null,
+            patologias: deportistaData.patologias
+              ? decrypt(deportistaData.patologias)
+              : null,
+            tratamientos: deportistaData.tratamientos
+              ? decrypt(deportistaData.tratamientos)
+              : null,
+          };
+
+          // Obtenemos el rol ID y nombre del request
+          const rolId = req.rolId;
+          const rolNombre = req.rolNombre;
+
+          // Renderizamos la vista "dashboard/deportistas" con los datos obtenidos
+          res.render("dashboard/editarDeportista", {
+            rolId: rolId,
+            rolNombre: rolNombre,
+            disciplinas: disciplinaData,
+            disciplina: disciplina,
+            deportista: deportistaData,
+            idDeportista: deportistaData.id,
+            tiposdecuotas: cuotasDeportista,
+          });
         });
       });
     });
@@ -214,6 +266,7 @@ class DeportistasController {
 
     const datosCifrados = {
       nombre: datos.nombre,
+      dni: datos.dni,
       fechaNacimiento: datos.fechaNacimiento,
       domicilio: encrypt(datos.domicilio),
       localidad: encrypt(datos.localidad),
@@ -247,6 +300,7 @@ class DeportistasController {
       alergias: encrypt(datos.alergias),
       patologias: encrypt(datos.patologias),
       tratamientos: encrypt(datos.tratamientos),
+      tipodecuota: datos.tipodecuota,
     };
 
     deportistaModel.insertDeportista(
@@ -290,6 +344,7 @@ class DeportistasController {
 
     const datosCifrados = {
       nombre: datos.nombre,
+      dni: datos.dni,
       fechaNacimiento: datos.fechaNacimiento,
       domicilio: encrypt(datos.domicilio),
       localidad: encrypt(datos.localidad),
@@ -323,6 +378,7 @@ class DeportistasController {
       alergias: encrypt(datos.alergias),
       patologias: encrypt(datos.patologias),
       tratamientos: encrypt(datos.tratamientos),
+      tipodecuota: datos.tipodecuota,
     };
 
     deportistaModel.updateDeportista(id, datosCifrados, (deportistaData) => {
@@ -340,34 +396,29 @@ class DeportistasController {
   }
 
   crearPago(req, res) {
-    const { id_deportista, valor, fechaPago } = req.body;
+    const { monto, metodoPago, facturas } = req.body;
 
-    if (!id_deportista || !valor || !fechaPago) {
-      return res.status(500).json({
-        message: "Falta completar campos obligatorios",
+    if (!monto || !metodoPago || !facturas || !facturas.length) {
+      return res.status(400).json({
+        message: "Faltan campos obligatorios o no se seleccionaron facturas",
         ok: false,
       });
     }
 
-    deportistaModel.insertPago(
-      id_deportista,
-      valor,
-      fechaPago,
-      (deportistaData) => {
-        if (deportistaData == null) {
-          return res.status(500).json({
-            message: "Error del servidor al ingresar el pago",
-            ok: false,
-          });
-        }
-
-        res.status(200).json({
-          message: "Pago cargado con exito",
-          ok: true,
-          idPago: deportistaData.insertId,
+    deportistaModel.insertPago(null, monto, metodoPago, facturas, (result) => {
+      if (!result) {
+        return res.status(500).json({
+          message: "Error del servidor al procesar el pago",
+          ok: false,
         });
       }
-    );
+
+      res.status(200).json({
+        message: "Pago creado y facturas asociadas con éxito",
+        ok: true,
+        idPago: result.idPago,
+      });
+    });
   }
 
   traerPagosPorDeportista(req, res) {
@@ -394,71 +445,66 @@ class DeportistasController {
     const { disciplina } = req.params;
 
     disciplinaModel.listarDisciplinas((disciplinaData) => {
-      // 1. Obtener información del deportista
       deportistaModel.getDeportistaById(id_deportista, (deportistaResult) => {
         if (deportistaResult == null)
           return res.status(500).send("Error en el servidor");
         if (deportistaResult.length === 0)
           return res.status(404).send("Deportista no encontrado");
 
-        const deportista = deportistaResult;
-
-        // 2. Obtener pagos realizados por el deportista
-        deportistaModel.getPagosPorDeportista(id_deportista, (pagosResult) => {
-          if (pagosResult == null)
+        // Obtener las facturas pendientes
+        deportistaModel.getFacturasById(id_deportista, (facturasResult) => {
+          if (facturasResult == null)
             return res.status(500).send("Error en el servidor");
 
-          const pagos = pagosResult;
-
-          // Determinar la fecha del primer pago o usar la fecha actual si no hay pagos
-          const fechaPrimerPago =
-            pagos.length > 0
-              ? moment(pagos[0].fecha, "DD-MM-YYYY") // Tomar la fecha del primer pago
-              : moment(); // Usar la fecha actual si no hay pagos
-
-          const cuotas = [];
-          const cuotasPagadas = pagos.map((pago) =>
-            moment(pago.fecha, "DD-MM-YYYY").format("YYYY-MM")
+          // Separar las facturas en pendientes y pagadas
+          const facturasPendientes = facturasResult.filter(
+            (factura) => factura.estado === "pendiente"
+          );
+          const facturasPagadas = facturasResult.filter(
+            (factura) => factura.estado === "pagado"
           );
 
-          // 3. Calcular cuotas mensuales desde la fecha del primer pago hasta hoy
-          let fechaActual = moment();
-          let fechaIterativa = moment(fechaPrimerPago);
+          // Calcular el total pendiente
+          const totalPendiente = facturasPendientes.reduce(
+            (total, factura) => total + parseFloat(factura.monto),
+            0
+          );
 
-          while (
-            fechaIterativa.isBefore(fechaActual, "month") ||
-            fechaIterativa.isSame(fechaActual, "month")
-          ) {
-            const mes = fechaIterativa.format("YYYY-MM");
-            const pagado = cuotasPagadas.includes(mes);
-
-            cuotas.push({
-              mes,
-              estado: pagado ? "Pagado" : "Pendiente",
-            });
-
-            // Avanzar al siguiente mes
-            fechaIterativa.add(1, "month");
-          }
-
-          // Obtenemos el rol del usuario
-          const rolId = req.rolId;
-          const rolNombre = req.rolNombre;
-
-          // 4. Renderizar vista con datos
+          // Renderizar la vista con las facturas
           res.render("dashboard/pagosDeportistas", {
             disciplinas: disciplinaData,
             disciplina: disciplina,
-            rolId: rolId,
-            rolNombre: rolNombre,
-            deportista,
-            pagos,
-            cuotas,
+            rolId: req.rolId,
+            rolNombre: req.rolNombre,
+            deportista: deportistaResult,
+            facturasPendientes,
+            facturasPagadas,
+            facturas: facturasResult,
+            totalPendiente: totalPendiente.toFixed(2),
           });
         });
       });
     });
   };
+
+  listarFacturasImpagas(req, res) {
+    const id_deportista = req.params.id;
+
+    deportistaModel.getFacturasById(id_deportista, (facturasResult) => {
+      if (facturasResult == null) {
+        return res.status(500).json({
+          message: "Error del servidor a listar las facturas",
+          ok: false,
+        });
+      }
+      // Separar las facturas en pendientes y pagadas
+      const facturasPendientes = facturasResult.filter(
+        (factura) => factura.estado === "pendiente"
+      );
+
+      res.json({ data: facturasPendientes, ok: true });
+    });
+  }
 
   listarDeudoresMesDeportistas = (req, res) => {
     const { fecha, disciplina } = req.params; // Mes y año recibido en formato YYYY-MM
@@ -493,56 +539,150 @@ class DeportistasController {
           });
 
           // Obtener la lista de pagos del mes
-          deportistaModel.getPagosDelMes(fecha, (pagosResult) => {
-            if (pagosResult == null)
+          deportistaModel.getFacturasPendientesDelMes(fecha, (facturasResult) => {
+            if (facturasResult == null) {
               return res.status(500).send("Error en el servidor");
+            }
 
-            // Obtener IDs de deportistas que ya pagaron este mes
-            const idsPagados = pagosResult.map((pago) => pago.id_deportista);
+            // Filtrar socios que tienen facturas impagas en el mes solicitado
+            const deudores = deportistas.filter((deportista) => {
+              facturasResult.filter(
+                (factura) =>
+                  factura.id_deportista === deportista.id &&
+                  factura.estado === "pendiente" // Consideramos solo facturas impagas
+              );
+            });
 
-            // Filtrar deportistas que no han pagado este mes y cuya fecha del primer pago sea anterior al mes solicitado
-            deportistaModel.getPrimerPagoDeportistas((primerPagoResult) => {
-              if (primerPagoResult == null)
-                return res.status(500).send("Error en el servidor");
+            // Obtenemos el rol del usuario
+            const rolId = req.rolId;
+            const rolNombre = req.rolNombre;
 
-              // Crear un mapa de deportista -> fecha del primer pago
-              const primerPagoMap = primerPagoResult.reduce((map, pago) => {
-                map[pago.id_deportista] = moment(pago.fecha, "YYYY-MM-DD");
-                return map;
-              }, {});
-
-              // Filtrar deudores
-              const deudores = deportistas.filter((deportista) => {
-                const fechaPrimerPago = primerPagoMap[deportista.id];
-                const mesConsulta = moment(fecha, "YYYY-MM");
-
-                // Verificar que la fecha del primer pago sea antes o igual al mes consultado
-                return (
-                  fechaPrimerPago &&
-                  fechaPrimerPago.isSameOrBefore(mesConsulta, "month") &&
-                  !idsPagados.includes(deportista.id)
-                );
-              });
-
-              // Obtenemos el rol del usuario
-              const rolId = req.rolId;
-              const rolNombre = req.rolNombre;
-
-              // Renderizar la vista de deudores
-              res.render("dashboard/listaDeportistasDeudores", {
-                rolId: rolId,
-                rolNombre: rolNombre,
-                disciplinas: disciplinaData,
-                deudores,
-                fecha,
-                disciplina: disciplina,
-              });
+            // Renderizar la vista de deudores
+            res.render("dashboard/listaDeportistasDeudores", {
+              rolId: rolId,
+              rolNombre: rolNombre,
+              disciplinas: disciplinaData,
+              deudores,
+              fecha,
+              disciplina: disciplina,
             });
           });
         }
       );
     });
   };
+
+  mostrarCuotasDeportistas(req, res) {
+    // Obtenemos la página y el número de filas por página desde la query
+    const { disciplina } = req.params;
+
+    deportistaModel.selectCuotasDeportista(disciplina, (deportistaData) => {
+      if (!deportistaData) {
+        return res
+          .status(500)
+          .send("Error al obtener los datos de los deportistas");
+      }
+      disciplinaModel.listarDisciplinas((disciplinaData) => {
+        // Verificamos si hubo un error al obtener los datos
+        if (disciplinaData === null) {
+          return res
+            .status(500)
+            .send("Error al obtener los datos de las disciplinas");
+        }
+
+        // Obtenemos el rol ID y nombre del request
+        const rolId = req.rolId;
+        const rolNombre = req.rolNombre;
+
+        // Renderizamos la vista "dashboard/deportistas" con los datos obtenidos
+        res.render("dashboard/cuotasDeportistas", {
+          rolId: rolId,
+          rolNombre: rolNombre,
+          disciplinas: disciplinaData,
+          disciplina: disciplina,
+          data: deportistaData,
+        });
+      });
+    });
+  }
+
+  crearCuotaDeportista(req, res) {
+    const { disciplina } = req.params;
+    const { nombre, valordecuota } = req.body;
+
+    if (!nombre || !valordecuota) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
+
+    deportistaModel.insertCuotaDeportista(
+      nombre,
+      valordecuota,
+      disciplina,
+      (cuotaDeportistaData) => {
+        if (cuotaDeportistaData == null) {
+          return res.status(500).json({
+            message: "Error del servidor al crear la cuota de deportistas",
+            ok: false,
+          });
+        }
+
+        res
+          .status(200)
+          .json({ message: "Cuota de deportista creada con exito", ok: true });
+      }
+    );
+  }
+
+  editarCuotaDeportista(req, res) {
+    const { id } = req.params;
+    const { nombre, valordecuota } = req.body;
+
+    if (!nombre || !valordecuota) {
+      return res.status(500).json({
+        message: "Falta completar campos obligatorios",
+        ok: false,
+      });
+    }
+
+    deportistaModel.updateCuotaDeportista(
+      id,
+      nombre,
+      valordecuota,
+      (cuotaDeportistaData) => {
+        if (cuotaDeportistaData == null) {
+          return res.status(500).json({
+            message: "Error del servidor al actualizar la cuota de deportista",
+            ok: false,
+          });
+        }
+
+        res.status(200).json({
+          message: "Cuota de deportista actualizada con exito",
+          ok: true,
+        });
+      }
+    );
+  }
+
+  borrarCuotaDeportista(req, res) {
+    const { id } = req.params;
+
+    deportistaModel.deleteCuotaDeportista(id, (cuotaDeportistaData) => {
+      if (cuotaDeportistaData == null) {
+        return res.status(500).json({
+          message: "Error del servidor al borrar la cuota de deportista",
+          ok: false,
+        });
+      }
+
+      res
+        .status(200)
+        .json({ message: "Cuota de deportista borrada con exito", ok: true });
+    });
+  }
 }
 
 // Exportamos la clase DeportistasController

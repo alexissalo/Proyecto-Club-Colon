@@ -237,4 +237,109 @@ router.get(
   deportistasController.traerPagosPorDeportista
 );
 
+router.get(
+  "/dashboard/cuotasdeportivas/:disciplina",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.mostrarCuotasDeportistas
+);
+
+router.post(
+  "/crearTipoCuota/:disciplina",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.crearCuotaDeportista
+);
+
+router.put(
+  "/editarTipoCuota/:disciplina/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.editarCuotaDeportista
+);
+
+router.delete(
+  "/borrarTipoCuota/:disciplina/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.borrarCuotaDeportista
+);
+
+router.get(
+  "/listarFacturasImpagas/:disciplina/:id",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol([
+      "coordinador_futbol",
+      "coordinador_tenis",
+      "coordinador_voley",
+      "coordinador_basquet",
+      "coordinador_patin",
+      "admin_futbol",
+      "admin_tenis",
+      "admin_voley",
+      "admin_basquet",
+      "admin_patin",
+    ]),
+    authMiddlewares.verificarAccesoDisciplina("disciplina"),
+  ],
+  deportistasController.listarFacturasImpagas
+);
+
 module.exports = router;

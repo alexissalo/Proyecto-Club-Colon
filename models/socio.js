@@ -1,5 +1,6 @@
 // Importamos la conexión a la base de datos
 const pool = require("../database/db");
+const cron = require("node-cron");
 
 // Definimos la clase SocioModel
 class SocioModel {
@@ -11,36 +12,43 @@ class SocioModel {
 
       // Creamos la consulta SQL para seleccionar los socios
       let sql = `
-        SELECT 
-          s.id,
-          s.nombre, 
-          s.dni, 
-          DATE_FORMAT(s.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento,
-          s.telefono, 
-          s.domicilio,
-          s.email, 
-          DATE_FORMAT(s.fechaInscripcion, '%d-%m-%Y') AS fechaInscripcion,
-          d.nombre AS deporte,
-          ts.nombre AS tipodesocio
-        FROM 
-          socios s
-        LEFT JOIN 
-          disciplinas d ON s.id_disciplina = d.id
-        LEFT JOIN 
-          tiposdesocios ts ON s.id_tipo_socio = ts.id
-      `;
+            SELECT 
+                s.id,
+                s.nombre, 
+                s.dni, 
+                DATE_FORMAT(s.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento,
+                s.telefono, 
+                s.domicilio,
+                s.estado,
+                s.email, 
+                DATE_FORMAT(s.fechaInscripcion, '%d-%m-%Y') AS fechaInscripcion,
+                d.nombre AS deporte,
+                ts.nombre AS tipodesocio
+            FROM 
+                socios s
+            LEFT JOIN 
+                disciplinas d ON s.id_disciplina = d.id
+            LEFT JOIN 
+                tiposdesocios ts ON s.id_tipo_socio = ts.id
+        `;
 
       // Agregamos la cláusula WHERE si se proporciona un término de búsqueda
       if (buscar) {
         sql += ` WHERE s.nombre LIKE ? OR s.dni LIKE ?`;
       }
 
+      // Ordenamos los resultados: activos primero, ordenados por nombre, y luego los inactivos
+      sql += `
+            ORDER BY 
+                s.estado = 'inactivo', -- Inactivos al final
+                s.nombre ASC -- Orden alfabético
+        `;
+
       // Agregamos la cláusula LIMIT y OFFSET para la paginación
       sql += ` LIMIT ? OFFSET ?`;
 
       // Preparamos los parámetros para la consulta
       let params = [];
-
       if (buscar) {
         params = [`%${buscar}%`, `%${buscar}%`, filasPorPagina, offset];
       } else {
@@ -50,48 +58,12 @@ class SocioModel {
       // Ejecutamos la consulta utilizando el pool de conexiones
       const [socios] = await pool.query(sql, params);
 
-      // Luego, para cada socio, obtenemos los pagos correspondientes
-      const arregloSocios = await Promise.all(
-        socios.map(async (socio) => {
-          let sql = `
-            SELECT
-              sa.id,
-              DATE_FORMAT(sa.fecha, '%d-%m-%Y') AS fecha,
-              sa.valor
-            FROM 
-              socios_abonos sa
-            WHERE 
-              sa.id_socio = ?
-          `;
-
-          const [pagos] = await pool.query(sql, [socio.id]);
-
-          return {
-            id: socio.id,
-            nombre: socio.nombre,
-            dni: socio.dni,
-            fechaNacimiento: socio.fechaNacimiento,
-            telefono: socio.telefono,
-            domicilio: socio.domicilio,
-            email:socio.email,
-            fechaInscripcion: socio.fechaInscripcion,
-            deporte: socio.deporte,
-            tipodesocio: socio.tipodesocio,
-            pagos: pagos.map((pago) => ({
-              idPago:pago.id,
-              fecha: pago.fecha,
-              valor: pago.valor,
-            })),
-          };
-        })
-      );
-
       // Pasamos el resultado a la función callback
-      callback(arregloSocios);
+      callback(socios);
     } catch (error) {
       // Mostramos el error en la consola si ocurre algún problema
       console.error(error);
-      callback(null)
+      callback(null);
     }
   }
 
@@ -111,7 +83,7 @@ class SocioModel {
       }
     } catch (error) {
       console.error(error);
-      callback(null)
+      callback(null);
     }
   }
 
@@ -120,6 +92,7 @@ class SocioModel {
     dni,
     telefono,
     fechaNacimiento,
+    fechaInscripcion,
     domicilio,
     email,
     deporte,
@@ -127,7 +100,10 @@ class SocioModel {
     callback
   ) {
     try {
-      let sql = `INSERT INTO socios(nombre,dni,telefono,fechaNacimiento,domicilio,id_tipo_socio,id_disciplina,email,fechaInscripcion) VALUES (?,?,?,?,?,?,?,?,now())`;
+      const sql = `
+        INSERT INTO socios(nombre, dni, telefono, fechaNacimiento, domicilio, id_tipo_socio, id_disciplina, email, fechaInscripcion) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
 
       const [result] = await pool.query(sql, [
         nombre,
@@ -137,8 +113,65 @@ class SocioModel {
         domicilio,
         tipodesocio,
         deporte,
-        email
+        email,
+        fechaInscripcion,
       ]);
+
+      await this.generarFactura(result.insertId, tipodesocio, callback);
+
+      callback(null, result); // Retorna resultado si no hay error
+    } catch (error) {
+      callback(error, null); // Retorna error si ocurre
+    }
+  }
+
+  async generarFactura(socioId, tipoSocioId, callback) {
+    try {
+      // Obtener el valor de la cuota del tipo de socio
+      const [result] = await pool.query(
+        `SELECT valorDeCuota FROM tiposdesocios WHERE id = ?`,
+        [tipoSocioId]
+      );
+
+      const valorDeCuota = result[0].valorDeCuota;
+
+      if (valorDeCuota > 0) {
+        await pool.query(
+          `
+          INSERT INTO facturas_socios (id_socio, fecha_emision, monto, estado) 
+          VALUES (?, now(), ?, 'pendiente')
+      `,
+          [socioId, valorDeCuota]
+        );
+
+        console.log("Factura generada para el socio:", socioId);
+      } else {
+        console.log(
+          `Factura no generada para el socio con ID ${socioId}: valor de cuota no válido (${valorDeCuota}).`
+        );
+      }
+    } catch (error) {
+      console.log("Error al generar factura:", error);
+      callback(null, error);
+    }
+  }
+
+  async darDeBajaSocio(id, callback) {
+    try {
+      let sql = `UPDATE socios SET estado = 'inactivo' WHERE id = ?`;
+      const [result] = await pool.query(sql, [id]);
+
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+
+  async darDeAltaSocio(id, callback) {
+    try {
+      let sql = `UPDATE socios SET estado = 'activo' WHERE id = ?`;
+      const [result] = await pool.query(sql, [id]);
 
       callback(result);
     } catch (error) {
@@ -161,14 +194,22 @@ class SocioModel {
     try {
       let sql = `UPDATE socios SET nombre = ?, telefono = ?, domicilio = ?, id_tipo_socio= ?, id_disciplina= ?, email= ? WHERE id = ?`;
 
-      const params = [nombre, telefono, domicilio,tipodesocio,deporte,email, id];
+      const params = [
+        nombre,
+        telefono,
+        domicilio,
+        tipodesocio,
+        deporte,
+        email,
+        id,
+      ];
 
       const [result] = await pool.query(sql, params);
 
       callback(result);
     } catch (error) {
       console.error(error);
-      callback(null)
+      callback(null);
     }
   }
 
@@ -182,7 +223,7 @@ class SocioModel {
       callback(result);
     } catch (error) {
       console.error(error);
-      callback(null)
+      callback(null);
     }
   }
 
@@ -195,100 +236,135 @@ class SocioModel {
       callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
-  async insertPago(id_socio,valor,fechaPago,callback){
-
-    try{
-      let sql= "INSERT INTO socios_abonos(id_socio,valor,fecha) VALUES (?,?,?)"
-
-      const [result]=await pool.query(sql,[id_socio,valor,fechaPago])
-      
-      callback(result)
-    }catch(error){
-      console.log(error);
-      callback(null)
-    }
-  }
-
-  async insertTipoDeSocio(nombre,valordecuota,callback){
+  async insertPago(
+    id_socio,
+    monto,
+    metodoPago,
+    facturasSeleccionadas,
+    callback
+  ) {
     try {
-      let sql= "INSERT INTO tiposdesocios(nombre,valorDeCuota) VALUES (?,?)"
+      // Insertar el pago
+      const sqlPago = `
+        INSERT INTO socios_abonos (fecha_pago, monto_pagado, metodo_pago, id_facturas)
+        VALUES (now(), ?, ?, ?)
+      `;
+      const [pagoResult] = await pool.query(sqlPago, [
+        monto,
+        metodoPago,
+        JSON.stringify(facturasSeleccionadas),
+      ]);
 
-      const[result]=await pool.query(sql,[nombre,valordecuota])
-      callback(result)
+      // Actualizar las facturas como pagadas
+      const sqlFacturas = `
+        UPDATE facturas_socios 
+        SET estado = "pagado" 
+        WHERE id IN (?);
+    `;
+
+      await pool.query(sqlFacturas, [facturasSeleccionadas]);
+
+      callback(pagoResult);
+    } catch (error) {
+      console.error(error);
+      callback(null);
+    }
+  }
+
+  async insertTipoDeSocio(nombre, valordecuota, callback) {
+    try {
+      let sql = "INSERT INTO tiposdesocios(nombre,valorDeCuota) VALUES (?,?)";
+
+      const [result] = await pool.query(sql, [nombre, valordecuota]);
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
-      
+      callback(null);
     }
   }
 
-  async updateTipoDeSocio(id,nombre,valordecuota,callback){
+  async updateTipoDeSocio(id, nombre, valordecuota, callback) {
     try {
-      let sql= "UPDATE tiposdesocios SET nombre = ? , valorDeCuota = ? WHERE id= ?"
+      let sql =
+        "UPDATE tiposdesocios SET nombre = ? , valorDeCuota = ? WHERE id= ?";
 
-      const[result]=await pool.query(sql,[nombre,valordecuota,id])
-      callback(result)
+      const [result] = await pool.query(sql, [nombre, valordecuota, id]);
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
-      
+      callback(null);
     }
   }
 
-  async deleteTipoDeSocio(id,callback){
+  async deleteTipoDeSocio(id, callback) {
     try {
-      let sql="DELETE FROM tiposdesocios WHERE id=?"
+      let sql = "DELETE FROM tiposdesocios WHERE id=?";
 
-      const [result]=await pool.query(sql,[id])
-      callback(result)
+      const [result] = await pool.query(sql, [id]);
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
-  async listarCantidadDeSociosPorTipo(callback){
+  async listarCantidadDeSociosPorTipo(callback) {
     try {
-      let sql=`SELECT tiposdesocios.nombre, COUNT(socios.id) AS cantidad_socios
+      let sql = `SELECT tiposdesocios.nombre, COUNT(socios.id) AS cantidad_socios
               FROM socios JOIN tiposdesocios ON socios.id_tipo_socio = tiposdesocios.id
-              GROUP BY tiposdesocios.nombre;`
-      const [result]=await pool.query(sql,[])
-      
-      callback(result)
+              GROUP BY tiposdesocios.nombre;`;
+      const [result] = await pool.query(sql, []);
+
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
-  async getPagosById(id, callback){
-
+  async getPagosById(id, callback) {
     try {
-      let sql=`SELECT id, id_socio, valor, DATE_FORMAT(fecha, '%d-%m-%Y') AS fecha FROM socios_abonos WHERE id_socio= ?`
+      let sql = `SELECT id, id_socio, valor, DATE_FORMAT(fecha, '%d-%m-%Y') AS fecha FROM socios_abonos WHERE id_socio= ?`;
 
-      const [result]= await pool.query(sql, [id])
+      const [result] = await pool.query(sql, [id]);
 
-      callback(result)
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
-  async getTotalPagosById(id,callback){
+  async getTotalPagosById(id, callback) {
     try {
-      let sql=`SELECT COUNT(*) AS total FROM socios_abonos WHERE id_socio = ?`
+      let sql = `SELECT COUNT(*) AS total FROM socios_abonos WHERE id_socio = ?`;
 
-      const [result]= await pool.query(sql, [id])
+      const [result] = await pool.query(sql, [id]);
 
-      callback(result[0].total)
+      callback(result[0].total);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
+    }
+  }
+
+  async getMontoTipoSocio(idSocio, callback) {
+    try {
+      let sql = `
+        SELECT ts.valorDeCuota AS monto
+        FROM socios s
+        INNER JOIN tiposdesocios ts ON s.id_tipo_socio = ts.id
+        WHERE s.id = ?
+      `;
+      const [result] = await pool.query(sql, [idSocio]);
+      callback(result[0] ? result[0].monto : null);
+    } catch (error) {
+      console.error("Error al obtener el monto del tipo de socio:", error);
+      callback(null);
     }
   }
 
@@ -300,10 +376,10 @@ class SocioModel {
         FROM socios_abonos
         WHERE id_socio = ?
       `;
-      
+
       // Ejecutar la consulta
       const [result] = await pool.query(sql, [id_socio]);
-  
+
       // Devolver el resultado a través del callback
       callback(result[0].totalCuotas);
     } catch (error) {
@@ -311,18 +387,17 @@ class SocioModel {
       callback(null);
     }
   }
-  
 
-  async getSocioById(id,callback){
+  async getSocioById(id, callback) {
     try {
-      let sql= `SELECT * FROM socios WHERE id= ?`
+      let sql = `SELECT * FROM socios WHERE id= ?`;
 
-      const [result]=await pool.query(sql, [id])
+      const [result] = await pool.query(sql, [id]);
 
-      callback(result)
+      callback(result);
     } catch (error) {
       console.log(error);
-      callback(null)
+      callback(null);
     }
   }
 
@@ -337,23 +412,32 @@ class SocioModel {
     }
   }
 
-  async getPagosDelMes(mesActual, callback) {
+  async getFacturasPendientesDelMes(mesActual, callback) {
     try {
       const sql = `
-        SELECT id_socio 
-        FROM socios_abonos 
-        WHERE DATE_FORMAT(fecha, '%Y-%m') = ?`;
+        SELECT 
+          fs.id, 
+          fs.id_socio, 
+          fs.fecha_emision, 
+          fs.monto, 
+          fs.estado 
+        FROM 
+          facturas_socios fs
+        WHERE 
+          DATE_FORMAT(fs.fecha_emision, '%Y-%m') = ?
+          AND fs.estado = 'pendiente'
+      `;
       const [result] = await pool.query(sql, [mesActual]);
       callback(result);
     } catch (error) {
-      console.log(error);
+      console.error("Error al obtener las facturas pendientes del mes:", error);
       callback(null);
     }
   }
 
-  async listarSociosParaExcel(){
+  async listarSociosParaExcel() {
     try {
-      let sql=`SELECT 
+      let sql = `SELECT 
           s.id,
           s.nombre, 
           s.dni, 
@@ -369,17 +453,47 @@ class SocioModel {
         LEFT JOIN 
           disciplinas d ON s.id_disciplina = d.id
         LEFT JOIN 
-          tiposdesocios ts ON s.id_tipo_socio = ts.id`
-      
-      const [result]=await pool.query(sql,[])
+          tiposdesocios ts ON s.id_tipo_socio = ts.id`;
 
-      return result
+      const [result] = await pool.query(sql, []);
+
+      return result;
     } catch (error) {
       console.log(error);
-      throw error
+      throw error;
     }
   }
-  
+
+  async getTipoDeSocioById(id, callback) {
+    try {
+      let sql = `
+      SELECT * 
+      FROM tiposdesocios
+      WHERE id = ?
+    `;
+      const [result] = await pool.query(sql, [id]);
+
+      callback(result[0]);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+
+  async getFacturasById(id_socio, callback) {
+    try {
+      let query = `
+      SELECT f.id, DATE_FORMAT(f.fecha_emision, '%d-%m-%Y') AS fecha_emision, f.monto, f.estado 
+      FROM facturas_socios AS f 
+      WHERE f.id_socio = ?`;
+      const [result] = await pool.query(query, [id_socio]);
+
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
 }
 
 // Exportamos la clase SocioModel

@@ -4,12 +4,16 @@ const app = express();
 const port = 3000;
 const {keysecretsession}=require("./config")
 
+
 const rutasSocios= require("./routes/socio")
 const rutasUsuarios = require('./routes/usuario');
 const rutasEventos= require("./routes/evento")
 const rutasEconomia= require("./routes/economia")
 const rutasDeportistas= require("./routes/deportistas")
 const rutasMovimientos= require("./routes/movimiento")
+const rutasCron= require("./routes/cron")
+
+
 
 // MiddleWare
 
@@ -39,6 +43,7 @@ app.use("/",rutasEventos)
 app.use("/",rutasEconomia)
 app.use("/",rutasDeportistas)
 app.use("/", rutasMovimientos)
+app.use("/cron",rutasCron)
 
 
 app.listen(port, () => {

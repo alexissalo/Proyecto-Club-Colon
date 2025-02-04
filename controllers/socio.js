@@ -77,6 +77,21 @@ class SocioController {
     });
   }
 
+  // mostrarEscanerSocios(req, res) {
+  //   disciplinaModel.listarDisciplinas((disciplinaData) => {
+  //     // Obtenemos el rol del usuario
+  //     const rolId = req.rolId;
+  //     const rolNombre = req.rolNombre;
+
+  //     // Renderizamos la vista de socios con los datos obtenidos
+  //     res.render("dashboard/escaner", {
+  //       rolId: rolId,
+  //       rolNombre: rolNombre,
+  //       disciplinas: disciplinaData,
+  //     });
+  //   });
+  // }
+
   crearSocio(req, res) {
     const {
       nombre,
@@ -84,13 +99,15 @@ class SocioController {
       domicilio,
       dni,
       fechaNacimiento,
+      fechaInscripcion,
       email,
       deporte,
       tipodesocio,
     } = req.body;
 
+    // Validar campos obligatorios
     if (!nombre || !telefono || !domicilio || !dni || !fechaNacimiento) {
-      return res.status(500).json({
+      return res.status(400).json({
         message: "Falta completar campos obligatorios",
         ok: false,
       });
@@ -101,21 +118,87 @@ class SocioController {
       dni,
       telefono,
       fechaNacimiento,
+      fechaInscripcion,
       domicilio,
       email,
       deporte,
       tipodesocio,
-      (socioData) => {
-        if (socioData == null) {
+      (error, socioData) => {
+        if (error) {
+          // Manejar errores específicos
+          if (error.code === "ER_DUP_ENTRY") {
+            return res.status(400).json({
+              message: "El DNI ingresado ya está registrado.",
+              ok: false,
+            });
+          }
+
+          // Manejar otros errores
           return res.status(500).json({
-            message: "Error del servidor al crear el socio",
+            message: "Error del servidor al crear el socio.",
             ok: false,
+            error: error.message, // Para depuración
           });
         }
 
-        res.status(200).json({ message: "Socio creado con exito", ok: true });
+        // Si no hubo errores, responde con éxito
+        res.status(201).json({
+          message: "Socio creado con éxito.",
+          ok: true,
+          data: socioData,
+        });
       }
     );
+  }
+
+  darDeBajaSocio(req, res) {
+    const { id } = req.params;
+
+    socioModel.darDeBajaSocio(id, (data) => {
+      if (data == null) {
+        return res.status(500).json({
+          message: "Error del servidor al dar de baja al socio",
+          ok: false,
+        });
+      }
+
+      if (data.affectedRows === 0) {
+        return res.status(500).json({
+          message: "Socio no encontrado",
+          ok: false,
+        });
+      }
+
+      res.status(200).json({
+        message: "El socio fue dado de baja con exito",
+        ok: true,
+      });
+    });
+  }
+
+  darDeAltaSocio(req, res) {
+    const { id } = req.params;
+
+    socioModel.darDeAltaSocio(id, (data) => {
+      if (data == null) {
+        return res.status(500).json({
+          message: "Error del servidor al dar de alta al socio",
+          ok: false,
+        });
+      }
+
+      if (data.affectedRows === 0) {
+        return res.status(500).json({
+          message: "Socio no encontrado",
+          ok: false,
+        });
+      }
+
+      res.status(200).json({
+        message: "El socio fue dado de alta con exito",
+        ok: true,
+      });
+    });
   }
 
   actualizarSocio(req, res) {
@@ -169,26 +252,27 @@ class SocioController {
   }
 
   crearPago(req, res) {
-    const { id_socio, valor, fechaPago } = req.body;
+    const { monto, metodoPago, facturas } = req.body;
 
-    if (!id_socio || !valor || !fechaPago) {
-      return res.status(500).json({
-        message: "Falta completar campos obligatorios",
+    if (!monto || !metodoPago || !facturas || !facturas.length) {
+      return res.status(400).json({
+        message: "Faltan campos obligatorios o no se seleccionaron facturas",
         ok: false,
       });
     }
 
-    socioModel.insertPago(id_socio, valor, fechaPago, (socioData) => {
-      if (socioData == null) {
-        return res
-          .status(500)
-          .json({ message: "Error del servidor al crear el pago", ok: false });
+    socioModel.insertPago(null, monto, metodoPago, facturas, (result) => {
+      if (!result) {
+        return res.status(500).json({
+          message: "Error del servidor al procesar el pago",
+          ok: false,
+        });
       }
 
       res.status(200).json({
-        message: "Pago creado con exito",
+        message: "Pago creado y facturas asociadas con éxito",
         ok: true,
-        idPago: socioData.insertId,
+        idPago: result.idPago,
       });
     });
   }
@@ -197,7 +281,6 @@ class SocioController {
     const id_socio = req.params.id;
 
     disciplinaModel.listarDisciplinas((disciplinaData) => {
-      // 1. Obtener información del socio
       socioModel.getSocioById(id_socio, (socioResult) => {
         if (socioResult == null)
           return res.status(500).send("Error en el servidor");
@@ -205,89 +288,98 @@ class SocioController {
           return res.status(404).send("Socio no encontrado");
 
         const socio = socioResult[0];
-        const fechaInscripcion = moment(socio.fechaInscripcion);
 
-        // 2. Obtener pagos realizados por el socio
-        socioModel.getPagosById(id_socio, (pagosResult) => {
-          if (pagosResult == null)
+        // Obtener las facturas pendientes
+        socioModel.getFacturasById(id_socio, (facturasResult) => {
+          if (facturasResult == null)
             return res.status(500).send("Error en el servidor");
 
-          const pagos = pagosResult;
-          const cuotas = [];
-          const cuotasPagadas = pagos.map((pago) =>
-            moment(pago.fecha, "DD-MM-YYYY").format("YYYY-MM")
+          // Separar las facturas en pendientes y pagadas
+          const facturasPendientes = facturasResult.filter(
+            (factura) => factura.estado === "pendiente"
+          );
+          const facturasPagadas = facturasResult.filter(
+            (factura) => factura.estado === "pagado"
           );
 
-          // 3. Calcular cuotas mensuales desde la fecha de inscripción hasta hoy
-          let fechaActual = moment();
-          let fechaIterativa = moment(fechaInscripcion);
+          // Calcular el total pendiente
+          const totalPendiente = facturasPendientes.reduce(
+            (total, factura) => total + parseFloat(factura.monto),
+            0
+          );
 
-          while (
-            fechaIterativa.isBefore(fechaActual, "month") ||
-            fechaIterativa.isSame(fechaActual, "month")
-          ) {
-            const mes = fechaIterativa.format("YYYY-MM");
-            const pagado = cuotasPagadas.includes(mes);
-
-            cuotas.push({
-              mes,
-              estado: pagado ? "Pagado" : "Pendiente",
-            });
-
-            // Avanzar al siguiente mes
-            fechaIterativa.add(1, "month");
-          }
-
-          // Obtenemos el rol del usuario
-          const rolId = req.rolId;
-          const rolNombre = req.rolNombre;
-
-          // 4. Renderizar vista con datos
+          // Renderizar la vista con las facturas
           res.render("dashboard/pagosSocios", {
             disciplinas: disciplinaData,
-            rolId: rolId,
-            rolNombre: rolNombre,
+            rolId: req.rolId,
+            rolNombre: req.rolNombre,
             socio,
-            pagos,
-            cuotas,
+            facturasPendientes,
+            facturasPagadas,
+            facturas: facturasResult,
+            totalPendiente: totalPendiente.toFixed(2),
           });
         });
       });
     });
   };
 
-  listarDeudoresMes = (req, res) => {
+  listarFacturasImpagas(req, res) {
+    const id_socio = req.params.id;
+
+    socioModel.getFacturasById(id_socio, (facturasResult) => {
+      if (facturasResult == null) {
+        return res.status(500).json({
+          message: "Error del servidor a listar las facturas",
+          ok: false,
+        });
+      }
+      // Separar las facturas en pendientes y pagadas
+      const facturasPendientes = facturasResult.filter(
+        (factura) => factura.estado === "pendiente"
+      );
+
+      res.json({ data: facturasPendientes, ok: true });
+    });
+  }
+
+  listarDeudoresMes(req, res) {
     const { fecha } = req.params; // Mes y año recibido en formato YYYY-MM
 
     disciplinaModel.listarDisciplinas((disciplinaData) => {
       socioModel.listarSociosParaDeuda((sociosResult) => {
-        if (sociosResult == null)
+        if (sociosResult == null) {
           return res.status(500).send("Error en el servidor");
-        if (sociosResult.length === 0)
+        }
+        if (sociosResult.length === 0) {
           return res.status(404).send("No hay socios registrados");
+        }
 
         // Lista de todos los socios
         const socios = sociosResult;
 
-        socioModel.getPagosDelMes(fecha, (pagosResult) => {
-          if (pagosResult == null)
+        socioModel.getFacturasPendientesDelMes(fecha, (facturasResult) => {
+          if (facturasResult == null) {
             return res.status(500).send("Error en el servidor");
+          }
 
-          // Obtenemos IDs de socios que ya pagaron este mes
-          const idsPagados = pagosResult.map((pago) => pago.id_socio);
-
-          // Filtrar socios que no han pagado este mes y cuya inscripción sea anterior al mes solicitado
+          // Filtrar socios que tienen facturas impagas en el mes solicitado
           const deudores = socios.filter((socio) => {
+            const facturasSocio = facturasResult.filter(
+              (factura) =>
+                factura.id_socio === socio.id && factura.estado === "pendiente" // Consideramos solo facturas impagas
+            );
+
             const fechaInscripcion = moment(
               socio.fechaInscripcion,
               "YYYY-MM-DD"
             );
             const mesConsulta = moment(fecha, "YYYY-MM");
 
-            // Verificar si el socio está inscrito antes del mes consultado y no ha pagado
+            // Verificar si el socio está inscrito antes del mes consultado y tiene facturas impagas
             return (
               fechaInscripcion.isSameOrBefore(mesConsulta, "month") &&
-              !idsPagados.includes(socio.id)
+              facturasSocio.length > 0
             );
           });
 
@@ -306,7 +398,7 @@ class SocioController {
         });
       });
     });
-  };
+  }
 
   crearTipoDeSocio(req, res) {
     const { nombre, valordecuota } = req.body;
@@ -328,7 +420,7 @@ class SocioController {
 
       res
         .status(200)
-        .json({ message: "Tipo de socio creado con exito", ok: true });
+        .json({ message: "Tipo de socio creado con éxito", ok: true });
     });
   }
 
@@ -355,9 +447,10 @@ class SocioController {
           });
         }
 
-        res
-          .status(200)
-          .json({ message: "Tipo de socio actualizado con exito", ok: true });
+        res.status(200).json({
+          message: "Tipo de socio actualizado con éxito",
+          ok: true,
+        });
       }
     );
   }
@@ -376,6 +469,24 @@ class SocioController {
       res
         .status(200)
         .json({ message: "Tipo de socio borrado con exito", ok: true });
+    });
+  }
+
+  getSocioById(req, res) {
+    const { id } = req.params;
+
+    socioModel.getSocioById(id, (socioData) => {
+      if (socioData == null)
+        return res
+          .status(500)
+          .json({ message: "Error en el servidor", ok: false });
+      if (socioData.length === 0)
+        return res
+          .status(404)
+          .json({ message: "Socio no encontrado", ok: false });
+
+      const socio = socioData[0];
+      res.json({ data: socio, ok: true });
     });
   }
 }

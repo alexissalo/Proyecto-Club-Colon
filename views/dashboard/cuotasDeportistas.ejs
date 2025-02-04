@@ -6,23 +6,23 @@
     <link rel="stylesheet" href="/public/css/styles.css">
     <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <style>
-        .formTipoSocio,
-        .formTipoSocioEditar {
+        .formTipoCuota,
+        .formTipoCuotaEditar {
             display: flex;
             flex-direction: column;
             gap: 1rem;
             padding: 1rem;
         }
 
-        .formTipoSocio label,
-        .formTipoSocioEditar label {
+        .formTipoCuota label,
+        .formTipoCuotaEditar label {
             font-weight: bold;
             font-size: 1rem;
             color: #333;
         }
 
-        .formTipoSocio input,
-        .formTipoSocioEditar input {
+        .formTipoCuota input,
+        .formTipoCuotaEditar input {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #ddd;
@@ -32,8 +32,8 @@
             background-color: #fff;
         }
 
-        .formTipoSocio button,
-        .formTipoSocioEditar button {
+        .formTipoCuota button,
+        .formTipoCuotaEditar button {
             padding: 0.75rem 1.5rem;
             background-color: #4CAF50;
             color: white;
@@ -44,17 +44,17 @@
             transition: background-color 0.3s ease;
         }
 
-        .formTipoSocio button:hover,
-        .formTipoSocioEditar button:hover {
+        .formTipoCuota button:hover,
+        .formTipoCuotaEditar button:hover {
             background-color: #45a049;
         }
 
-        .formTipoSocio button:active,
-        .formTipoSocioEditar button:active {
+        .formTipoCuota button:active,
+        .formTipoCuotaEditar button:active {
             background-color: #3e8e41;
         }
     </style>
-    <title>Tipos de socios</title>
+    <title>Cuotas Deportistas</title>
 </head>
 
 <body>
@@ -65,44 +65,45 @@
                 <!-- Main -->
                 <main class="main-container">
                     <div class="main-title">
-                        <h2>TIPOS DE SOCIOS</h2>
+                        <h2>Cuotas de Deportistas</h2>
                     </div>
                     <div class="container-tablas">
                         <div class="tabla-header">
-                            <button id="toggleCron" style="padding: 15px; background-color: #db0000; color: black; margin-left: 0;"
-                                onclick="toggleCronSocios()">Activar Cron</button>
-                            <button style="padding: 15px;" onclick="añadirTipoSocio()">Nuevo tipo de socio</button>
+                            <button id="toggleCron"
+                                style="padding: 15px; background-color: #db0000; color: black; margin-left: 0;"
+                                onclick="toggleCronDeportistas()">Activar Cron</button>
+                            <button style="padding: 15px;" onclick="añadirTipoCuota()">Nueva Tipo de Cuota</button>
                         </div>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Tipo de socio</th>
+                                    <th>Nombre</th>
                                     <th>Valor de Cuota</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <% if (tiposdesocios.length> 0) { %>
-                                    <% tiposdesocios.forEach(function(tiposocio) { %>
+                                <% if (data.length> 0) { %>
+                                    <% data.forEach(function(item) { %>
                                         <tr>
                                             <td style="width: 800px;">
-                                                <%= tiposocio.nombre %>
+                                                <%= item.nombre %>
                                             </td>
                                             <td style="width: 40%;">
-                                                <%= tiposocio.valorDeCuota %>
+                                                <%= item.valorDeCuota %>
                                             </td>
                                             <td style="width: 10%;">
                                                 <i class="bi bi-pencil-fill" title="Editar"
-                                                    onclick="editarTipoSocio(<%= JSON.stringify(tiposocio) %>)"></i>
+                                                    onclick="editarTipoCuota(<%= JSON.stringify(item) %>)"></i>
                                                 <i class="bi bi-trash-fill" title="Eliminar"
-                                                    onclick="borrarTipoDeSocio(<%= tiposocio.id%>)"></i>
+                                                    onclick="borrarTipoCuota(<%= item.id%>)"></i>
                                             </td>
                                         </tr>
                                         <% }); %>
                                             <% } else { %>
                                                 <tr>
-                                                    <td colspan="8" style="text-align: center;">No hay tipos de socios
-                                                        registrados</td>
+                                                    <td colspan="8" style="text-align: center;">No hay tipos de cuotas
+                                                        registradas</td>
                                                 </tr>
                                                 <% } %>
                             </tbody>
@@ -116,17 +117,18 @@
     <script src="/public/js/interacciones.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const disciplinaActual = "<%= disciplina %>";
 
-        function añadirTipoSocio() {
+        function añadirTipoCuota() {
             Swal.fire({
-                title: 'Agregar nuevo tipo de socio',
+                title: 'Agregar nueva tipo de cuota',
                 html: `
-                    <form class="formTipoSocio">
+                    <form class="formTipoCuota">
                         <label for="nombre">Nombre:</label>
                         <input type="text" id="nombre" required>
                         <label for="valorcuota">Valor de la cuota:</label>
                         <input type="number" id="valorcuota" required>
-                        <button type="submit">Guardar Tipo de Socio</button>
+                        <button type="submit">Guardar</button>
                     </form>
                     <div class="error-message"></div>
                 `,
@@ -136,14 +138,14 @@
                 allowOutsideClick: false,
             });
 
-            document.querySelector(".formTipoSocio").addEventListener("submit", (e) => {
+            document.querySelector(".formTipoCuota").addEventListener("submit", (e) => {
                 e.preventDefault()
 
                 const nombre = document.getElementById('nombre').value;
                 const valorCuota = document.getElementById("valorcuota").value;
                 const errorMessage = document.querySelector(".error-message");
 
-                fetch('/crearTipoSocio', {
+                fetch(`/crearTipoCuota/${disciplinaActual}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -159,7 +161,7 @@
                         errorMessage.textContent = data.message
                         if (data.ok) {
                             Swal.fire({
-                                title: "Tipo de socio creado!",
+                                title: "Tipo de cuota creada!",
                                 text: data.message,
                                 icon: "success",
                                 confirmButtonColor: "#4CAF50",
@@ -174,16 +176,16 @@
             })
         }
 
-        function editarTipoSocio(tiposocio) {
+        function editarTipoCuota(tipocuota) {
             Swal.fire({
-                title: 'Editar tipo de socio',
+                title: 'Editar tipo de cuota',
                 html: `
-                    <form class="formTipoSocioEditar">
+                    <form class="formTipoCuotaEditar">
                         <label for="nombreEditar">Nombre:</label>
-                        <input type="text" id="nombreEditar" value="${tiposocio.nombre}" required>
+                        <input type="text" id="nombreEditar" value="${tipocuota.nombre}" required>
                         <label for="valorcuotaEditar">Valor de la cuota:</label>
-                        <input type="number" id="valorcuotaEditar" value="${tiposocio.valorDeCuota}" required>
-                        <button type="submit">Actualizar Tipo de Socio</button>
+                        <input type="number" id="valorcuotaEditar" value="${tipocuota.valorDeCuota}" required>
+                        <button type="submit">Actualizar</button>
                     </form>
                     <div class="error-message"></div>
                 `,
@@ -193,14 +195,14 @@
                 allowOutsideClick: false,
             });
 
-            document.querySelector(".formTipoSocioEditar").addEventListener("submit", (e) => {
+            document.querySelector(".formTipoCuotaEditar").addEventListener("submit", (e) => {
                 e.preventDefault()
 
                 const nombre = document.getElementById('nombreEditar').value;
                 const valorCuota = document.getElementById("valorcuotaEditar").value;
                 const errorMessage = document.querySelector(".error-message");
 
-                fetch(`/editarTipoSocio/${tiposocio.id}`, {
+                fetch(`/editarTipoCuota/${disciplinaActual}/${tipocuota.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -216,7 +218,7 @@
                         errorMessage.textContent = data.message
                         if (data.ok) {
                             Swal.fire({
-                                title: "Tipo de socio actualizado!",
+                                title: "Tipo de cuota actualizada!",
                                 text: data.message,
                                 icon: "success",
                                 confirmButtonColor: "#4CAF50",
@@ -231,7 +233,7 @@
             })
         }
 
-        function borrarTipoDeSocio(id) {
+        function borrarTipoCuota(id) {
             Swal.fire({
                 title: "Estas seguro?",
                 icon: "warning",
@@ -242,7 +244,7 @@
                 confirmButtonText: "Borrar"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/borrarTipoSocio/${id}`, {
+                    fetch(`/borrarTipoCuota/${disciplinaActual}/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'
@@ -251,7 +253,7 @@
                         if (response.ok) {
                             Swal.fire({
                                 title: "Borrado!",
-                                text: "El tipo de socio ha sido borrado.",
+                                text: "El tipo de cuota ha sido borrado.",
                                 icon: "success"
                             }).then((response) => {
                                 if (result.isConfirmed) {
@@ -270,7 +272,7 @@
         let cronActivo = false; // Estado inicial del cron (puedes inicializarlo según tu lógica en el backend).
 
 
-        function toggleCronSocios() {
+        function toggleCronDeportistas() {
             const mensajeConfirmacion = cronActivo
                 ? '¿Estás seguro de que deseas desactivar la facturacion automatica?'
                 : '¿Estás seguro de que deseas activar la facturacion automatica?';
@@ -287,8 +289,8 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     const endpoint = cronActivo
-                        ? '/cron/desactivar-socios'
-                        : '/cron/activar-socios';
+                        ? '/cron/desactivar-deportistas'
+                        : '/cron/activar-deportistas';
 
                     fetch(endpoint, {
                         method: 'POST',
@@ -338,7 +340,7 @@
 
         // Llamar al servidor para verificar el estado inicial del cron.
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('/cron/estado-socios-cron', {
+            fetch('/cron/estado-deportistas-cron', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

@@ -128,6 +128,7 @@
                                     <th>Email</th>
                                     <th>Tipo de socio</th>
                                     <th>Deporte</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -167,7 +168,15 @@
                                                             No realiza deporte
                                                             <% } %>
                                             </td>
+                                            <td style="text-transform: capitalize;">
+                                                <%= socio.estado %>
+                                            </td>
                                             <td>
+                                                <% if (socio.estado=="activo") { %>
+                                                    <i class="bi bi-person-down" title="Dar de Baja" onclick="darDeBajaSocio(<%= socio.id%>)"></i>
+                                                <% }else{ %>
+                                                    <i class="bi bi-person-up" title="Dar de Alta" onclick="darDeAltaSocio(<%= socio.id%>)"></i>
+                                                <% } %>
                                                 <i class="bi bi-clipboard" title="Ver Pagos"
                                                     onclick="window.location.href=`/dashboard/socios/pagos/<%= socio.id%>`"></i>
                                                 <i class="bi bi-cash" title="Pagos"
@@ -213,13 +222,15 @@
                             </div>
                         </div>
                         <div class="dropdown">
-                            <button class="botonlistadodeudores" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                              Acciones
+                            <button class="botonlistadodeudores" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Acciones
                             </button>
                             <ul class="dropdown-menu">
-                              <li onclick="modalListaDeudores()">Listado de deudores</li>
-                              <li id="downloadExcel"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar a Excel</li>
-                              <li id="downloadPdf"><i class="bi bi-filetype-pdf"></i> Exportar a PDF</li>
+                                <li onclick="modalListaDeudores()">Listado de deudores</li>
+                                <li id="downloadExcel"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar a Excel
+                                </li>
+                                <li id="downloadPdf"><i class="bi bi-filetype-pdf"></i> Exportar a PDF</li>
                             </ul>
                         </div>
                     </div>
@@ -227,7 +238,9 @@
                 <!-- End Main -->
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
     <script src="/public/js/interacciones.js"></script>
     <script>
 
@@ -308,6 +321,8 @@
                         <input type="text" id="domicilio" required>
                         <label for="dni">DNI:</label>
                         <input type="number" id="dni" required>
+                        <label for="fechaInscripcion">Fecha de inscripcion:</label>
+                        <input type="date" id="fechaInscripcion" required>
                         <label for="fechaNacimiento">Fecha de nacimiento:</label>
                         <input type="date" id="fechaNacimiento" required>
                         <label for="email">Email:</label>
@@ -339,6 +354,7 @@
                 const domicilio = document.getElementById('domicilio').value;
                 const dni = document.getElementById('dni').value;
                 const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+                const fechaInscripcion = document.getElementById('fechaInscripcion').value;
                 const email = document.getElementById("email").value
                 const tipoSocio = document.getElementById('tipoSocio').value;
                 const deporte = document.getElementById('deporte').value;
@@ -355,6 +371,7 @@
                         domicilio: domicilio,
                         dni: dni,
                         fechaNacimiento: fechaNacimiento,
+                        fechaInscripcion: fechaInscripcion,
                         email: email,
                         tipodesocio: tipoSocio,
                         deporte: deporte
@@ -367,11 +384,12 @@
                                 title: "Socio creado!",
                                 text: data.message,
                                 icon: "success",
-                                confirmButtonColor: "#4CAF50",
-                            }).then((response) => {
-                                if (response.isConfirmed) {
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                didClose: () => {
                                     window.location.reload()
-                                }
+                                } 
                             })
                         } else {
                             errorMessage.textContent = data.message
@@ -403,11 +421,13 @@
                                 Swal.fire({
                                     title: "Borrado!",
                                     text: `${data.message}`,
-                                    icon: "success"
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
+                                    icon: "success",
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true,
+                                    didClose: () => {
                                         window.location.reload()
-                                    }
+                                    } 
                                 })
                             } else {
                                 console.error('Response error:', data.message);
@@ -492,12 +512,13 @@
                                 title: "Socio actualizado!",
                                 text: data.message,
                                 icon: "success",
-                                confirmButtonColor: "#4CAF50",
-                            }).then((response) => {
-                                if (response.isConfirmed) {
-                                    window.location.reload();
-                                }
-                            });
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                didClose: () => {
+                                    window.location.reload()
+                                } 
+                            })
                         } else {
                             // Mostrar el mensaje de error en el modal
                             errorMessage.textContent = data.message;
@@ -511,58 +532,109 @@
         }
 
         function crearPago(socio) {
+    // Solicitar las facturas impagas del socio
+    fetch(`/listarFacturasImpagas/${socio.id}`)
+        .then(response => response.json())
+        .then(res => {
+            if (!res.ok) {
+                console.error('Error al obtener facturas:', res.message);
+                return;
+            }
 
-            const errorMessage = document.querySelector(".error-message")
-            // Buscar el tipo de socio en el array usando el id_tipo_socio del objeto socio
-            const tipoSocio = tiposDeSociosData.find(tipo => tipo.nombre === socio.tipodesocio);
+            const facturas = res.data; // Array de facturas impagas
+            const facturasHtml = `
+            <div class="container-tablas">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Monto</th>
+                            <th>Fecha de Emision</th>
+                            <th>Seleccionar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${facturas && facturas.length > 0 ? facturas.map(factura => `
+                        <tr>
+                            <td>${factura.id}</td>
+                            <td class="monto">$${factura.monto}</td>
+                            <td>${factura.fecha_emision}</td>
+                            <td>
+                                <input type="checkbox" class="factura-checkbox" data-monto="${factura.monto}" value="${factura.id}">
+                            </td>
+                        </tr>`).join('') :
+                        `
+                        <tr>
+                            <td colspan="4" style="padding: 10px; text-align: center;">No se encuentran facturas</td>
+                        </tr>
+                        `}
+                    </tbody>
+                </table>
+            </div>
+            `;
 
-            // Obtener el valor de la cuota o establecer un valor predeterminado si no se encuentra el tipo de socio
-            const valorCuota = tipoSocio ? tipoSocio.valorDeCuota : 0;
-
-            // Obtener la fecha actual correctamente en formato YYYY-MM-DD según la zona horaria local
-            const fechaActual = new Date();
-            const anio = fechaActual.getFullYear();
-            const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Los meses en JavaScript empiezan desde 0
-            const dia = fechaActual.getDate().toString().padStart(2, '0');
-            const fechaFormateada = `${anio}-${mes}-${dia}`;
-
+            // Mostrar el modal con las facturas
             Swal.fire({
                 title: 'Crear pago',
                 html: `
-                    <form class="formSocioPago">
-                        <label>Valor de la cuota:</label>
-                        <input type="number" value="${valorCuota}" class="monto" required>
-                        <label>Fecha del pago:</label>
-                        <input type="date" value="${fechaFormateada}" class="fechaPago" required>
-                        <label>Metodo de pago:</label>
-                        <select required>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia">Transferencia</option>
-                        </select>
-                        <button type="submit">Guardar Pago</button>
-                    </form>
-                    <div class="error-message" style="color: red; margin-top: 10px;"></div>
+                <form class="formSocioPago">
+                    <div>
+                        <h4>Selecciona las facturas a pagar:</h4>
+                        ${facturasHtml}
+                    </div>
+                    <div id="monto-total" style="margin-top: 10px; font-weight: bold;">Monto total: $0</div>
+                    <label>Método de pago:</label>
+                    <select required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                    <button type="submit">Guardar Pago</button>
+                </form>
+                <div class="error-message" style="color: red; margin-top: 10px;"></div>
                 `,
                 showConfirmButton: false,
                 showCloseButton: true,
-                showCancelButton: false,
                 allowOutsideClick: false,
             });
 
+            // Actualizar el monto total cuando cambian las selecciones
+            const checkboxes = document.querySelectorAll(".factura-checkbox");
+            const totalDisplay = document.querySelector("#monto-total");
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener("change", () => {
+                    const total = Array.from(checkboxes)
+                        .filter(cb => cb.checked)
+                        .reduce((sum, cb) => sum + parseFloat(cb.dataset.monto), 0);
+
+                    totalDisplay.textContent = `Monto total: $${total.toFixed(2)}`;
+                });
+            });
+
+            // Manejar el envío del formulario
             document.querySelector(".formSocioPago").addEventListener("submit", (e) => {
                 e.preventDefault();
 
-                const monto = document.querySelector(".formSocioPago .monto").value
-                const fechaPago = document.querySelector(".formSocioPago .fechaPago").value
-                const metodoDePago = document.querySelector(".formSocioPago select").value
+                // Recoger las facturas seleccionadas
+                const facturasSeleccionadas = Array.from(document.querySelectorAll(".factura-checkbox:checked"))
+                    .map(checkbox => checkbox.value);
+
+                if (facturasSeleccionadas.length === 0) {
+                    const errorMessage = document.querySelector(".error-message");
+                    errorMessage.textContent = "Debes seleccionar al menos una factura.";
+                    return;
+                }
+
+                const metodoDePago = document.querySelector(".formSocioPago select").value;
 
                 const infoPago = {
                     id_socio: socio.id,
-                    valor: monto,
-                    fechaPago: fechaPago,
-                    metodoPago: metodoDePago
-                }
+                    facturas: facturasSeleccionadas,
+                    metodoPago: metodoDePago,
+                    monto: parseFloat(totalDisplay.textContent.replace("Monto total: $", "")),
+                };
 
+                // Enviar los datos al servidor
                 fetch(`/crearPago`, {
                     method: 'POST',
                     headers: {
@@ -574,33 +646,33 @@
                     .then((data) => {
                         if (data.ok) {
                             Swal.fire({
-                                title: "Pago realizado!",
-                                text: data.message,
+                                title: "Pago registrado",
+                                text: "El pago fue registrado exitosamente.",
                                 icon: "success",
-                                confirmButtonColor: "#4CAF50",
-                                showCancelButton: true,
-                                cancelButtonText: "Cerrar",
-                                confirmButtonText: "Descargar Ticket",
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    descargarTicketPago(socio, infoPago, data.idPago);
-                                }
-                                // Recargar página después de cerrar el modal
-                                if (result.dismiss) {
-                                    window.location.reload();
-                                }
-                            });
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                didClose: () => {
+                                    window.location.reload()
+                                } 
+                            })
                         } else {
-                            // Mostrar el mensaje de error en el modal
-                            errorMessage.textContent = data.message;
+                            const errorMessage = document.querySelector(".error-message");
+                            errorMessage.textContent = data.message || "Error al registrar el pago.";
                         }
                     })
                     .catch((error) => {
-                        // En caso de error en la petición, mostrar mensaje en el modal
-                        errorMessage.textContent = "Error en el pago. Inténtalo nuevamente.";
+                        console.error('Error:', error);
+                        const errorMessage = document.querySelector(".error-message");
+                        errorMessage.textContent = "Error en el servidor. Inténtalo nuevamente.";
                     });
             });
-        }
+        })
+        .catch(error => {
+            console.error('Error al obtener facturas:', error);
+        });
+}
+
 
 
         function descargarTicketPago(socio, infoPago, idPago) {
@@ -633,81 +705,159 @@
         function modalListaDeudores() {
 
             Swal.fire({
-            title: 'Seleccionar Mes y Año',
-            html: `
+                title: 'Seleccionar Mes y Año',
+                html: `
                 <input type="month" id="mesDeuda" class="swal2-input" required>
             `,
-            showCancelButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: "#4CAF50",
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const mes = document.getElementById('mesDeuda').value;
-                if (!mes) {
-                Swal.showValidationMessage('Por favor selecciona un mes');
+                showCancelButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: "#4CAF50",
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const mes = document.getElementById('mesDeuda').value;
+                    if (!mes) {
+                        Swal.showValidationMessage('Por favor selecciona un mes');
+                    }
+                    return mes;
                 }
-                return mes;
-            }
             }).then((result) => {
-            if (result.isConfirmed) {
-                const mesSeleccionado = result.value;
-                window.location.href = `/dashboard/socios/pagos/listadeudores/${mesSeleccionado}`;
-            }
-        });
+                if (result.isConfirmed) {
+                    const mesSeleccionado = result.value;
+                    window.location.href = `/dashboard/socios/pagos/listadeudores/${mesSeleccionado}`;
+                }
+            });
 
         }
 
         document.getElementById('downloadExcel').addEventListener('click', () => {
-        // Hacer una solicitud para obtener el archivo Excel
-        fetch('/descargarExcelSocios', {
-            method: 'GET',
-        })
-            .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al descargar el archivo.');
-            }
-            return response.blob(); // Convertir la respuesta a Blob
+            // Hacer una solicitud para obtener el archivo Excel
+            fetch('/descargarExcelSocios', {
+                method: 'GET',
             })
-            .then(blob => {
-            // Crear una URL para el archivo descargado
-            const url = window.URL.createObjectURL(blob);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al descargar el archivo.');
+                    }
+                    return response.blob(); // Convertir la respuesta a Blob
+                })
+                .then(blob => {
+                    // Crear una URL para el archivo descargado
+                    const url = window.URL.createObjectURL(blob);
 
-            // Crear un elemento <a> para descargar el archivo
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'socios.xlsx'; // Nombre del archivo descargado
-            document.body.appendChild(a);
-            a.click(); // Simular un clic para iniciar la descarga
-            document.body.removeChild(a); // Eliminar el elemento después de usarlo
-            })
-            .catch(error => {
-            console.error('Error al descargar el archivo:', error);
-            });
+                    // Crear un elemento <a> para descargar el archivo
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'socios.xlsx'; // Nombre del archivo descargado
+                    document.body.appendChild(a);
+                    a.click(); // Simular un clic para iniciar la descarga
+                    document.body.removeChild(a); // Eliminar el elemento después de usarlo
+                })
+                .catch(error => {
+                    console.error('Error al descargar el archivo:', error);
+                });
         })
 
         document.getElementById('downloadPdf').addEventListener('click', async () => {
-          try {
-            const response = await fetch('/listarPdfSocios', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-      
-            if (!response.ok) {
-              alert('Error al generar el PDF');
-              return;
+            try {
+                const response = await fetch('/listarPdfSocios', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    alert('Error al generar el PDF');
+                    return;
+                }
+
+                // Crear un blob del PDF y abrirlo en una nueva pestaña
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            } catch (error) {
+                console.error('Error al generar el PDF:', error);
+                alert('Error inesperado');
             }
-      
-            // Crear un blob del PDF y abrirlo en una nueva pestaña
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-          } catch (error) {
-            console.error('Error al generar el PDF:', error);
-            alert('Error inesperado');
-          }
         });
+
+        function darDeBajaSocio(id) {
+            Swal.fire({
+                title: "Estas seguro de dar de baja al socio?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Aceptar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/darDeBajaSocio/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then((response) => response.json())
+                        .then((data) => {
+                            if (data.ok) {
+                                Swal.fire({
+                                    title: "Actualizado!",
+                                    text: `${data.message}`,
+                                    icon: "success",
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true,
+                                    didClose: () => {
+                                        window.location.reload()
+                                    }    
+                                })
+                            } else {
+                                console.error('Response error:', data.message);
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+        }
+
+        function darDeAltaSocio(id) {
+            Swal.fire({
+                title: "Estas seguro de dar de alta al socio?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Aceptar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/darDeAltaSocio/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then((response) => response.json())
+                        .then((data) => {
+                            if (data.ok) {
+                                Swal.fire({
+                                    title: "Actualizado!",
+                                    text: `${data.message}`,
+                                    icon: "success",
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true,
+                                    didClose: () => {
+                                        window.location.reload()
+                                    }    
+                                })
+                            } else {
+                                console.error('Response error:', data.message);
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+        }
     </script>
 </body>
 

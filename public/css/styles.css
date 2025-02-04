@@ -470,8 +470,9 @@ td .bi-three-dots-vertical:hover {
 
 .container-tablas-pagos{
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
+    align-items: start;
 }
 
 
@@ -507,6 +508,10 @@ td .bi-three-dots-vertical:hover {
     .sidebar-logo i{
         display: block;
     }
+
+    .container-tablas-pagos{
+        grid-template-columns: 1fr;
+    }
 }
 
 
@@ -524,9 +529,6 @@ td .bi-three-dots-vertical:hover {
         margin-top: 30px;
     }
 
-    .container-tablas-pagos{
-        grid-template-columns: 1fr;
-    }
 }
 
 /* Extra Small <= 576px */

@@ -19,7 +19,8 @@
             color: #333;
         }
 
-        .formDeportistaPago input, .formDeportistaPago select {
+        .formDeportistaPago input,
+        .formDeportistaPago select {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #ddd;
@@ -63,7 +64,8 @@
             background-color: #2772b3;
         }
     </style>
-    <title>Deportistas de <%= disciplina %></title>
+    <title>Deportistas de <%= disciplina %>
+    </title>
 </head>
 
 <body>
@@ -74,14 +76,15 @@
                 <!-- Main -->
                 <main class="main-container">
                     <div class="main-title">
-                        <h2>DEPORTISTAS DE <%= disciplina.toUpperCase() %></h2>
+                        <h2>DEPORTISTAS DE <%= disciplina.toUpperCase() %>
+                        </h2>
                     </div>
                     <div class="container-tablas">
                         <div class="tabla-header">
                             <div>
                                 <form action="" method="GET" class="search-bar">
                                     <input type="text" name="buscar" class="search-input"
-                                        placeholder="Buscar por nombre"
+                                        placeholder="Buscar por nombre o DNI..."
                                         value="<%= typeof buscar !== 'undefined' ? buscar : '' %>">
                                     <button type="submit" class="search-button">Buscar</button>
                                 </form>
@@ -91,16 +94,19 @@
                             <thead>
                                 <tr>
                                     <th>Nombre Completo</th>
+                                    <th>DNI</th>
                                     <th>Fecha de Nacimiento</th>
                                     <th>Domicilio</th>
                                     <th>Localidad</th>
-                                    <% if (disciplina=="futbol") { %>
+                                    <th>Es Socio?</th>
+                                    <th>Tipo de Cuota</th>
+                                    <% if (disciplina=="futbol" ) { %>
                                         <th>Categoria</th>
-                                    <% } %>
-                                    <th>Email</th>
-                                    <th>Tel. Jugador</th>
-                                    <th>Tel. Emergencia</th>
-                                    <th>Acciones</th>
+                                        <% } %>
+                                            <th>Email</th>
+                                            <th>Tel. Jugador</th>
+                                            <th>Tel. Emergencia</th>
+                                            <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,6 +117,9 @@
                                                 <%= deportista.nombre %>
                                             </td>
                                             <td>
+                                                <%= deportista.dni %>
+                                            </td>
+                                            <td>
                                                 <%= deportista.fechaNacimiento %>
                                             </td>
                                             <td>
@@ -119,33 +128,45 @@
                                             <td>
                                                 <%= deportista.localidad %>
                                             </td>
-                                            <% if (disciplina=="futbol") { %>
+                                            <td>
+                                                <% if (deportista.esSocio) { %>
+                                                    Si
+                                                <% }else{ %>
+                                                    No
+                                                <% } %>
+                                            </td>
+                                            <td style="text-transform: capitalize;">
+                                                <%= deportista.tipodecuotanombre %>
+                                            </td>
+                                            <% if (disciplina=="futbol" ) { %>
                                                 <td>
                                                     <%= deportista.categoria %>
                                                 </td>
-                                            <% } %>
-                                            <td>
-                                                <%= deportista.email %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.telefonoJugador %>
-                                            </td>
-                                            <td>
-                                                <%= deportista.telefonoEmergencia %>
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <i class="bi bi-eye-fill" title="Ver detalles"
-                                                    onclick="verDetalle(<%= JSON.stringify(deportista) %>)"></i>
-                                                <i class="bi bi-clipboard" onclick="window.location.href=`/dashboard/deportistas/<%= disciplina %>/pagos/<%= deportista.id %>`" title="Ver Pagos"></i>
-                                                <i class="bi bi-cash" title="Crear pagos"
-                                                    onclick="crearPago(<%= JSON.stringify(deportista) %>)">
-                                                </i>
-                                                <i class="bi bi-pencil-fill" title="Editar"
-                                                    onclick="window.location.href='/dashboard/editardeportista/<%= disciplina %>/<%= deportista.id %>'">
-                                                </i>
-                                                <i class="bi bi-trash-fill" title="Eliminar"
-                                                    onclick="borrarDeportista(<%= deportista.id %>)"></i>
-                                            </td>
+                                                <% } %>
+                                                    <td>
+                                                        <%= deportista.email %>
+                                                    </td>
+                                                    <td>
+                                                        <%= deportista.telefonoJugador %>
+                                                    </td>
+                                                    <td>
+                                                        <%= deportista.telefonoEmergencia %>
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <i class="bi bi-eye-fill" title="Ver detalles"
+                                                            onclick="verDetalle(<%= JSON.stringify(deportista) %>)"></i>
+                                                        <i class="bi bi-clipboard"
+                                                            onclick="window.location.href=`/dashboard/deportistas/<%= disciplina %>/pagos/<%= deportista.id %>`"
+                                                            title="Ver Pagos"></i>
+                                                        <i class="bi bi-cash" title="Crear pagos"
+                                                            onclick="crearPago(<%= JSON.stringify(deportista) %>)">
+                                                        </i>
+                                                        <i class="bi bi-pencil-fill" title="Editar"
+                                                            onclick="window.location.href='/dashboard/editardeportista/<%= disciplina %>/<%= deportista.id %>'">
+                                                        </i>
+                                                        <i class="bi bi-trash-fill" title="Eliminar"
+                                                            onclick="borrarDeportista(<%= deportista.id %>)"></i>
+                                                    </td>
                                         </tr>
                                         <% }); %>
                                             <% } else { %>
@@ -245,90 +266,141 @@
         }
 
         function crearPago(deportista) {
+            // Solicitar las facturas impagas del socio
+            fetch(`/listarFacturasImpagas/${disciplinaActual}/${deportista.id}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (!res.ok) {
+                        console.error('Error al obtener facturas:', res.message);
+                        return;
+                    }
 
-            // Obtener la fecha actual correctamente en formato YYYY-MM-DD según la zona horaria local
-            const fechaActual = new Date();
-            const anio = fechaActual.getFullYear();
-            const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Los meses en JavaScript empiezan desde 0
-            const dia = fechaActual.getDate().toString().padStart(2, '0');
-            const fechaFormateada = `${anio}-${mes}-${dia}`;
+                    const facturas = res.data; // Array de facturas impagas
+                    const facturasHtml = `
+            <div class="container-tablas">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Monto</th>
+                            <th>Fecha de Emision</th>
+                            <th>Seleccionar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${facturas && facturas.length > 0 ? facturas.map(factura => `
+                        <tr>
+                            <td>${factura.id}</td>
+                            <td class="monto">$${factura.monto}</td>
+                            <td>${factura.fecha_emision}</td>
+                            <td>
+                                <input type="checkbox" class="factura-checkbox" data-monto="${factura.monto}" value="${factura.id}">
+                            </td>
+                        </tr>`).join('') :
+                            `
+                        <tr>
+                            <td colspan="4" style="padding: 10px; text-align: center;">No se encuentran facturas</td>
+                        </tr>
+                        `}
+                    </tbody>
+                </table>
+            </div>
+            `;
 
-            Swal.fire({
-                title: 'Crear pago',
-                html: `
-                    <form class="formDeportistaPago">
-                        <label>Monto:</label>
-                        <input type="number" class="monto" required>
-                        <label>Fecha del pago:</label>
-                        <input type="date" class="fecha" value="${fechaFormateada}" required>
-                        <label>Metodo de pago:</label>
-                        <select required>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia">Transferencia</option>
-                        </select>
-                        <button type="submit">Guardar Pago</button>
-                    </form>
-                    <div class="error-message" style="color: red; margin-top: 10px;"></div>
+                    // Mostrar el modal con las facturas
+                    Swal.fire({
+                        title: 'Crear pago',
+                        html: `
+                <form class="formDeportistaPago">
+                    <div>
+                        <h4>Selecciona las facturas a pagar:</h4>
+                        ${facturasHtml}
+                    </div>
+                    <div id="monto-total" style="margin-top: 10px; font-weight: bold;">Monto total: $0</div>
+                    <label>Método de pago:</label>
+                    <select required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                    <button type="submit">Guardar Pago</button>
+                </form>
+                <div class="error-message" style="color: red; margin-top: 10px;"></div>
                 `,
-                showConfirmButton: false,
-                showCloseButton: true,
-                showCancelButton: false,
-                allowOutsideClick: false,
-            });
-
-            document.querySelector(".formDeportistaPago").addEventListener("submit", (e) => {
-                e.preventDefault();
-
-                const monto = document.querySelector(".formDeportistaPago .monto").value
-                const fecha = document.querySelector(".formDeportistaPago .fecha").value
-                const metodoDePago= document.querySelector(".formDeportistaPago select").value
-
-                const errorMessage = document.querySelector(".error-message")
-
-                const infoPago = {
-                    id_deportista: deportista.id,
-                    valor: monto,
-                    fechaPago: fecha,
-                    metodoPago: metodoDePago
-                }
-
-                fetch(`/crearPagoDeportista`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(infoPago),
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.ok) {
-                            Swal.fire({
-                                title: "Pago realizado!",
-                                text: data.message,
-                                icon: "success",
-                                confirmButtonColor: "#4CAF50",
-                                showCancelButton: true,
-                                cancelButtonText: "Cerrar",
-                                confirmButtonText: "Descargar Ticket",
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    descargarTicketPago(deportista, infoPago, data.idPago);
-                                }
-                                // Recargar página después de cerrar el modal
-                                if (result.dismiss) {
-                                    window.location.reload();
-                                }
-                            });
-                        } else {
-                            // Mostrar el mensaje de error en el modal
-                            errorMessage.textContent = data.message;
-                        }
-                    })
-                    .catch((error) => {
-                        // En caso de error en la petición, mostrar mensaje en el modal
-                        errorMessage.textContent = "Error en el pago. Inténtalo nuevamente.";
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        allowOutsideClick: false,
                     });
-            });
+
+                    // Actualizar el monto total cuando cambian las selecciones
+                    const checkboxes = document.querySelectorAll(".factura-checkbox");
+                    const totalDisplay = document.querySelector("#monto-total");
+
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener("change", () => {
+                            const total = Array.from(checkboxes)
+                                .filter(cb => cb.checked)
+                                .reduce((sum, cb) => sum + parseFloat(cb.dataset.monto), 0);
+
+                            totalDisplay.textContent = `Monto total: $${total.toFixed(2)}`;
+                        });
+                    });
+
+                    // Manejar el envío del formulario
+                    document.querySelector(".formDeportistaPago").addEventListener("submit", (e) => {
+                        e.preventDefault();
+
+                        // Recoger las facturas seleccionadas
+                        const facturasSeleccionadas = Array.from(document.querySelectorAll(".factura-checkbox:checked"))
+                            .map(checkbox => checkbox.value);
+
+                        if (facturasSeleccionadas.length === 0) {
+                            const errorMessage = document.querySelector(".error-message");
+                            errorMessage.textContent = "Debes seleccionar al menos una factura.";
+                            return;
+                        }
+
+                        const metodoDePago = document.querySelector(".formDeportistaPago select").value;
+
+                        const infoPago = {
+                            id_deportista: deportista.id,
+                            facturas: facturasSeleccionadas,
+                            metodoPago: metodoDePago,
+                            monto: parseFloat(totalDisplay.textContent.replace("Monto total: $", "")),
+                        };
+
+                        // Enviar los datos al servidor
+                        fetch(`/crearPagoDeportista`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(infoPago),
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.ok) {
+                                    Swal.fire({
+                                        title: "Pago registrado",
+                                        text: "El pago fue registrado exitosamente.",
+                                        icon: "success",
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    const errorMessage = document.querySelector(".error-message");
+                                    errorMessage.textContent = data.message || "Error al registrar el pago.";
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                                const errorMessage = document.querySelector(".error-message");
+                                errorMessage.textContent = "Error en el servidor. Inténtalo nuevamente.";
+                            });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener facturas:', error);
+                });
         }
 
         function descargarTicketPago(deportista, infoPago, idPago) {
@@ -358,7 +430,7 @@
         }
 
 
-        function verDetalle(deportista){
+        function verDetalle(deportista) {
             Swal.fire({
                 title: 'Selecciona la sección de datos',
                 input: 'select',
@@ -384,19 +456,20 @@
                 if (result.isConfirmed) {
                     // Según la selección, se renderizan los datos correspondientes
                     let selectedData = result.value;
-                    renderData(selectedData,deportista);
+                    renderData(selectedData, deportista);
                 }
             });
         }
 
-        function renderData(section,deportista) {
+        function renderData(section, deportista) {
             let dataHtml = '';
 
-            switch(section) {
+            switch (section) {
                 case 'personales':
                     dataHtml = `
                         <ul>
                             <li><strong>Nombre:</strong> ${deportista.nombre || "Dato no registrado"}</li>
+                            <li><strong>DNI:</strong> ${deportista.dni || "Dato no registrado"}</li>
                             <li><strong>Fecha de Nacimiento:</strong> ${deportista.fechaNacimiento || "Dato no registrado"}</li>
                             <li><strong>Domicilio:</strong> ${deportista.domicilio || "Dato no registrado"}</li>
                             <li><strong>Escolaridad:</strong> ${deportista.escolaridad || "Dato no registrado"}</li>
@@ -474,15 +547,15 @@
             return text.charAt(0).toUpperCase() + text.slice(1);
         }
 
-        function getPagosPorDeportista(id){
-            fetch(`/getPagos/${id}`,{
+        function getPagosPorDeportista(id) {
+            fetch(`/getPagos/${id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-            }).then((response)=>response.json())
-            .then((data)=>{
-                const contenido = `
+            }).then((response) => response.json())
+                .then((data) => {
+                    const contenido = `
                 <h2 style="text-align:center; margin-bottom: 20px;">Pagos de la cuota</h2>
                 <div style="max-height: 300px; overflow-y: auto;">
                     <table style="width:100%; border-collapse: collapse;">
@@ -501,7 +574,7 @@
                                 <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">$${pago.valor}</td>
                             </tr>
                             `).join('')
-                                : `
+                            : `
                             <tr>
                                 <td colspan="3" style="padding: 10px; text-align: center; color: #999;">Sin pagos registrados</td>
                             </tr>`}
@@ -510,40 +583,40 @@
                 </div>
             `;
 
-            // Muestra el modal con SweetAlert
-            Swal.fire({
-                html: contenido,
-                showConfirmButton: false,
-                showCloseButton: true,
-                showCancelButton: false,
-            });
-            })
+                    // Muestra el modal con SweetAlert
+                    Swal.fire({
+                        html: contenido,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        showCancelButton: false,
+                    });
+                })
         }
 
 
         function modalListaDeudores() {
 
             Swal.fire({
-            title: 'Seleccionar Mes y Año',
-            html: `
+                title: 'Seleccionar Mes y Año',
+                html: `
                 <input type="month" id="mesDeuda" class="swal2-input" required>
             `,
-            showCancelButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: "#4CAF50",
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const mes = document.getElementById('mesDeuda').value;
-                if (!mes) {
-                Swal.showValidationMessage('Por favor selecciona un mes');
+                showCancelButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: "#4CAF50",
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const mes = document.getElementById('mesDeuda').value;
+                    if (!mes) {
+                        Swal.showValidationMessage('Por favor selecciona un mes');
+                    }
+                    return mes;
                 }
-                return mes;
-            }
             }).then((result) => {
-            if (result.isConfirmed) {
-                const mesSeleccionado = result.value;
-                window.location.href = `/dashboard/deportistas/${disciplinaActual}/pagos/listadeudores/${mesSeleccionado}`;
-            }
+                if (result.isConfirmed) {
+                    const mesSeleccionado = result.value;
+                    window.location.href = `/dashboard/deportistas/${disciplinaActual}/pagos/listadeudores/${mesSeleccionado}`;
+                }
             });
 
         }
@@ -551,5 +624,3 @@
 </body>
 
 </html>
-
-

@@ -50,6 +50,13 @@
                 </a>
             </li>
         <% } %>
+        <!-- <% if(rolNombre==="admin_general") { %>
+            <li class="sidebar-list-item">
+                <a href="/dashboard/escaner">
+                    Escaner
+                </a>
+            </li>
+        <% } %> -->
         <% disciplinas.forEach(function(disciplina) { %>
             <% if (rolNombre === `admin_${disciplina.nombre}` || rolNombre === `coordinador_${disciplina.nombre}`) { %>
                 <li class="sidebar-list-item" onclick="toggleSubMenu()">
@@ -61,6 +68,11 @@
                         <% if(rolNombre===`coordinador_${disciplina.nombre}` || rolNombre===`admin_${disciplina.nombre}`) { %>
                             <li class="sub-menu-item">
                                 <a href="/dashboard/deportistas/<%= disciplina.nombre %>">Lista de Deportistas</a>
+                            </li>
+                        <% } %>
+                        <% if(rolNombre===`coordinador_${disciplina.nombre}` || rolNombre===`admin_${disciplina.nombre}`) { %>
+                            <li class="sub-menu-item">
+                                <a href="/dashboard/cuotasdeportivas/<%= disciplina.nombre %>">Tipos de cuotas</a>
                             </li>
                         <% } %>
                         <% if(rolNombre===`coordinador_${disciplina.nombre}` || rolNombre===`admin_${disciplina.nombre}`) { %>

@@ -6,26 +6,31 @@
     <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
     <link rel="stylesheet" href="/public/css/styles.css">
     <style>
-        .inicio-graficos {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        .resumen-saldo {
+            margin: 20px auto;
+            background-color: #fff;
             padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow-x: hidden;
         }
 
-        .grafico {
-            background-color: white;
-            border-radius: 5px;
-            text-align: center;
+        .estado-pendiente {
+            color: red;
+        }
+
+        .estado-pagado {
+            color: green;
         }
     </style>
-    <title>Pagos</title>
+    <title>Pagos del Socio</title>
 </head>
 
 <body>
     <div class="grid-container">
         <%- include('header') %>
-            <%- include('sidebar',{ rolId: rolId,rolNombre:rolNombre, disciplinas:disciplinas }) %>
+            <%- include('sidebar', { rolId: rolId, rolNombre: rolNombre, disciplinas: disciplinas }) %>
+
                 <!-- Main -->
                 <main class="main-container">
                     <div class="main-title">
@@ -33,76 +38,89 @@
                     </div>
 
                     <div class="container-tablas-pagos">
-                        <!-- Tabla de pagos realizados -->
+                        <!-- Resumen del saldo pendiente -->
+                        <div class="resumen-saldo">
+                            <h3>Deuda Pendiente</h3>
+                            <p>Total a pagar: <strong>$<%= totalPendiente %></strong></p>
+                        </div>
+
+                        <!-- Tabla de facturas pendientes -->
                         <div>
                             <div class="container-tablas">
-                                <h3>Pagos Realizados</h3>
+                                <h3>Facturas Pendientes</h3>
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Nro de referencia</th>
-                                            <th>Fecha</th>
+                                            <th>ID</th>
+                                            <th>Fecha de Emisión</th>
                                             <th>Monto</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% if (pagos.length> 0) { %>
-                                            <% pagos.forEach(pago=> { %>
+                                        <% if (facturasPendientes.length> 0) { %>
+                                            <% facturasPendientes.forEach(factura=> { %>
                                                 <tr>
                                                     <td>
-                                                        <%= pago.id%>
+                                                        <%= factura.id %>
                                                     </td>
                                                     <td>
-                                                        <%= pago.fecha %>
+                                                        <%= factura.fecha_emision %>
                                                     </td>
-                                                    <td>
-                                                        <%= pago.valor %>
+                                                    <td>$<%= factura.monto %>
                                                     </td>
                                                 </tr>
                                                 <% }) %>
                                                     <% } else { %>
                                                         <tr>
-                                                            <td colspan="2">No hay pagos registrados</td>
+                                                            <td colspan="3">No hay facturas pendientes.</td>
                                                         </tr>
                                                         <% } %>
                                     </tbody>
                                 </table>
                             </div>
-
                         </div>
 
+
                         <div>
+                            <!-- Tabla de facturas pagadas -->
                             <div class="container-tablas">
-                                <!-- Tabla de cuotas (pagadas y pendientes) -->
-                                <h3>Resumen de Cuotas</h3>
+                                <h3>Facturas Pagadas</h3>
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Mes</th>
-                                            <th>Estado</th>
+                                            <th>ID</th>
+                                            <th>Fecha de Emisión</th>
+                                            <th>Monto</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% cuotas.forEach(cuota=> { %>
-                                            <tr>
-                                                <td>
-                                                    <%= cuota.mes %>
-                                                </td>
-                                                <td style="color: <%= cuota.estado === 'Pagado' ? 'green' : 'red' %>">
-                                                    <%= cuota.estado %>
-                                                </td>
-                                            </tr>
-                                            <% }) %>
+                                        <% if (facturasPagadas.length> 0) { %>
+                                            <% facturasPagadas.forEach(factura=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= factura.id %>
+                                                    </td>
+                                                    <td>
+                                                        <%= factura.fecha_emision %>
+                                                    </td>
+                                                    <td>$<%= factura.monto %>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <tr>
+                                                            <td colspan="3">No hay facturas pagadas.</td>
+                                                        </tr>
+                                                        <% } %>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-
                 </main>
                 <!-- End Main -->
-
     </div>
+
     <script src="/public/js/interacciones.js"></script>
 </body>
 
