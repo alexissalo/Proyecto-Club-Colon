@@ -33,11 +33,11 @@ class DeportistaModel {
                  WHEN s.dni IS NOT NULL THEN true
                  ELSE false
                END AS esSocio
-        FROM datosPersonalesDeportista dp
-        LEFT JOIN tallesDeportista td ON dp.id = td.deportistaId
-        LEFT JOIN comunicacionDeportista cm ON dp.id = cm.deportistaId
-        LEFT JOIN datosFamiliaresDeportista df ON dp.id = df.deportistaId
-        LEFT JOIN datosMedicosDeportista dm ON dp.id = dm.deportistaId
+        FROM datospersonalesdeportista dp
+        LEFT JOIN tallesdeportista td ON dp.id = td.deportistaId
+        LEFT JOIN comunicaciondeportista cm ON dp.id = cm.deportistaId
+        LEFT JOIN datosfamiliaresdeportista df ON dp.id = df.deportistaId
+        LEFT JOIN datosmedicosdeportista dm ON dp.id = dm.deportistaId
         LEFT JOIN cuotas_deportistas cd ON dp.id_tipo_cuota = cd.id
         JOIN disciplinas d ON dp.id_disciplina = d.id
         -- Relación con la tabla socios para verificar el DNI
@@ -93,7 +93,7 @@ class DeportistaModel {
       // Consulta para contar el total de deportistas
       let sql = `
         SELECT COUNT(*) AS total 
-        FROM datosPersonalesDeportista dp
+        FROM datospersonalesdeportista dp
         INNER JOIN disciplinas d ON dp.id_disciplina = d.id
         WHERE d.nombre = ?
       `;
@@ -123,7 +123,7 @@ class DeportistaModel {
       // Consulta para contar el total de deportistas
       let sql = `
         SELECT COUNT(*) AS total 
-        FROM datosPersonalesDeportista`;
+        FROM datospersonalesdeportista`;
   
       // Parámetros para la consulta
       let params = [];
@@ -149,23 +149,23 @@ class DeportistaModel {
   async deleteDeportista(id, callback) {
     try {
       // Eliminar datos personales del deportista
-      let sql = "DELETE FROM datosPersonalesDeportista WHERE id = ?";
+      let sql = "DELETE FROM datospersonalesdeportista WHERE id = ?";
       await pool.query(sql, id);
 
       // Eliminar talles del deportista
-      sql = "DELETE FROM tallesDeportista WHERE deportistaId = ?";
+      sql = "DELETE FROM tallesdeportista WHERE deportistaId = ?";
       await pool.query(sql, id);
 
       // Eliminar comunicación del deportista
-      sql = "DELETE FROM comunicacionDeportista WHERE deportistaId = ?";
+      sql = "DELETE FROM comunicaciondeportista WHERE deportistaId = ?";
       await pool.query(sql, id);
 
       // Eliminar datos médicos del deportista
-      sql = "DELETE FROM datosMedicosDeportista WHERE deportistaId = ?";
+      sql = "DELETE FROM datosmedicosdeportista WHERE deportistaId = ?";
       await pool.query(sql, id);
 
       // Eliminar datos familiares del deportista
-      sql = "DELETE FROM datosFamiliaresDeportista WHERE deportistaId = ?";
+      sql = "DELETE FROM datosfamiliaresdeportista WHERE deportistaId = ?";
       await pool.query(sql, id);
 
       callback(`Deportista con ID ${id} eliminado correctamente`);
@@ -186,7 +186,7 @@ class DeportistaModel {
 
       // Insertar datos personales del deportista
       sql =
-        "INSERT INTO datosPersonalesDeportista (nombre, dni, fechaNacimiento, domicilio, localidad, escolaridad, gradoEscolar, posicionJuego, altura, peso, id_disciplina, categoria, id_tipo_cuota) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO datospersonalesdeportista (nombre, dni, fechaNacimiento, domicilio, localidad, escolaridad, gradoEscolar, posicionJuego, altura, peso, id_disciplina, categoria, id_tipo_cuota) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       const [resultado] = await pool.query(sql, [
         datos.nombre,
         datos.dni,
@@ -207,7 +207,7 @@ class DeportistaModel {
 
       // Insertar talles del deportista
       sql =
-        "INSERT INTO tallesDeportista (deportistaId, talleCalzado, talleCamiseta, tallePantalon) VALUES (?, ?, ?, ?)";
+        "INSERT INTO tallesdeportista (deportistaId, talleCalzado, talleCamiseta, tallePantalon) VALUES (?, ?, ?, ?)";
       await pool.query(sql, [
         idDeportista,
         datos.talleCalzado,
@@ -217,7 +217,7 @@ class DeportistaModel {
 
       // Insertar comunicación del deportista
       sql =
-        "INSERT INTO comunicacionDeportista (deportistaId, email, instagram, facebook, telefonoJugador, telefonoEmergencia) VALUES (?, ?, ?, ?, ?, ?)";
+        "INSERT INTO comunicaciondeportista (deportistaId, email, instagram, facebook, telefonoJugador, telefonoEmergencia) VALUES (?, ?, ?, ?, ?, ?)";
       await pool.query(sql, [
         idDeportista,
         datos.email,
@@ -229,7 +229,7 @@ class DeportistaModel {
 
       // Insertar datos médicos del deportista
       sql =
-        "INSERT INTO datosMedicosDeportista (deportistaId, grupoSanguineo, factor, coberturaMedica, numeroAfiliado, alergias, patologias, tratamientos, lesiones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO datosmedicosdeportista (deportistaId, grupoSanguineo, factor, coberturaMedica, numeroAfiliado, alergias, patologias, tratamientos, lesiones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
       await pool.query(sql, [
         idDeportista,
         datos.grupoSanguineo,
@@ -244,7 +244,7 @@ class DeportistaModel {
 
       // Insertar datos familiares del deportista
       sql =
-        "INSERT INTO datosFamiliaresDeportista (deportistaId, nombre, domicilio, localidad, telefono, telefonoFijo, facebookTutor, instagramTutor, emailResponsable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO datosfamiliaresdeportista (deportistaId, nombre, domicilio, localidad, telefono, telefonoFijo, facebookTutor, instagramTutor, emailResponsable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
       await pool.query(sql, [
         idDeportista,
         datos.tutorNombre,
@@ -301,7 +301,7 @@ class DeportistaModel {
   
       // Actualizar datos personales del deportista
       sql = `
-        UPDATE datosPersonalesDeportista 
+        UPDATE datospersonalesdeportista 
         SET nombre = ?, dni= ?, fechaNacimiento = ?, domicilio = ?, localidad = ?, escolaridad = ?, 
             gradoEscolar = ?, posicionJuego = ?, altura = ?, peso = ?, categoria = ?, id_tipo_cuota= ?
         WHERE id = ?
@@ -324,7 +324,7 @@ class DeportistaModel {
   
       // Actualizar talles del deportista
       sql = `
-        UPDATE tallesDeportista 
+        UPDATE tallesdeportista 
         SET talleCalzado = ?, talleCamiseta = ?, tallePantalon = ? 
         WHERE deportistaId = ?
       `;
@@ -337,7 +337,7 @@ class DeportistaModel {
   
       // Actualizar comunicación del deportista
       sql = `
-        UPDATE comunicacionDeportista 
+        UPDATE comunicaciondeportista 
         SET email = ?, instagram = ?, facebook = ?, telefonoJugador = ?, telefonoEmergencia = ?
         WHERE deportistaId = ?
       `;
@@ -352,7 +352,7 @@ class DeportistaModel {
   
       // Actualizar datos médicos del deportista
       sql = `
-        UPDATE datosMedicosDeportista 
+        UPDATE datosmedicosdeportista 
         SET grupoSanguineo = ?, factor = ?, coberturaMedica = ?, numeroAfiliado = ?, 
             alergias = ?, patologias = ?, tratamientos = ?, lesiones = ? 
         WHERE deportistaId = ?
@@ -371,7 +371,7 @@ class DeportistaModel {
   
       // Actualizar datos familiares del deportista
       sql = `
-        UPDATE datosFamiliaresDeportista 
+        UPDATE datosfamiliaresdeportista 
         SET nombre = ?, domicilio = ?, localidad = ?, telefono = ?, telefonoFijo = ?, 
             facebookTutor = ?, instagramTutor = ?, emailResponsable = ? 
         WHERE deportistaId = ?
@@ -400,7 +400,7 @@ class DeportistaModel {
   async getCantidadDeportistaPorDisciplina(callback) {
     try {
       let sql = `SELECT disciplinas.nombre, COUNT(datosPersonalesDeportista.id) AS cantidad_deportistas
-              FROM datosPersonalesDeportista JOIN disciplinas ON datosPersonalesDeportista.id_disciplina = disciplinas.id
+              FROM datospersonalesdeportista JOIN disciplinas ON datospersonalesdeportista.id_disciplina = disciplinas.id
               GROUP BY disciplinas.nombre;
           `;
 
@@ -474,12 +474,12 @@ class DeportistaModel {
           dm.grupoSanguineo, dm.factor, dm.coberturaMedica, dm.numeroAfiliado, dm.lesiones, dm.patologias, dm.tratamientos, dm.alergias,
           df.nombre AS nombreTutor, df.domicilio AS domicilioTutor, df.localidad AS localidadTutor, df.telefono AS telefonoTutor, 
           df.telefonoFijo AS telefonoFijoTutor, df.facebookTutor, df.instagramTutor, df.emailResponsable
-        FROM datosPersonalesDeportista dpd
+        FROM datospersonalesdeportista dpd
         JOIN disciplinas d ON dpd.id_disciplina = d.id
-        LEFT JOIN tallesDeportista td ON dpd.id = td.deportistaId
-        LEFT JOIN comunicacionDeportista cd ON dpd.id = cd.deportistaId
-        LEFT JOIN datosMedicosDeportista dm ON dpd.id = dm.deportistaId
-        LEFT JOIN datosFamiliaresDeportista df ON dpd.id = df.deportistaId
+        LEFT JOIN tallesdeportista td ON dpd.id = td.deportistaId
+        LEFT JOIN comunicaciondeportista cd ON dpd.id = cd.deportistaId
+        LEFT JOIN datosmedicosdeportista dm ON dpd.id = dm.deportistaId
+        LEFT JOIN datosfamiliaresdeportista df ON dpd.id = df.deportistaId
         WHERE dpd.id = ?
       `;
 
@@ -527,8 +527,8 @@ class DeportistaModel {
           cd.telefonoJugador AS telefonoJugador,
           cd.telefonoEmergencia AS telefonoEmergencia,
           d.nombre AS disciplina
-        FROM datosPersonalesDeportista dp
-        LEFT JOIN comunicacionDeportista cd ON dp.id = cd.deportistaId
+        FROM datospersonalesdeportista dp
+        LEFT JOIN comunicaciondeportista cd ON dp.id = cd.deportistaId
         JOIN disciplinas d ON dp.id_disciplina = d.id
         WHERE d.nombre = ?
       `;
