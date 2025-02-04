@@ -399,7 +399,7 @@ class DeportistaModel {
 
   async getCantidadDeportistaPorDisciplina(callback) {
     try {
-      let sql = `SELECT disciplinas.nombre, COUNT(datosPersonalesDeportista.id) AS cantidad_deportistas
+      let sql = `SELECT disciplinas.nombre, COUNT(datospersonalesdeportista.id) AS cantidad_deportistas
               FROM datospersonalesdeportista JOIN disciplinas ON datospersonalesdeportista.id_disciplina = disciplinas.id
               GROUP BY disciplinas.nombre;
           `;
