@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Noticia - Club Colón</title>
+  <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/styles.css">
+
+  <style>
+    /* --- ESTILOS BASE --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root { 
+        --rojo-colon: #e30613; 
+        --negro-colon: #1a1a1a; 
+        --gris-fondo: #f4f4f4;
+        --verde-boton: #28a745;
+        --verde-boton-hover: #218838;
+        --celeste-boton: #17a2b8;
+    }
+    
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gris-fondo); padding-bottom: 50px; }
+    
+    .grid-container {
+        display: grid; grid-template-columns: 250px 1fr; min-height: 100vh;
+    }
+
+    .main-container { padding: 30px; width: 100%; max-width: 1000px; margin: 0 auto; }
+
+    .main-title h2 { 
+        color: var(--negro-colon); border-left: 5px solid var(--rojo-colon); padding-left: 15px; margin-bottom: 30px; 
+    }
+
+    /* FORMULARIO */
+    .form-section {
+        background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; width: 100%;
+    }
+    
+    .form-header {
+        background: var(--celeste-boton); color: white; padding: 15px 25px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .form-header h2 { margin: 0; font-size: 1.1rem; }
+
+    .form-body { padding: 30px; }
+
+    .form-row-2-col { display: flex; gap: 30px; margin-bottom: 20px; }
+    .form-row-2-col > div { flex: 1; }
+
+    input, textarea, select {
+        width: 100%; padding: 12px; margin-bottom: 20px; 
+        border: 1px solid #ddd; border-radius: 6px; font-size: 14px; display: block;
+    }
+    input:focus, textarea:focus, select:focus { 
+        border-color: var(--celeste-boton); outline: none; box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1); 
+    }
+    input[type="file"] { padding: 10px; background: #f9f9f9; border: 1px dashed #ccc; }
+
+    /* TAGS */
+    .tags-wrapper {
+        border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: white;
+        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 48px;
+    }
+    .tags-wrapper:focus-within { border-color: var(--celeste-boton); }
+    .tag-badge {
+        background: var(--negro-colon); color: white; padding: 6px 12px; border-radius: 20px; 
+        font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+    }
+    .tag-badge i { cursor: pointer; color: #ff8585; }
+    #tagInput { border: none; margin: 0; padding: 5px; width: auto; flex-grow: 1; outline: none;}
+
+    /* BOTÓN GUARDAR (VERDE) */
+    button.btn-submit {
+        background-color: var(--verde-boton); color: white; border: none; padding: 15px; 
+        border-radius: 6px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold;
+        transition: background 0.3s;
+    }
+    button.btn-submit:hover { background-color: var(--verde-boton-hover); }
+
+    .img-preview {
+        width: 150px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; margin-top: -10px; margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+        .grid-container { display: block; }
+        .form-row-2-col { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid-container">
+    <%- include('header') %>
+    <%- include('sidebar', { rolId: rolId, rolNombre: rolNombre, disciplinas: [] }) %> 
+
+    <main class="main-container">
+      <div class="main-title">
+        <h2><a href="/dashboard/noticias" style="text-decoration: none; color: inherit;"><i class="fas fa-arrow-left"></i> Volver</a></h2>
+      </div>
+
+      <section class="form-section">
+        <div class="form-header">
+            <i class="fas fa-pencil-alt"></i>
+            <h2>Editar Noticia</h2>
+        </div>
+
+        <div class="form-body">
+            <form id="editForm">
+                <div class="form-row-2-col">
+                    <div>
+                        <label>Título</label>
+                        <input type="text" name="titulo" value="<%= noticia.titulo %>" required>
+                    </div>
+                    
+                    <div>
+                        <label>Categoría</label>
+                        <select name="id_categoria" required>
+                            <% if (categorias && categorias.length > 0) { %>
+                                <% categorias.forEach(cat => { %>
+                                    <option value="<%= cat.id_categoria %>" 
+                                        <%= cat.id_categoria === noticia.id_categoria ? 'selected' : '' %>>
+                                        <%= cat.nombre %>
+                                    </option>
+                                <% }) %>
+                            <% } else { %>
+                                <option disabled>No hay categorías</option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Subtítulo</label>
+                <input type="text" name="subtitulo" value="<%= noticia.subtitulo %>">
+
+                <label>Imagen Principal Actual</label>
+                <% if (noticia.imagen_principal) { %>
+                    <img src="<%= noticia.imagen_principal %>" class="img-preview" alt="Imagen actual">
+                <% } else { %>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Sin imagen</p>
+                <% } %>
+                
+                <label>Cambiar Imagen (Opcional)</label>
+                <input type="file" name="imagen_principal" accept="image/*">
+
+                <label>Contenido</label>
+
+                <div id="editor-container" style="height: 280px;"></div>
+
+                <input type="hidden" name="contenido" id="contenido">
+
+                <label>Tags</label>
+                <div class="tags-wrapper" onclick="document.getElementById('tagInput').focus()">
+                    <input type="text" id="tagInput" placeholder="Agregar más tags...">
+                </div>
+                <input type="hidden" name="tags" id="tagsHidden">
+
+                <button type="submit" class="btn-submit">Guardar Cambios</button>
+            </form>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+
+    const quill = new Quill('#editor-container', {
+    theme: 'snow',
+    placeholder: 'Editar contenido de la noticia...',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link'],
+        ['clean']
+      ]
+    }
+    });
+
+    const contenidoActual = `<%- noticia.contenido %>`;
+    quill.root.innerHTML = contenidoActual;
+
+    const tagInput = document.getElementById('tagInput');
+    const tagsWrapper = document.querySelector('.tags-wrapper');
+    const tagsHidden = document.getElementById('tagsHidden');
+    
+    // Recuperar tags
+    let rawTags = '<%- noticia.tags %>'; 
+    let tagsList = rawTags ? rawTags.replace(/[\[\]"]/g, '').split(',') : [];
+    tagsList = tagsList.filter(t => t.trim() !== '');
+
+    function renderTags() {
+        document.querySelectorAll('.tag-badge').forEach(el => el.remove());
+        tagsList.forEach(tag => {
+            const badge = document.createElement('span');
+            badge.className = 'tag-badge';
+            badge.innerHTML = `${tag} <i class="fas fa-times" onclick="removeTag('${tag}')"></i>`;
+            tagsWrapper.insertBefore(badge, tagInput);
+        });
+        tagsHidden.value = tagsList.join(','); 
+    }
+
+    window.removeTag = (tag) => {
+        tagsList = tagsList.filter(t => t !== tag);
+        renderTags();
+    }
+
+    tagInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const val = tagInput.value.trim();
+            if (val && !tagsList.includes(val)) { tagsList.push(val); renderTags(); }
+            tagInput.value = '';
+        }
+    });
+
+    renderTags();
+
+    // SUBMIT (Actualizar)
+    document.getElementById("editForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        const contenidoHtml = quill.root.innerHTML;
+        console.log(contenidoHtml);
+        
+        document.getElementById('contenido').value = contenidoHtml;
+
+        const formData = new FormData(e.target);
+        const idNoticia = '<%= noticia.id_noticia %>';
+
+        fetch(`/actualizar-noticia/${idNoticia}`, {
+            method: "PUT",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                Swal.fire({
+                    title: "¡Actualizado!",
+                    text: data.message,
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    window.location.href = "/dashboard/noticias";
+                });
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        })
+        .catch(err => console.error(err));
+    });
+  </script>
+</body>
+</html>

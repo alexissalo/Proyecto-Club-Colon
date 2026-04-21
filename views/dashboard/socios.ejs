@@ -121,6 +121,7 @@
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Dni</th>
+                                    <th>Nro.Socio</th>
                                     <th>Fec.Nac</th>
                                     <th>Telefono</th>
                                     <th>Domicilio</th>
@@ -141,6 +142,9 @@
                                             </td>
                                             <td>
                                                 <%= socio.dni %>
+                                            </td>
+                                            <td>
+                                                <%= socio.nroSocio %>
                                             </td>
                                             <td>
                                                 <%= socio.fechaNacimiento %>
@@ -321,6 +325,8 @@
                         <input type="text" id="domicilio" required>
                         <label for="dni">DNI:</label>
                         <input type="number" id="dni" required>
+                        <label for="nroSocio">Nro.Socio:</label>
+                        <input type="number" id="nroSocio" required>
                         <label for="fechaInscripcion">Fecha de inscripcion:</label>
                         <input type="date" id="fechaInscripcion" required>
                         <label for="fechaNacimiento">Fecha de nacimiento:</label>
@@ -353,6 +359,7 @@
                 const telefono = document.getElementById('telefono').value;
                 const domicilio = document.getElementById('domicilio').value;
                 const dni = document.getElementById('dni').value;
+                const nroSocio = document.getElementById('nroSocio').value;
                 const fechaNacimiento = document.getElementById('fechaNacimiento').value;
                 const fechaInscripcion = document.getElementById('fechaInscripcion').value;
                 const email = document.getElementById("email").value
@@ -374,7 +381,8 @@
                         fechaInscripcion: fechaInscripcion,
                         email: email,
                         tipodesocio: tipoSocio,
-                        deporte: deporte
+                        deporte: deporte,
+                        nroSocio:nroSocio
                     }),
                 })
                     .then((response) => response.json())
@@ -461,6 +469,8 @@
                 <input type="text" id="domicilioEditar" value="${socio.domicilio}" required>
                 <label for="emailEditar">Email:</label>
                 <input type="email" id="emailEditar" value="${socio.email || ""}" required>
+                <label for="nroSocioEditar">Nro.Socio:</label>
+                <input type="number" id="nroSocioEditar" value="${socio.nroSocio || ""}" required>
                 <label for="tipoSocio">Tipo de socio:</label>
                 <select id="tipoSocioEditar" required>
                     ${tiposDeSociosHtml}
@@ -489,6 +499,7 @@
                 const email = document.getElementById("emailEditar").value
                 const tipoSocio = document.getElementById('tipoSocioEditar').value;
                 const deporte = document.getElementById('deporteEditar').value;
+                const nroSocio = document.getElementById('nroSocioEditar').value;
                 const errorMessage = document.querySelector(".error-message");
 
                 fetch(`/actualizarSocio/${socio.id}`, {
@@ -502,7 +513,8 @@
                         domicilio: domicilio,
                         tipodesocio: tipoSocio,
                         deporte: deporte,
-                        email: email
+                        email: email,
+                        nroSocio:nroSocio
                     }),
                 })
                     .then((response) => response.json())

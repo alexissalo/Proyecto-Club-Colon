@@ -15,6 +15,7 @@ async function exportarSociosExcel(req, res) {
     worksheet.columns = [
       { header: "Nombre", key: "nombre", width: 25 },
       { header: "DNI", key: "dni", width: 15 },
+      { header: "Nro.Socio", key: "nrosocio", width: 10 },
       { header: "Fecha de nacimiento", key: "fechanacimiento", width: 20 },
       { header: "Teléfono", key: "telefono", width: 15 },
       { header: "Domicilio", key: "direccion", width: 30 },
@@ -29,6 +30,7 @@ async function exportarSociosExcel(req, res) {
       worksheet.addRow({
         nombre: socio.nombre,
         dni: socio.dni,
+        nrosocio: socio.nroSocio,
         fechanacimiento:socio.fechaNacimiento,
         telefono: socio.telefono,
         direccion: socio.domicilio,

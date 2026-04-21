@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Noticias - Club Colón</title>
+  <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/styles.css">
+
+  <style>
+    /* --- 1. RESET Y REGLAS BASE --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root { 
+        --rojo-colon: #e30613; 
+        --negro-colon: #1a1a1a; 
+        --gris-fondo: #f4f4f4;
+        /* --- COLORES --- */
+        --verde-boton: #28a745;
+        --verde-boton-hover: #218838;
+        --celeste-boton: #17a2b8;
+        --celeste-boton-hover: #138496;
+        --rojo-borrar: #dc3545;
+        --rojo-borrar-hover: #c82333;
+    }
+    
+    body { 
+        font-family: 'Segoe UI', Arial, sans-serif; 
+        background-color: var(--gris-fondo); 
+    }
+
+    /* --- 2. LAYOUT --- */
+    .grid-container {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        min-height: 100vh;
+    }
+
+    .main-container { 
+        padding: 30px; 
+        width: 100%;
+        max-width: 1600px; 
+    }
+
+    .main-title h2 { 
+        color: var(--negro-colon); 
+        border-left: 5px solid var(--rojo-colon); 
+        padding-left: 15px; 
+        margin-bottom: 30px; 
+    }
+
+    /* --- 3. FORMULARIO --- */
+    .form-section {
+        background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-bottom: 40px; overflow: hidden; width: 100%;
+    }
+    
+    .form-header {
+        background: var(--celeste-boton); 
+        color: white; padding: 15px 25px; cursor: pointer;
+        display: flex; justify-content: space-between; align-items: center; user-select: none;
+        transition: background-color 0.3s ease;
+    }
+    .form-header:hover { background: var(--celeste-boton-hover); }
+    .form-header h2 { margin: 0; font-size: 1.1rem; }
+
+    .form-body { padding: 30px; }
+    .form-section.collapsed .form-body { display: none; }
+
+    .form-row-2-col { display: flex; gap: 30px; margin-bottom: 20px; }
+    .form-row-2-col > div { flex: 1; }
+
+    input, textarea, select {
+        width: 100%; padding: 12px; margin-bottom: 20px; 
+        border: 1px solid #ddd; border-radius: 6px; font-size: 14px; display: block;
+    }
+    input:focus, textarea:focus, select:focus { 
+        border-color: var(--celeste-boton); outline: none; box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1); 
+    }
+    input[type="file"] { padding: 10px; background: #f9f9f9; border: 1px dashed #ccc; }
+
+    .tags-wrapper {
+        border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: white;
+        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 48px;
+    }
+    .tags-wrapper:focus-within { border-color: var(--celeste-boton); }
+
+    .tag-badge {
+        background: var(--negro-colon); color: white; padding: 6px 12px; border-radius: 20px; 
+        font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+    }
+    .tag-badge i { cursor: pointer; color: #ff8585; }
+    #tagInput { border: none; margin: 0; padding: 5px; width: auto; flex-grow: 1; outline: none;}
+
+    button.btn-submit {
+        background-color: var(--verde-boton);
+        color: white; border: none; padding: 15px; 
+        border-radius: 6px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+    button.btn-submit:hover { background-color: var(--verde-boton-hover); }
+
+    /* --- 4. LISTADO DE NOTICIAS --- */
+    .list-section { margin-top: 30px; }
+    .noticias-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+        gap: 25px;
+    }
+
+    .card-noticia {
+        background: white; border-radius: 10px; overflow: hidden; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #eee;
+        display: flex; flex-direction: column; transition: transform 0.2s;
+    }
+    .card-noticia:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+    .card-img { width: 100%; height: 200px; object-fit: cover; background-color: #eee; }
+    
+    .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .card-cat { font-size: 0.75rem; text-transform: uppercase; color: #999; font-weight: bold; margin-bottom: 8px; }
+    .card-title { font-size: 1.25rem; margin: 0 0 10px 0; color: #333; line-height: 1.3; font-weight: 700; }
+    .card-desc { font-size: 0.95rem; color: #666; line-height: 1.5; }
+    
+    /* FOOTER DE LA TARJETA (NUEVO: FECHA + BOTONES) */
+    .card-footer { 
+        padding: 15px 20px; background: #fafafa; border-top: 1px solid #eee; 
+        font-size: 0.85rem; color: #888; 
+        display: flex; justify-content: space-between; align-items: center; /* Separa fecha de botones */
+    }
+
+    .card-actions { display: flex; gap: 10px; }
+
+    .btn-icon {
+        width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+        color: white; text-decoration: none; border: none; cursor: pointer; transition: background 0.3s;
+    }
+    .btn-edit { background-color: var(--celeste-boton); }
+    .btn-edit:hover { background-color: var(--celeste-boton-hover); }
+    
+    .btn-delete { background-color: var(--rojo-borrar); }
+    .btn-delete:hover { background-color: var(--rojo-borrar-hover); }
+
+    /* FILTROS */
+    .filtros-container { 
+        display: flex; gap: 15px; margin-bottom: 20px; 
+        background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .filtros-container input, .filtros-container select { margin-bottom: 0; }
+    .btn-filter { 
+        background: var(--celeste-boton); color: white; border: none; padding: 0 25px; 
+        border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.3s;
+    }
+    .btn-filter:hover { background: var(--celeste-boton-hover); }
+
+    /* PAGINADOR */
+    .paginador { margin: 40px 0; text-align: center; }
+    .paginador a { 
+        display: inline-block; padding: 10px 16px; margin: 0 4px; border: 1px solid #e0e0e0; 
+        background: white; color: #333; text-decoration: none; border-radius: 6px; font-weight: 600; transition: 0.3s;
+    }
+    .paginador a.active, .paginador a:hover { background: var(--celeste-boton); color: white; border-color: var(--celeste-boton); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+        .grid-container { display: block; }
+        .form-row-2-col { flex-direction: column; gap: 0; }
+        .noticias-grid { grid-template-columns: 1fr; }
+        .filtros-container { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid-container">
+    <%- include('header') %>
+    <%- include('sidebar', { rolId: rolId, rolNombre: rolNombre, disciplinas: disciplinas }) %>
+
+    <main class="main-container">
+      <div class="main-title">
+        <h2>Gestión de Noticias</h2>
+      </div>
+
+      <section class="form-section" id="sectionForm">
+        <div class="form-header" onclick="toggleForm()">
+            <h2><i class="fas fa-plus-circle"></i> Nueva Noticia</h2>
+            <i class="fas fa-chevron-up" id="toggleIcon"></i>
+        </div>
+
+        <div class="form-body">
+            <form class="form-noticia" id="newsForm">
+                <div class="form-row-2-col">
+                    <div>
+                        <label>Título</label>
+                        <input type="text" name="titulo" id="titulo" required>
+                    </div>
+                    <div>
+                        <label>Categoría</label>
+                        <select name="id_categoria" id="categoria" required>
+                            <% if (categorias && categorias.length > 0) { %>
+                                <% categorias.forEach(cat => { %>
+                                    <option value="<%= cat.id_categoria %>"><%= cat.nombre %></option>
+                                <% }) %>
+                            <% } else { %>
+                                <option disabled>Sin categorías</option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Subtítulo</label>
+                <input type="text" name="subtitulo" id="subtitulo">
+
+                <label>Imagen Principal</label>
+                <input type="file" name="imagen_principal" id="imagen" accept="image/*">
+
+                <label>Contenido</label>
+
+                <div id="editor-container" style="height: 250px;"></div>
+
+                <input type="hidden" name="contenido" id="contenido">
+
+                <label>Tags (Escribe y presiona Enter o Coma)</label>
+                <div class="tags-wrapper" onclick="document.getElementById('tagInput').focus()">
+                    <input type="text" id="tagInput" placeholder="Ej: Futbol, Primera...">
+                </div>
+                <input type="hidden" name="tags" id="tagsHidden">
+
+                <label>Fecha de Publicación</label>
+                <input type="datetime-local" name="fecha_publicacion" id="fecha_publicacion" required>
+
+                <button type="submit" class="btn-submit">Publicar Noticia</button>
+            </form>
+        </div>
+      </section>
+
+      <form method="GET" class="filtros-container">
+         <input type="text" name="busqueda" placeholder="Buscar noticia..." value="<%= typeof busqueda !== 'undefined' ? busqueda : '' %>">
+         <select name="orden">
+            <option value="reciente" <%= orden === 'reciente' ? 'selected' : '' %>>Más recientes</option>
+            <option value="antiguo" <%= orden === 'antiguo' ? 'selected' : '' %>>Más antiguas</option>
+            <option value="az" <%= orden === 'az' ? 'selected' : '' %>>A-Z</option>
+         </select>
+         <button type="submit" class="btn-filter">Filtrar</button>
+      </form>
+
+      <section class="list-section">
+        <% if (noticias.length === 0) { %>
+           <p style="text-align: center; color: #666;">No se encontraron noticias.</p>
+        <% } else { %>
+           <div class="noticias-grid">
+              <% noticias.forEach(noticia => { %>
+                 <article class="card-noticia">
+                    <img src="<%= noticia.imagen_principal || '/public/img/logo_colon.png' %>" alt="Noticia" class="card-img">
+                    
+                    <div class="card-content">
+                       <span class="card-cat"><%= noticia.categoria_nombre %></span>
+                       <h3 class="card-title"><%= noticia.titulo %></h3>
+                       <p class="card-desc"><%= noticia.subtitulo ? noticia.subtitulo : (noticia.contenido.slice(0, 80) + '...') %></p>
+                    </div>
+
+                    <div class="card-footer">
+                        <span><i class="far fa-calendar-alt"></i> <%= noticia.fecha_publicacion ? new Date(noticia.fecha_publicacion).toLocaleDateString() : 'N/A' %></span>
+                        
+                        <div class="card-actions">
+                            <a href="/dashboard/editar-noticia/<%= noticia.id_noticia %>" class="btn-icon btn-edit" title="Editar">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <button onclick="confirmarEliminar(<%= noticia.id_noticia %>)" class="btn-icon btn-delete" title="Eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                 </article>
+              <% }) %>
+           </div>
+        <% } %>
+
+        <div class="paginador">
+           <% for (let i = 1; i <= totalPaginas; i++) { %>
+             <a href="?pagina=<%= i %>&orden=<%= orden %>&busqueda=<%= busqueda %>" 
+                class="<%= i === pagina ? 'active' : '' %>"><%= i %></a>
+           <% } %>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+
+    const quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Escribí el contenido de la noticia...',
+        modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link'],
+            ['clean']
+        ]
+        }
+    });
+
+
+    // --- 1. LÓGICA MINIMIZAR FORMULARIO ---
+    function toggleForm() {
+        const section = document.getElementById('sectionForm');
+        const icon = document.getElementById('toggleIcon');
+        section.classList.toggle('collapsed');
+        if (section.classList.contains('collapsed')) {
+            icon.classList.remove('fa-chevron-up'); icon.classList.add('fa-chevron-down');
+        } else {
+            icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-up');
+        }
+    }
+
+    // --- 2. LÓGICA TAGS ---
+    const tagInput = document.getElementById('tagInput');
+    const tagsWrapper = document.querySelector('.tags-wrapper');
+    const tagsHidden = document.getElementById('tagsHidden');
+    let tagsList = [];
+
+    tagInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault(); 
+            const val = tagInput.value.trim();
+            if (val && !tagsList.includes(val)) { tagsList.push(val); renderTags(); }
+            tagInput.value = '';
+        }
+    });
+
+    function renderTags() {
+        document.querySelectorAll('.tag-badge').forEach(el => el.remove());
+        tagsList.forEach(tag => {
+            const badge = document.createElement('span');
+            badge.className = 'tag-badge';
+            badge.innerHTML = `${tag} <i class="fas fa-times" onclick="removeTag('${tag}')"></i>`;
+            tagsWrapper.insertBefore(badge, tagInput);
+        });
+        tagsHidden.value = tagsList.join(','); 
+    }
+
+    window.removeTag = (tag) => {
+        tagsList = tagsList.filter(t => t !== tag);
+        renderTags();
+    }
+
+    // --- 3. SUBMIT NUEVA NOTICIA ---
+    document.querySelector("#newsForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const contenidoHtml = quill.root.innerHTML;
+        document.getElementById('contenido').value = contenidoHtml;
+
+        const formData = new FormData(e.target);
+        fetch("/agregar-noticia", { method: "POST", body: formData })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.ok) {
+                Swal.fire({
+                    title: "Noticia Creada!", text: data.message, icon: "success", showConfirmButton: false, timer: 2000, timerProgressBar: true,
+                    didClose: () => { window.location.reload(); }
+                });
+            } else {
+                Swal.fire("Error", data.message || "Error desconocido", "error");
+            }
+        })
+        .catch((error) => console.error(error));
+    });
+
+    // --- 4. NUEVO: LÓGICA PARA BORRAR NOTICIA ---
+    function confirmarEliminar(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esto.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Llamada al backend para eliminar
+                fetch(`/eliminar-noticia/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok) {
+                        Swal.fire(
+                            '¡Eliminado!',
+                            'La noticia ha sido eliminada.',
+                            'success'
+                        ).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', 'No se pudo eliminar.', 'error');
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+        })
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Solicitudes</title>
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .solicitudes-list {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .solicitudes-list .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .solicitudes-list h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .solicitudes-list .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .solicitudes-list .btn-outline {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .solicitudes-list .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+
+        .solicitudes-list .btn-destructive {
+            background-color: #ef4444;
+            border: none;
+            color: white;
+        }
+
+        .solicitudes-list .btn-destructive:hover {
+            background-color: #dc2626;
+        }
+
+        .solicitudes-list .btn-destructive:disabled {
+            background-color: #fca5a5;
+            cursor: not-allowed;
+        }
+
+        .solicitudes-list ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .solicitudes-list li {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .solicitudes-list li:hover {
+            background-color: #f3f4f6;
+        }
+
+        .solicitudes-list li.selected {
+            background-color: #e0f2fe;
+        }
+
+        .solicitudes-list .checkbox {
+            margin-right: 12px;
+        }
+
+        .solicitudes-list .solicitud-info {
+            flex-grow: 1;
+        }
+
+        .solicitudes-list .remitente {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .solicitudes-list .asunto {
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .solicitudes-list .fecha {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .solicitudes-list .icon {
+            color: #9ca3af;
+        }
+
+        .estado {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .estado-aprobada {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .estado-rechazada {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .estado-pendiente {
+            background-color: #fef9c3;
+            color: #92400e;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+            <%- include('sidebar',{ rolId: rolId, rolNombre:rolNombre, disciplinas:disciplinas }) %>
+
+                <!-- Main -->
+                <main class="main-container">
+                    <div class="main-title">
+                        <h2>SOLICITUDES</h2>
+                    </div>
+                    <div class="container">
+                        <div class="solicitudes-list">
+                            <div class="header">
+                                <h3>Bandeja de entrada</h3>
+                                <div>
+                                    <!-- FILTRO POR ESTADO -->
+                                    <form method="GET" action="/dashboard/solicitudes/" style="display: inline;">
+                                        <select name="estado" class="btn btn-outline" onchange="this.form.submit()">
+                                            <option value="">Todas</option>
+                                            <option value="pendiente" <%=estadoFiltro==="pendiente" ? "selected" : "" %>
+                                                >Pendientes</option>
+                                            <option value="aprobada" <%=estadoFiltro==="aprobada" ? "selected" : "" %>
+                                                >Aprobadas</option>
+                                            <option value="rechazada" <%=estadoFiltro==="rechazada" ? "selected" : "" %>
+                                                >Rechazadas</option>
+                                        </select>
+                                    </form>
+
+
+                                    <button id="selectionModeBtn" class="btn btn-outline">Seleccionar</button>
+                                    <button id="deleteSelectedBtn" class="btn btn-destructive" style="display: none;">
+                                        Borrar (<span id="selectedCount">0</span>)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <ul id="solicitudesList">
+                                <% solicitudes.forEach(s=> {
+                                    let datos = {};
+                                    try { datos = (s.datos_solicitud) } catch(e) {}
+                                    %>
+                                    <a href="/dashboard/solicitud/<%= s.id_solicitud %>"
+                                        style="text-decoration: none; color: #000;">
+                                        <li data-estado="<%= s.estado %>">
+                                            <input type="checkbox" class="checkbox" style="display:none;"
+                                                data-id="<%= s.id_solicitud %>">
+
+                                            <div class="solicitud-info">
+                                                <% if (s.tipo_solicitud==="registro_deportista" ) { %>
+                                                    <div class="remitente">Registro de deportista: <%= datos.datosPersonales.nombre %> (
+                                                            <%= datos.datosPersonales.dni %>)</div>
+                                                    <% } else if (s.tipo_solicitud==="nuevo_socio" ) { %>
+                                                        <div class="remitente">Nueva solicitud de socio</div>
+                                                        <% } else { %>
+                                                            <div class="remitente">Solicitud de socio existente</div>
+                                                            <% } %>
+                                                                <div class="fecha">
+                                                                    <%= (s.fecha_solicitud) %>
+                                                                </div>
+                                            </div>
+
+
+                                            <span class="estado 
+                            <%= s.estado === 'aprobada' ? 'estado-aprobada' : 
+                                s.estado === 'rechazada' ? 'estado-rechazada' : 'estado-pendiente' %>">
+                                                <%= s.estado %>
+                                            </span>
+                                        </li>
+
+                                    </a>
+                                    <% }) %>
+                            </ul>
+                        </div>
+                    </div>
+                </main>
+                <!-- End Main -->
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/public/js/interacciones.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const filterEstado = document.getElementById("filterEstado");
+            const solicitudesList = document.getElementById("solicitudesList");
+            const selectionModeBtn = document.getElementById("selectionModeBtn");
+            const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+            const selectedCount = document.getElementById("selectedCount");
+
+            let selectionMode = false;
+
+            // FILTRO POR ESTADO
+            // filterEstado.addEventListener("change", () => {
+            //     const estado = filterEstado.value;
+            //     const items = solicitudesList.querySelectorAll("li");
+
+            //     items.forEach(item => {
+            //     if (!estado || item.dataset.estado === estado) {
+            //         item.style.display = "";
+            //     } else {
+            //         item.style.display = "none";
+            //     }
+            //     });
+            // });
+
+            // MODO SELECCIÓN
+            selectionModeBtn.addEventListener("click", () => {
+                selectionMode = !selectionMode;
+                const checkboxes = solicitudesList.querySelectorAll(".checkbox");
+
+                checkboxes.forEach(cb => {
+                    cb.style.display = selectionMode ? "inline-block" : "none";
+                    cb.checked = false;
+                });
+
+                deleteSelectedBtn.style.display = selectionMode ? "inline-block" : "none";
+                selectedCount.textContent = "0";
+            });
+
+            // ACTUALIZAR CONTADOR DE SELECCIONADOS
+            solicitudesList.addEventListener("change", (e) => {
+                if (e.target.classList.contains("checkbox")) {
+                    const total = solicitudesList.querySelectorAll(".checkbox:checked").length;
+                    selectedCount.textContent = total;
+                }
+            });
+
+            // ELIMINAR SELECCIONADOS
+            deleteSelectedBtn.addEventListener("click", async () => {
+                const seleccionados = [...solicitudesList.querySelectorAll(".checkbox:checked")];
+
+                if (seleccionados.length === 0) return alert("No hay solicitudes seleccionadas.");
+
+                Swal.fire({
+                    title: "Estas seguro?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    cancelButtonText: "Cancelar",
+                    confirmButtonText: "Aceptar"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        for (const cb of seleccionados) {
+                            const id = cb.dataset.id;
+
+                            fetch(`/eliminarSolicitud/${id}`,
+                                {
+                                    method: "DELETE",
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                }
+
+                            )
+                        }
+                        Swal.fire({
+                            title: "Solicitudes Eliminadas!",
+                            icon: "success",
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            didClose: () => {
+                                window.location.reload()
+                            }
+                    })
+                }
+
+            });
+        });
+        })
+
+
+    </script>
+</body>
+
+</html>

@@ -66,14 +66,14 @@ router.get(
   socioController.listarTiposDeSocios
 );
 
-// router.get(
-//   "/dashboard/escaner",
-//   [
-//     authMiddlewares.verificarSesion,
-//     authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
-//   ],
-//   socioController.mostrarEscanerSocios
-// );
+router.get(
+  "/dashboard/escaner",
+  [
+    authMiddlewares.verificarSesion,
+    authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
+  ],
+  socioController.mostrarEscanerSocios
+);
 
 router.post(
   "/crearSocio",
@@ -152,10 +152,10 @@ router.get("/listarPdfSocios",[
 ],
 listarSociosenPdf)
 
-router.get("/getsocio/:id",[
+router.get("/getsocio/:dni",[
   authMiddlewares.verificarSesion,
   authMiddlewares.verificarRol(["admin_general", "admin_secretaria"]),
-], socioController.getSocioById)
+], socioController.getSocioByDNI)
 
 router.get("/listarFacturasImpagas/:id",[
   authMiddlewares.verificarSesion,

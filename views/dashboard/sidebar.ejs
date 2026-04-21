@@ -50,13 +50,13 @@
                 </a>
             </li>
         <% } %>
-        <!-- <% if(rolNombre==="admin_general") { %>
+        <% if(rolNombre==="admin_general") { %>
             <li class="sidebar-list-item">
                 <a href="/dashboard/escaner">
                     Escaner
                 </a>
             </li>
-        <% } %> -->
+        <% } %>
         <% disciplinas.forEach(function(disciplina) { %>
             <% if (rolNombre === `admin_${disciplina.nombre}` || rolNombre === `coordinador_${disciplina.nombre}`) { %>
                 <li class="sidebar-list-item" onclick="toggleSubMenu()">
@@ -93,10 +93,44 @@
                                 <a href="/dashboard/movimientos/<%= disciplina.nombre %>">Movimientos</a>
                             </li>
                         <% } %>
+                        <% if(rolNombre===`admin_${disciplina.nombre}`  ||  rolNombre===`coordinador_${disciplina.nombre}`) { %>
+                            <li class="sub-menu-item">
+                                <a href="/dashboard/solicitudes/<%= disciplina.nombre %>">Solicitudes</a>
+                            </li>
+                        <% } %>
                     </ul>
                 </li>
                 <% } %>
             <% }); %>
+
+        <% if(rolNombre==="admin_tienda") { %>
+            <li class="sidebar-list-item" onclick="toggleSubMenu()">
+                <a class="menu-link">
+                    Tienda
+                    <i id="arrowIcon" class="bi bi-chevron-right"></i>
+                </a>
+                <ul class="sub-menu" id="subMenu">
+                    <li class="sub-menu-item">
+                        <a href="/dashboard/productos">
+                            Lista de productos
+                        </a>
+                    </li>
+                    <li class="sub-menu-item">
+                        <a href="/dashboard/categoriaProducto">
+                            Categorias de productos
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        <% } %>
+
+        <% if(rolNombre==="admin_noticias") { %>
+            <li class="sidebar-list-item">
+                <a href="/dashboard/noticias">
+                    Noticias
+                </a>
+            </li>
+        <% } %>
     </ul>
 </aside>
 <!-- End Sidebar -->

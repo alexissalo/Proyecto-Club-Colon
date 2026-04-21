@@ -77,20 +77,20 @@ class SocioController {
     });
   }
 
-  // mostrarEscanerSocios(req, res) {
-  //   disciplinaModel.listarDisciplinas((disciplinaData) => {
-  //     // Obtenemos el rol del usuario
-  //     const rolId = req.rolId;
-  //     const rolNombre = req.rolNombre;
+  mostrarEscanerSocios(req, res) {
+    disciplinaModel.listarDisciplinas((disciplinaData) => {
+      // Obtenemos el rol del usuario
+      const rolId = req.rolId;
+      const rolNombre = req.rolNombre;
 
-  //     // Renderizamos la vista de socios con los datos obtenidos
-  //     res.render("dashboard/escaner", {
-  //       rolId: rolId,
-  //       rolNombre: rolNombre,
-  //       disciplinas: disciplinaData,
-  //     });
-  //   });
-  // }
+      // Renderizamos la vista de socios con los datos obtenidos
+      res.render("dashboard/escaner", {
+        rolId: rolId,
+        rolNombre: rolNombre,
+        disciplinas: disciplinaData,
+      });
+    });
+  }
 
   crearSocio(req, res) {
     const {
@@ -103,6 +103,7 @@ class SocioController {
       email,
       deporte,
       tipodesocio,
+      nroSocio
     } = req.body;
 
     // Validar campos obligatorios
@@ -123,6 +124,7 @@ class SocioController {
       email,
       deporte,
       tipodesocio,
+      nroSocio,
       (error, socioData) => {
         if (error) {
           // Manejar errores específicos
@@ -203,7 +205,7 @@ class SocioController {
 
   actualizarSocio(req, res) {
     const { id } = req.params;
-    const { nombre, telefono, domicilio, tipodesocio, deporte, email } =
+    const { nombre, telefono, domicilio, tipodesocio, deporte, email, nroSocio } =
       req.body;
 
     if (!nombre || !telefono || !domicilio) {
@@ -221,6 +223,7 @@ class SocioController {
       email,
       tipodesocio,
       deporte,
+      nroSocio,
       (socioData) => {
         if (socioData == null) {
           return res.status(500).json({
@@ -472,10 +475,10 @@ class SocioController {
     });
   }
 
-  getSocioById(req, res) {
-    const { id } = req.params;
+  getSocioByDNI(req, res) {
+    const { dni } = req.params;
 
-    socioModel.getSocioById(id, (socioData) => {
+    socioModel.getSocioByDNI(dni, (socioData) => {
       if (socioData == null)
         return res
           .status(500)

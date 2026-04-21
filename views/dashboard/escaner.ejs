@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/public/img/logo_colon_sin_fondo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <title>Escanear Código QR y Buscar Socio</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .scanner-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            margin: 20px auto;
+        }
+
+        #reader {
+            width: 400px;
+            height: 300px;
+            border: 2px dashed #ccc;
+            margin: 0 auto 20px;
+            display: none;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .search-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .search-container input {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-container button {
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('header') %>
+        <%- include('sidebar', { rolId: rolId, rolNombre: rolNombre, disciplinas: disciplinas }) %>
+
+        <!-- Main -->
+        <main class="main-container">
+            <div class="main-title">
+                <h2>Escanear Código QR o Buscar Socio</h2>
+            </div>
+
+            <!-- Buscador por DNI -->
+            <div class="search-container">
+                <input type="text" id="dni-search" placeholder="Ingrese DNI del socio o deportista">
+                <button onclick="buscarPorDNI()">Buscar</button>
+            </div>
+
+            <!-- Escáner QR -->
+            <div class="scanner-container">
+                <button onclick="toggleScanner()" style="margin: 10px;">Mostrar/Ocultar Escáner</button>
+                <div id="reader"></div>
+                <div class="buttons">
+                    <button class="start-btn" id="start-scan">Iniciar Cámara</button>
+                    <button class="stop-btn" id="stop-scan">Detener Cámara</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    let scannerVisible = false;
+    let html5QrCode = null;
+
+    const readerId = "reader";
+
+    function toggleScanner() {
+        scannerVisible = !scannerVisible;
+        const reader = document.getElementById(readerId);
+
+        reader.style.display = scannerVisible ? "block" : "none";
+
+        if (!scannerVisible) {
+            detenerCamara();
+        }
+    }
+
+    // ===============================
+    // INICIAR CÁMARA
+    // ===============================
+    document.getElementById("start-scan").addEventListener("click", () => {
+        iniciarCamara();
+    });
+
+    function iniciarCamara() {
+        if (html5QrCode) return;
+
+        html5QrCode = new Html5Qrcode(readerId);
+
+        html5QrCode.start(
+            { facingMode: "environment" }, // Cámara trasera
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            onScanSuccess,
+            onScanFailure
+        ).catch(err => {
+            console.error("Error al iniciar cámara:", err);
+            Swal.fire("Error", "No se pudo acceder a la cámara", "error");
+        });
+    }
+
+    // ===============================
+    // DETENER CÁMARA
+    // ===============================
+    document.getElementById("stop-scan").addEventListener("click", () => {
+        detenerCamara();
+    });
+
+    function detenerCamara() {
+        if (!html5QrCode) return;
+
+        html5QrCode.stop()
+            .then(() => {
+                html5QrCode.clear();
+                html5QrCode = null;
+            })
+            .catch(err => {
+                console.error("Error al detener cámara:", err);
+            });
+    }
+
+    // ===============================
+    // QR LEÍDO CON ÉXITO
+    // ===============================
+    function onScanSuccess(decodedText) {
+        console.log("QR leído:", decodedText);
+
+        detenerCamara();
+
+        // Asumimos que el QR contiene el DNI
+        document.getElementById("dni-search").value = decodedText;
+
+        buscarPorDNI();
+    }
+
+    function onScanFailure(error) {
+        // No mostramos errores para evitar spam
+    }
+
+    // ===============================
+    // BUSCAR SOCIO
+    // ===============================
+    function buscarPorDNI() {
+        const dni = document.getElementById("dni-search").value.trim();
+
+        if (!dni) {
+            Swal.fire("Error", "Debe ingresar un DNI", "error");
+            return;
+        }
+
+        fetch(`/getsocio/${dni}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.ok) {
+                    Swal.fire({
+                        title: "Información del socio",
+                        html: `
+                            <ul style="text-align:left">
+                                <li><b>Nombre:</b> ${result.data.nombre}</li>
+                                <li><b>DNI:</b> ${result.data.dni}</li>
+                                <li><b>Estado:</b> ${result.data.estado}</li>
+                                <li><b>Cuotas al día:</b> ${result.data.cuotasPendientes === 0 ? 'Sí' : 'No'}</li>
+                                <li><b>Último pago:</b> ${result.data.ultimoPago || 'No disponible'}</li>
+                            </ul>
+                        `,
+                        confirmButtonText: "Ver pagos",
+                        showCancelButton: true
+                    }).then((res) => {
+                        if (res.isConfirmed) {
+                            window.location.href = `/dashboard/socios/pagos/${dni}`;
+                        }
+                    });
+                } else {
+                    Swal.fire("Error", result.message, "error");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire("Error", "No se pudo obtener la información", "error");
+            });
+    }
+</script>
+
+</body>
+
+</html>

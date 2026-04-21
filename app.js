@@ -12,10 +12,15 @@ const rutasEconomia= require("./routes/economia")
 const rutasDeportistas= require("./routes/deportistas")
 const rutasMovimientos= require("./routes/movimiento")
 const rutasCron= require("./routes/cron")
+const rutasSolicitudes= require("./routes/solicitudes")
+const rutasProductos= require("./routes/productos")
+const rutasNoticias= require("./routes/noticias")
+
 
 
 
 // MiddleWare
+
 
 app.use(session({
   secret: keysecretsession,
@@ -44,6 +49,10 @@ app.use("/",rutasEconomia)
 app.use("/",rutasDeportistas)
 app.use("/", rutasMovimientos)
 app.use("/cron",rutasCron)
+app.use("/", rutasSolicitudes)
+app.use("/",rutasProductos)
+app.use("/",rutasNoticias)
+
 
 
 app.listen(port, () => {

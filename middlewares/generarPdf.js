@@ -451,7 +451,7 @@ async function listarSociosenPdf(req, res) {
     res.setHeader("Content-Type", "application/pdf");
 
     // Crea un documento PDF
-    const doc = new PDFDocument({ size: "A3", margin: 10 });
+    const doc = new PDFDocument({ size: "A2", margin: 10 });
     const pageHeight = doc.page.height;
 
     const hoy = new Date();
@@ -462,12 +462,12 @@ async function listarSociosenPdf(req, res) {
       .fontSize(12)
       .text(`Fecha: ${hoy.toLocaleDateString()}`, { align: "right" });
     doc.moveDown();
-    doc.fontSize(16).text("Listado de Socios", { align: "center" });
+    doc.fontSize(18).text("Listado de Socios", { align: "center" });
     doc.moveDown();
 
     // Variables de la tabla
     const tableTop = 100;
-    const columnWidths = [100, 70, 70, 100, 100, 70, 100, 70, 70]; // Anchos de columnas
+    const columnWidths = [120, 90,90, 90, 120, 120, 90, 120, 90, 90]; // Anchos de columnas
     const rowHeight = 40; // Altura de cada fila
     const startX = 50;
     let currentY = tableTop;
@@ -477,6 +477,7 @@ async function listarSociosenPdf(req, res) {
       const headers = [
         "Nombre",
         "DNI",
+        "Nro.Socio",
         "Fec.Nacimiento",
         "Telefono",
         "Domicilio",
@@ -488,7 +489,7 @@ async function listarSociosenPdf(req, res) {
       headers.forEach((header, i) => {
         doc
           .font("Helvetica-Bold")
-          .fontSize(11)
+          .fontSize(12)
           .text(
             header,
             startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0),
@@ -524,6 +525,7 @@ async function listarSociosenPdf(req, res) {
       const columns = [
         socio.nombre,
         socio.dni,
+        socio.nroSocio,
         socio.fechaNacimiento,
         socio.telefono,
         socio.domicilio,
@@ -536,7 +538,7 @@ async function listarSociosenPdf(req, res) {
       columns.forEach((text, colIndex) => {
         doc
           .font("Helvetica")
-          .fontSize(9)
+          .fontSize(10)
           .text(
             text,
             startX + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0),

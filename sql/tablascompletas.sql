@@ -1,8 +1,3 @@
-create database admincolon;
-
-use admincolon;
-
-
 CREATE TABLE `comunicaciondeportista` (
   `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `deportistaId` INT NULL DEFAULT NULL,
@@ -171,31 +166,6 @@ CREATE TABLE facturas_deportistas (
 );
 
 
-insert into roles(nombre) values
-("admin_general"),
-("admin_secretaria"),
-("admin_futbol"),
-("admin_futbol"),
-("admin_tenis"),
-("admin_patin"),
-("admin_voley"),
-("admin_basquet"),
-("coordinador_futbol"),
-("coordinador_tenis"),
-("coordinador_patin"),
-("coordinador_voley"),
-("coordinador_basquet");
-
-insert into disciplinas(nombre) values("futbol"),
-("tenis"),("patin"),("voley"),("basquet");
-
-insert into usuarios(nombre,email,contraseña,id_rol) values
-("admingeneral","admingeneral31@gmail.com","$2a$10$XpTg18Pa3C62JjMNccYha.5qBRs95jSyeQa9cjJp5xsvnfWpNIHwi",1),
-("adminsecretaria","adminsecretaria31@gmail.com","$2a$10$XpTg18Pa3C62JjMNccYha.5qBRs95jSyeQa9cjJp5xsvnfWpNIHwi",2),
-("adminfutbol","adminfutbol31@gmail.com","$2a$10$XpTg18Pa3C62JjMNccYha.5qBRs95jSyeQa9cjJp5xsvnfWpNIHwi",3),
-("coordinadorfutbol","coordfutbol31@gmail.com","$2a$10$XpTg18Pa3C62JjMNccYha.5qBRs95jSyeQa9cjJp5xsvnfWpNIHwi",9);
-
-
 CREATE TABLE solicitudes (
     id_solicitud INT AUTO_INCREMENT PRIMARY KEY,
     tipo_solicitud ENUM('nuevo_socio', 'socio_existente',"registro_deportista") NOT NULL,
@@ -206,8 +176,71 @@ CREATE TABLE solicitudes (
 );
 
 
+CREATE TABLE categorias_productos (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT NULL,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE productos (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
+    id_categoria INT NOT NULL,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_categoria) REFERENCES categorias_productos(id_categoria)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
 
 
+CREATE TABLE talles_productos (
+    id_talle INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(10) NOT NULL UNIQUE,
+    descripcion VARCHAR(50) NULL
+);
 
+CREATE TABLE stock_productos (
+    id_stock INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT NOT NULL,
+    id_talle INT,
+    cantidad INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (id_talle) REFERENCES talles_productos(id_talle)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    UNIQUE (id_producto, id_talle)
+);
 
+CREATE TABLE imagenes_productos (
+    id_imagen INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT NOT NULL,
+    ruta_imagen VARCHAR(255) NOT NULL,
+    fecha_subida DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+);
 
+CREATE TABLE noticias (
+    id_noticia INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    subtitulo VARCHAR(255) NULL,
+    contenido TEXT NOT NULL,
+    fecha_publicacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_categoria INT NOT NULL,
+    tags JSON NOT NULL,
+    imagen_principal VARCHAR(255) NULL,
+    FOREIGN KEY (id_categoria) REFERENCES categorias_noticias(id_categoria)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE categorias_noticias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+);

@@ -20,7 +20,8 @@ class SocioModel {
                 s.telefono, 
                 s.domicilio,
                 s.estado,
-                s.email, 
+                s.email,
+                s.nroSocio,
                 DATE_FORMAT(s.fechaInscripcion, '%d-%m-%Y') AS fechaInscripcion,
                 d.nombre AS deporte,
                 ts.nombre AS tipodesocio
@@ -97,12 +98,13 @@ class SocioModel {
     email,
     deporte,
     tipodesocio,
+    nroSocio,
     callback
   ) {
     try {
       const sql = `
-        INSERT INTO socios(nombre, dni, telefono, fechaNacimiento, domicilio, id_tipo_socio, id_disciplina, email, fechaInscripcion) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO socios(nombre, dni, telefono, fechaNacimiento, domicilio, id_tipo_socio, id_disciplina, email, fechaInscripcion, nroSocio) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
       `;
 
       const [result] = await pool.query(sql, [
@@ -115,6 +117,7 @@ class SocioModel {
         deporte,
         email,
         fechaInscripcion,
+        nroSocio
       ]);
 
       await this.generarFactura(result.insertId, tipodesocio, callback);
@@ -189,10 +192,11 @@ class SocioModel {
     email,
     tipodesocio,
     deporte,
+    nroSocio,
     callback
   ) {
     try {
-      let sql = `UPDATE socios SET nombre = ?, telefono = ?, domicilio = ?, id_tipo_socio= ?, id_disciplina= ?, email= ? WHERE id = ?`;
+      let sql = `UPDATE socios SET nombre = ?, telefono = ?, domicilio = ?, id_tipo_socio= ?, id_disciplina= ?, email= ?, nroSocio=? WHERE id = ?`;
 
       const params = [
         nombre,
@@ -201,6 +205,7 @@ class SocioModel {
         tipodesocio,
         deporte,
         email,
+        nroSocio,
         id,
       ];
 
@@ -388,6 +393,19 @@ class SocioModel {
     }
   }
 
+  async getSocioByDNI(dni, callback) {
+    try {
+      let sql = `SELECT * FROM socios WHERE dni= ?`;
+
+      const [result] = await pool.query(sql, [dni]);
+
+      callback(result);
+    } catch (error) {
+      console.log(error);
+      callback(null);
+    }
+  }
+
   async getSocioById(id, callback) {
     try {
       let sql = `SELECT * FROM socios WHERE id= ?`;
@@ -444,6 +462,7 @@ class SocioModel {
           DATE_FORMAT(s.fechaNacimiento, '%d-%m-%Y') AS fechaNacimiento,
           s.telefono, 
           s.domicilio,
+          s.nroSocio,
           s.email, 
           DATE_FORMAT(s.fechaInscripcion, '%d-%m-%Y') AS fechaInscripcion,
           d.nombre AS deporte,
