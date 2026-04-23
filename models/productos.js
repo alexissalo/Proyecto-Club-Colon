@@ -76,18 +76,43 @@ class ProductoModel {
   // models/productos.js — método agregarStockProducto
   async agregarStockProducto(id_producto, id_talle, cantidad, callback) {
     try {
-      const sql = `
-            INSERT INTO stock_productos (id_producto, id_talle, cantidad)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE cantidad = ?
-        `; // ✅ = ? en vez de = cantidad + ? → reemplaza en vez de sumar
-      const [result] = await pool.query(sql, [
-        id_producto,
-        id_talle,
-        cantidad,
-        cantidad, // valor de reemplazo
-      ]);
-      callback(result);
+      let sql;
+      let params;
+
+      if (id_talle === null) {
+        // 👉 Caso sin talle
+        sql = `
+        UPDATE stock_productos 
+        SET cantidad = ?
+        WHERE id_producto = ? AND id_talle IS NULL
+      `;
+        params = [cantidad, id_producto];
+
+        const [updateResult] = await pool.query(sql, params);
+
+        if (updateResult.affectedRows === 0) {
+          // 👉 No existía → insertar
+          const [insertResult] = await pool.query(
+            `INSERT INTO stock_productos (id_producto, id_talle, cantidad)
+           VALUES (?, NULL, ?)`,
+            [id_producto, cantidad],
+          );
+          callback(insertResult);
+        } else {
+          callback(updateResult);
+        }
+      } else {
+        // 👉 Caso con talle (usa duplicate key)
+        sql = `
+        INSERT INTO stock_productos (id_producto, id_talle, cantidad)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE cantidad = ?
+      `;
+        params = [id_producto, id_talle, cantidad, cantidad];
+
+        const [result] = await pool.query(sql, params);
+        callback(result);
+      }
     } catch (error) {
       console.error(error);
       callback(null);
