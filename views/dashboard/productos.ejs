@@ -453,8 +453,9 @@
                                             <td>
                                                 <button class="editar" onclick="editarProducto(<%= JSON.stringify(producto) %>)">Editar</button>
                                                 <button class="eliminar" onclick="borrarProducto(<%= producto.id_producto%>)">Eliminar</button>
-                                                <button stock="stock" onclick="agregarStock(<%= producto.id_producto %>)">Añadir
-                                                    Stock</button>
+                                                <button class="stock" onclick='agregarStock(<%= producto.id_producto %>, <%- JSON.stringify(producto.stock || {}) %>)'>
+                                                    Añadir Stock
+                                                </button>
                                             </td>
                                         </tr>
                                         <% }); %>
@@ -672,12 +673,12 @@
 
 
 
-        function agregarStock(id_producto) {
+        function agregarStock(id_producto, stock) {  // ✅ recibe stock como parámetro
             Swal.fire({
                 title: "Agregar Stock",
                 html: `
                 <style>
-                #formStock {
+                    #formStock {
                         display: grid;
                         grid-template-columns: 1fr 1fr;
                         gap: 12px;
@@ -685,10 +686,7 @@
                         font-size: 14px;
                         align-items: center;
                     }
-                    #formStock label {
-                        font-weight: 600;
-                        font-size: 13px;
-                    }
+                    #formStock label { font-weight: 600; font-size: 13px; }
                     #formStock input {
                         padding: 6px 8px;
                         border: 1px solid #ddd;
@@ -697,22 +695,9 @@
                         outline: none;
                         transition: border 0.2s;
                     }
-                    #formStock input:focus {
-                        border-color: #3085d6;
-                        box-shadow: 0 0 3px #3085d6;
-                    }
-                    #formStock h4 {
-                        grid-column: span 2;
-                        margin: 5px 0;
-                        font-size: 15px;
-                        color: #444;
-                    }
-                    #formStock hr {
-                        grid-column: span 2;
-                        border: none;
-                        border-top: 1px solid #eee;
-                        margin: 8px 0;
-                    }
+                    #formStock input:focus { border-color: #3085d6; box-shadow: 0 0 3px #3085d6; }
+                    #formStock h4 { grid-column: span 2; margin: 5px 0; font-size: 15px; color: #444; }
+                    #formStock hr { grid-column: span 2; border: none; border-top: 1px solid #eee; margin: 8px 0; }
                     #formStock button {
                         grid-column: span 2;
                         margin-top: 5px;
@@ -726,81 +711,81 @@
                         font-weight: bold;
                         transition: background 0.3s;
                     }
-                    #formStock button:hover {
-                        background: #2563eb;
-                    }
-                    .error-message {
-                        grid-column: span 2;
-                        margin-top: 5px;
-                        color: red;
-                        font-size: 13px;
-                        font-weight: 500;
-                    }
-
-                    @media (max-width: 600px) {
-                        #formStock {
-                            grid-template-columns: 1fr !important;
-                        }
-                        #formStock h4,
-                        #formStock hr,
-                        #formStock button,
-                        .error-message {
-                            grid-column: span 1 !important;
-                        }
-                    }
+                    #formStock button:hover { background: #2563eb; }
+                    .stock-hint { font-size: 11px; color: #999; grid-column: span 2; margin-top: -8px; }
                 </style>
-              <form id="formStock">
-                <label for="stockGeneral">Stock General:</label>
-                <input type="number" id="stockGeneral" placeholder="Cantidad" />
 
-                <hr/>
-                <h4>Por Talle:</h4>
-                ${tallesData.map(t => `
-                    <div>
-                        <label for="talle-${t.id_talle}">${t.nombre}:</label>
-                        <input type="number" id="talle-${t.id_talle}" data-id="${t.id_talle}" placeholder="Cantidad"/>
-                    </div>
-                `).join("")}
+                <form id="formStock">
+                    <label for="stockGeneral">Stock General:</label>
+                    <!-- ✅ Precargamos el stock general si existe -->
+                    <input 
+                        type="number" 
+                        id="stockGeneral" 
+                        placeholder="Cantidad"
+                        value="${stock?.general > 0 ? stock.general : ''}"
+                    />
 
-                <button type="submit">Guardar</button>
-              </form>
-              <div class="error-message"></div>
-            `,
+                    <p class="stock-hint">Editá el valor para actualizarlo. Se reemplazará el stock actual.</p>
+
+                    <hr/>
+                    <h4>Por Talle:</h4>
+
+                    ${tallesData.map(t => {
+                        // ✅ Buscamos si ya tiene stock cargado para este talle
+                        const talleExistente = stock?.talles?.find(st => st.nombre === t.nombre)
+                        const cantidadActual = talleExistente ? talleExistente.cantidad : ''
+                        return `
+                            <label for="talle-${t.id_talle}">${t.nombre}:</label>
+                            <input 
+                                type="number" 
+                                id="talle-${t.id_talle}" 
+                                data-id="${t.id_talle}" 
+                                placeholder="Cantidad"
+                                value="${cantidadActual}"
+                            />
+                        `
+                    }).join("")}
+
+                    <button type="submit">Guardar</button>
+                </form>
+                <div class="error-message"></div>
+                `,
                 showConfirmButton: false,
                 showCloseButton: true,
                 allowOutsideClick: false,
                 didOpen: () => {
                     document.getElementById("formStock").addEventListener("submit", async (e) => {
-                        e.preventDefault();
+                        e.preventDefault()
 
-                        // Construir array de stocks
-                        const stocks = [];
+                        const stocks = []
 
                         // Stock general
-                        const generalValue = document.getElementById("stockGeneral").value;
-                        if (generalValue) {
-                            stocks.push({ id_talle: null, cantidad: parseInt(generalValue, 10) });
+                        const generalValue = document.getElementById("stockGeneral").value
+                        if (generalValue !== '') {
+                            stocks.push({ id_talle: null, cantidad: parseInt(generalValue, 10) })
                         }
 
                         // Stock por talle
                         tallesData.forEach(t => {
-                            const input = document.getElementById(`talle-${t.id_talle}`);
-                            const value = input.value;
-                            if (value) {
-                                stocks.push({ id_talle: t.id_talle, cantidad: parseInt(value, 10) });
+                            const input = document.getElementById(`talle-${t.id_talle}`)
+                            if (input.value !== '') {
+                                stocks.push({ id_talle: t.id_talle, cantidad: parseInt(input.value, 10) })
                             }
-                        });
+                        })
+
+                        if (stocks.length === 0) {
+                            document.querySelector(".error-message").textContent = "Ingresá al menos un valor de stock."
+                            return
+                        }
 
                         try {
                             const res = await fetch("/agregarStock", {
                                 method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
+                                headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ id_producto, stocks })
-                            });
+                            })
 
-                            const data = await res.json();
+                            const data = await res.json()
                             if (data.ok) {
                                 Swal.fire({
                                     icon: "success",
@@ -808,17 +793,17 @@
                                     text: data.message,
                                     timer: 2000,
                                     showConfirmButton: false
-                                }).then(() => window.location.reload());
+                                }).then(() => window.location.reload())
                             } else {
-                                document.querySelector(".error-message").textContent = data.message;
+                                document.querySelector(".error-message").textContent = data.message
                             }
                         } catch (err) {
-                            console.error(err);
-                            document.querySelector(".error-message").textContent = "Error al conectar con el servidor.";
+                            console.error(err)
+                            document.querySelector(".error-message").textContent = "Error al conectar con el servidor."
                         }
-                    });
+                    })
                 }
-            });
+            })
         }
 
 

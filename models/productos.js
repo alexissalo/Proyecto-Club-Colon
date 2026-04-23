@@ -73,22 +73,20 @@ class ProductoModel {
   }
 
   //Método para agregar stock por talle
+  // models/productos.js — método agregarStockProducto
   async agregarStockProducto(id_producto, id_talle, cantidad, callback) {
     try {
-      // Consulta SQL para insertar o actualizar el stock
-      let sql = `
+      const sql = `
             INSERT INTO stock_productos (id_producto, id_talle, cantidad)
             VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE cantidad = cantidad + ?;
-            `;
+            ON DUPLICATE KEY UPDATE cantidad = ?
+        `; // ✅ = ? en vez de = cantidad + ? → reemplaza en vez de sumar
       const [result] = await pool.query(sql, [
         id_producto,
         id_talle,
         cantidad,
-        cantidad,
+        cantidad, // valor de reemplazo
       ]);
-
-      // Pasamos el resultado a la función callback
       callback(result);
     } catch (error) {
       console.error(error);
@@ -250,7 +248,7 @@ class ProductoModel {
     descripcion,
     precio,
     id_categoria,
-    callback
+    callback,
   ) {
     try {
       let sql = `
@@ -302,7 +300,7 @@ class ProductoModel {
     try {
       const [rows] = await pool.query(
         `SELECT ruta_imagen FROM imagenes_productos WHERE id_producto = ?`,
-        [id_producto]
+        [id_producto],
       );
       callback(rows);
     } catch (error) {
