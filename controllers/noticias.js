@@ -155,7 +155,7 @@ class NoticiasCategoriasController {
             let imagenFinal;
             if (req.file) {
                 // Nueva foto
-                imagenFinal = `/public/uploads/${req.file.filename}`;
+                imagenFinal = `/var/www/media/noticias/${req.file.filename}`;
             } else {
                 // Mantenemos la vieja
                 imagenFinal = noticiaActual.imagen_principal;

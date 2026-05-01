@@ -341,7 +341,7 @@ class ProductoController {
             // Extraemos solo el nombre del archivo de la URL
             // ej: "https://media.club.com/productos/abc123.jpg" → "abc123.jpg"
             const filename = img.ruta_imagen.split("/").pop();
-            const filePath = path.join("/root/imagenes/productos", filename);
+            const filePath = path.join("/var/www/media/productos", filename);
 
             if (fs.existsSync(filePath)) {
               fs.unlink(filePath, (err) => {

@@ -27,7 +27,7 @@ const uploads= multer({
 // ─── FUNCIÓN PARA /root/imagenes (nueva) ────────────────────────────────────
 
 const CARPETAS_PERMITIDAS = ["productos", "noticias", "otros"]
-const BASE_PATH = "/root/media"
+const BASE_PATH = "/var/www/media"
 
 // ✅ Recibe la subcarpeta como parámetro en vez de leerla del body
 function uploadsMedia(subcarpeta) {
